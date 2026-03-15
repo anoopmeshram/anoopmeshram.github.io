@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Building Scrutiny AI Extractor</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+padding:20px;
+}
+
+h2{
+color:#333;
+}
+
+textarea{
+width:100%;
+height:180px;
+padding:10px;
+font-size:14px;
+}
+
+button{
+padding:10px 18px;
+margin:6px;
+border:none;
+background:#2c7be5;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#1a5fd1;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+background:white;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:8px;
+font-size:14px;
+}
+
+th{
+background:#222;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Building Scrutiny Report Extractor</h2>
+
+<input type="file" id="pdfUpload">
+
+<br><br>
+
+<textarea id="report" placeholder="Paste report text here..."></textarea>
+
+<br>
+
+<button onclick="addEntry()">Add Entry</button>
+
+<button onclick="generateTable()">SEND / DONE</button>
+
+<button onclick="exportExcel()">Download Excel</button>
+
+<button onclick="resetData()">RESET</button>
+
+<p id="status"></p>
+
+<table id="table">
+
+<thead>
+
+<tr>
+
+<th>Sr No</th>
+<th>Technical Person</th>
+<th>Contact</th>
+<th>Site Address</th>
+<th>Type</th>
+<th>Owner Name</th>
+<th>Owner Contact</th>
+<th>Owner Address</th>
+<th>Structural Engineer</th>
+
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+<script>
+
+let data=[]
+let sr=1
+
+function cleanAddress(address){
+
+address=address.replace(/PLOT NO.*?,/gi,"")
+address=address.replace(/HOUSE NO.*?,/gi,"")
+address=address.replace(/CTS NO.*?,/gi,"")
+address=address.replace(/SHEET NO.*?,/gi,"")
+address=address.replace(/KH NO.*?,/gi,"")
+address=address.replace(/SURVEY NO.*?,/gi,"")
+
+return address.trim()
+
+}
+
+function extract(label,text){
+
+let reg=new RegExp(label+"\\s*\\n+([\\s\\S]*?)\\n","i")
+
+let match=text.match(reg)
+
+return match?match[1].trim():""
+
+}
+
+function addEntry(){
+
+let text=document.getElementById("report").value
+
+let techName=extract("Technical Person Name",text)
+
+let techContact=extract("Contact Number",text)
+
+let site=extract("Site Address",text)
+
+site=cleanAddress(site)
+
+let type=extract("Technical Person Type",text)
+
+let owner=extract("Owner",text)
+
+let ownerContact=extract("Contact Number",text)
+
+let ownerAddress=extract("Postal Address",text)
+
+let structural=extract("Structural Engineer Name",text)
+
+data.push({
+
+sr,
+techName,
+techContact,
+site,
+type,
+owner,
+ownerContact,
+ownerAddress,
+structural
+
+})
+
+document.getElementById("status").innerText="Entry noted. (Sr No. "+sr+")"
+
+sr++
+
+document.getElementById("report").value=""
+
+}
+
+function generateTable(){
+
+let tbody=document.querySelector("#table tbody")
+
+tbody.innerHTML=""
+
+data.forEach(d=>{
+
+tbody.innerHTML+=`
+<tr>
+
+<td>${d.sr}</td>
+<td>${d.techName}</td>
+<td>${d.techContact}</td>
+<td>${d.site}</td>
+<td>${d.type}</td>
+<td>${d.owner}</td>
+<td>${d.ownerContact}</td>
+<td>${d.ownerAddress}</td>
+<td>${d.structural}</td>
+
+</tr>
+`
+
+})
+
+}
+
+function exportExcel(){
+
+let table=document.getElementById("table").outerHTML
+
+let url='data:application/vnd.ms-excel,'+encodeURIComponent(table)
+
+let link=document.createElement("a")
+
+link.href=url
+
+link.download="scrutiny-data.xls"
+
+link.click()
+
+}
+
+function resetData(){
+
+data=[]
+sr=1
+
+document.querySelector("#table tbody").innerHTML=""
+
+document.getElementById("status").innerText="All entries cleared."
+
+}
+
+document.getElementById('pdfUpload').addEventListener('change',function(e){
+
+let file=e.target.files[0]
+
+let reader=new FileReader()
+
+reader.onload=function(){
+
+let typedarray=new Uint8Array(this.result)
+
+pdfjsLib.getDocument(typedarray).promise.then(function(pdf){
+
+let text=""
+
+let pages=[]
+
+for(let i=1;i<=pdf.numPages;i++){
+
+pages.push(
+
+pdf.getPage(i).then(function(page){
+
+return page.getTextContent().then(function(content){
+
+let strings=content.items.map(item=>item.str)
+
+text+=strings.join(" ")+" "
+
+})
+
+})
+
+)
+
+}
+
+Promise.all(pages).then(function(){
+
+document.getElementById("report").value=text
+
+})
+
+})
+
+}
+
+reader.readAsArrayBuffer(file)
+
+})
+
+</script>
+
+</body>
+
+</html>
