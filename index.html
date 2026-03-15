@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Building Scrutiny Report Extractor</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f4f4f4;
+padding:20px;
+}
+
+textarea{
+width:100%;
+height:200px;
+padding:10px;
+}
+
+button{
+padding:10px 20px;
+margin:10px 5px;
+cursor:pointer;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+background:white;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:8px;
+text-align:left;
+}
+
+th{
+background:#333;
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Building Scrutiny Report Extractor</h2>
+
+<textarea id="report" placeholder="Paste report text here"></textarea>
+
+<br>
+
+<button onclick="addEntry()">Add Entry</button>
+<button onclick="showTable()">SEND / DONE</button>
+<button onclick="resetData()">RESET</button>
+
+<h3>Status</h3>
+<p id="status"></p>
+
+<h3>Output Table</h3>
+
+<table id="outputTable">
+<thead>
+<tr>
+
+<th>Sr No</th>
+<th>Technical Person Name</th>
+<th>Technical Person Contact</th>
+<th>Site Address</th>
+<th>Technical Person Type</th>
+<th>Owner Name</th>
+<th>Owner Contact</th>
+<th>Owner Address</th>
+<th>Structural Engineer</th>
+
+</tr>
+</thead>
+
+<tbody></tbody>
+</table>
+
+<script>
+
+let data=[]
+let sr=1
+
+function shortenAddress(addr){
+
+addr=addr.replace(/PLOT NO\.?.*?,/gi,"")
+addr=addr.replace(/HOUSE NO\.?.*?,/gi,"")
+addr=addr.replace(/CTS NO\.?.*?,/gi,"")
+addr=addr.replace(/SHEET NO\.?.*?,/gi,"")
+addr=addr.replace(/KH\.?NO\.?.*?,/gi,"")
+addr=addr.replace(/SURVEY NO\.?.*?,/gi,"")
+
+return addr.trim()
+
+}
+
+function extract(pattern,text){
+
+let match=text.match(pattern)
+
+return match?match[1].trim():""
+
+}
+
+function addEntry(){
+
+let text=document.getElementById("report").value
+
+let techName=extract(/Technical Person Name\s*\n\n?(.*)/i,text)
+
+let techContact=extract(/Contact Number\s*\n\n?(\d+)/i,text)
+
+let techType=extract(/Technical Person Type\s*\n\n?(.*)/i,text)
+
+let site=extract(/Site Address\s*\n\n?([\s\S]*?)\n\n/i,text)
+
+site=shortenAddress(site)
+
+let ownerName=extract(/Individual Owner\s*\n\n?(.*)/i,text)
+
+let ownerContact=extract(/Contact Number\s*\n\n?(\d+)/i,text)
+
+let ownerAddress=extract(/Postal Address\s*\n\n?([\s\S]*?)\n\n/i,text)
+
+let structural=extract(/Structural Engineer Name\s*\n\n?(.*)/i,text)
+
+data.push({
+sr,
+techName,
+techContact,
+site,
+techType,
+ownerName,
+ownerContact,
+ownerAddress,
+structural
+})
+
+document.getElementById("status").innerText="Entry noted. (Sr No. "+sr+")"
+
+sr++
+
+document.getElementById("report").value=""
+
+}
+
+function showTable(){
+
+let tbody=document.querySelector("#outputTable tbody")
+
+tbody.innerHTML=""
+
+data.forEach(d=>{
+
+let row=`
+<tr>
+<td>${d.sr}</td>
+<td>${d.techName}</td>
+<td>${d.techContact}</td>
+<td>${d.site}</td>
+<td>${d.techType}</td>
+<td>${d.ownerName}</td>
+<td>${d.ownerContact}</td>
+<td>${d.ownerAddress}</td>
+<td>${d.structural}</td>
+</tr>
+`
+
+tbody.innerHTML+=row
+
+})
+
+}
+
+function resetData(){
+
+data=[]
+sr=1
+
+document.querySelector("#outputTable tbody").innerHTML=""
+
+document.getElementById("status").innerText="All entries cleared."
+
+}
+
+</script>
+
+</body>
+</html>
