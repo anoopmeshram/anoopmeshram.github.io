@@ -9,7 +9,9 @@ body {
     font-family: "Times New Roman", serif;
     margin: 0;
     background: #f2f2f2;
-}  
+}
+
+/* HEADER */
 .header {
     background: maroon;
     color: white;
@@ -19,6 +21,7 @@ body {
     font-weight: bold;
 }
 
+/* PAGE */
 .page {
     width: 900px;
     margin: 20px auto;
@@ -35,6 +38,7 @@ body {
 
 .details td {
     padding: 6px;
+    vertical-align: middle;
 }
 
 .label {
@@ -42,10 +46,24 @@ body {
     font-weight: bold;
 }
 
+/* INPUT (NO UNDERLINE) */
 input {
     width: 100%;
     border: none;
-    border-bottom: 1px solid black;
+    outline: none;
+    background: transparent;
+    font-family: "Times New Roman";
+    padding: 2px;
+}
+
+/* TEXTAREA */
+textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    background: transparent;
 }
 
 /* TABLE */
@@ -84,14 +102,7 @@ td:nth-child(1){text-align:right;}
 td:nth-child(2){text-align:left;}
 td:nth-child(n+3){text-align:center;}
 
-textarea {
-    width: 100%;
-    border: none;
-    resize: none;
-    overflow: hidden;
-}
-
-/* BUTTON */
+/* BUTTONS */
 .buttons {
     text-align: center;
     margin-top: 10px;
@@ -102,11 +113,18 @@ button {
     color: white;
     border: none;
     padding: 8px 15px;
+    margin: 5px;
+    cursor: pointer;
 }
 
 /* PRINT */
 @media print {
-    .buttons {display:none;}
+    .buttons { display: none; }
+    textarea {
+        height: auto !important;
+        overflow: visible !important;
+    }
+    body { background: white; }
 }
 </style>
 
