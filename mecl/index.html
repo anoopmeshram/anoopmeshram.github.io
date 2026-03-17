@@ -59,6 +59,7 @@ textarea {
     overflow: hidden;
 }
 
+/* TABLE */
 table.main {
     width: 100%;
     border-collapse: collapse;
@@ -80,6 +81,7 @@ td, th {
     height: 30px;
 }
 
+/* COLUMN WIDTH */
 colgroup col:nth-child(1){width:6%}
 colgroup col:nth-child(2){width:28%}
 colgroup col:nth-child(3){width:8%}
@@ -89,10 +91,12 @@ colgroup col:nth-child(6){width:10%}
 colgroup col:nth-child(7){width:14%}
 colgroup col:nth-child(8){width:14%}
 
+/* ALIGN */
 td:nth-child(1){text-align:right;}
 td:nth-child(2){text-align:left;}
 td:nth-child(n+3){text-align:center;}
 
+/* SIGN */
 .sign-section {
     margin-top: 40px;
     display: flex;
@@ -105,6 +109,7 @@ td:nth-child(n+3){text-align:center;}
     font-weight: bold;
 }
 
+/* BUTTON */
 .buttons {
     text-align: center;
     margin-top: 15px;
@@ -216,8 +221,9 @@ button {
 
 <tfoot>
 <tr>
-<td colspan="7"><b>Total</b></td>
+<td colspan="6" style="font-weight:bold;">Total</td>
 <td id="total">0.00</td>
+<td></td>
 </tr>
 </tfoot>
 
