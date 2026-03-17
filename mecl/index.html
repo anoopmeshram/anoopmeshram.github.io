@@ -19,10 +19,9 @@ body {
     padding: 12px;
     font-size: 22px;
     font-weight: bold;
-    letter-spacing: 1px;
 }
 
-/* MAIN BOX */
+/* CONTAINER */
 .container {
     width: 85%;
     margin: 20px auto;
@@ -31,10 +30,11 @@ body {
     padding: 20px;
 }
 
-/* FORM GRID */
+/* FORM */
 .row {
     display: flex;
     margin-bottom: 10px;
+    align-items: center;
 }
 
 .label {
@@ -47,9 +47,13 @@ body {
 }
 
 input, textarea {
-    width: 100%;
-    padding: 5px;
+    width: 95%;
+    padding: 4px;
     border: 1px solid black;
+    text-align: center;
+    box-sizing: border-box;
+    margin: auto;
+    display: block;
     font-family: "Times New Roman";
 }
 
@@ -58,11 +62,11 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+    table-layout: fixed;
 }
 
 th {
     background: #d9d9d9;
-    font-weight: bold;
 }
 
 table, th, td {
@@ -70,8 +74,10 @@ table, th, td {
 }
 
 td, th {
-    padding: 6px;
+    padding: 5px;
     text-align: center;
+    height: 35px;
+    vertical-align: middle;
 }
 
 /* TOTAL */
@@ -82,8 +88,8 @@ td, th {
 
 /* BUTTONS */
 .buttons {
-    margin-top: 15px;
     text-align: center;
+    margin-top: 15px;
 }
 
 button {
@@ -100,12 +106,8 @@ button:hover {
 
 /* PRINT */
 @media print {
-    .buttons {
-        display: none;
-    }
-    body {
-        background: white;
-    }
+    .buttons { display: none; }
+    body { background: white; }
 }
 </style>
 
@@ -153,10 +155,11 @@ MECL MEASUREMENT SHEET
 <tr>
 <th>Sr. No.</th>
 <th>Description</th>
+<th>No.</th>
 <th>L (m)</th>
 <th>B (m)</th>
 <th>D (m)</th>
-<th>Contents (m³)</th>
+<th>Contents</th>
 </tr>
 </thead>
 
@@ -164,6 +167,7 @@ MECL MEASUREMENT SHEET
 <tr>
 <td>1</td>
 <td><input></td>
+<td><input type="number"></td>
 <td><input type="number" oninput="calc(this)"></td>
 <td><input type="number" oninput="calc(this)"></td>
 <td><input type="number" oninput="calc(this)"></td>
@@ -173,7 +177,7 @@ MECL MEASUREMENT SHEET
 
 <tfoot>
 <tr class="total-row">
-<td colspan="5">Total</td>
+<td colspan="6">Total</td>
 <td id="total">0.00</td>
 </tr>
 </tfoot>
@@ -191,16 +195,16 @@ MECL MEASUREMENT SHEET
 <script>
 
 function calc(el) {
-    let row = el.parentElement.parentElement;
+    let row = el.closest("tr");
     let inputs = row.querySelectorAll("input");
 
-    let l = parseFloat(inputs[1].value) || 0;
-    let b = parseFloat(inputs[2].value) || 0;
-    let d = parseFloat(inputs[3].value) || 0;
+    let l = parseFloat(inputs[2].value) || 0;
+    let b = parseFloat(inputs[3].value) || 0;
+    let d = parseFloat(inputs[4].value) || 0;
 
     let contents = l * b * d;
 
-    inputs[4].value = contents.toFixed(2);
+    inputs[5].value = contents.toFixed(2);
 
     updateTotal();
 }
@@ -210,7 +214,7 @@ function updateTotal() {
     let total = 0;
 
     rows.forEach(row => {
-        let val = parseFloat(row.querySelectorAll("input")[4].value) || 0;
+        let val = parseFloat(row.querySelectorAll("input")[5].value) || 0;
         total += val;
     });
 
@@ -226,6 +230,7 @@ function addRow() {
     row.innerHTML = `
         <td>${rowCount}</td>
         <td><input></td>
+        <td><input type="number"></td>
         <td><input type="number" oninput="calc(this)"></td>
         <td><input type="number" oninput="calc(this)"></td>
         <td><input type="number" oninput="calc(this)"></td>
@@ -241,6 +246,7 @@ function resetForm() {
         <tr>
             <td>1</td>
             <td><input></td>
+            <td><input type="number"></td>
             <td><input type="number" oninput="calc(this)"></td>
             <td><input type="number" oninput="calc(this)"></td>
             <td><input type="number" oninput="calc(this)"></td>
