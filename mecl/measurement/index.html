@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MECL Measurement Book</title>
+
+<style>
+body {
+    font-family: "Times New Roman", serif;
+    margin: 0;
+    background: #f2f2f2;
+}
+
+.header {
+    background: maroon;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.page {
+    width: 900px;
+    margin: 20px auto;
+    background: white;
+    border: 2px solid black;
+    padding: 20px;
+}
+
+.details {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.details td {
+    padding: 6px 10px;
+}
+
+.label {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* INPUT */
+input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: "Times New Roman";
+}
+
+textarea {
+    width: 100%;
+    border: none;
+    resize: none;
+    overflow: hidden;
+}
+
+/* TABLE */
+table.main {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    table-layout: fixed;
+}
+
+th {
+    background: maroon;
+    color: white;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+td, th {
+    padding: 5px;
+    height: 30px;
+}
+
+/* COLUMN WIDTH */
+colgroup col:nth-child(1){width:6%}
+colgroup col:nth-child(2){width:28%}
+colgroup col:nth-child(3){width:8%}
+colgroup col:nth-child(4){width:10%}
+colgroup col:nth-child(5){width:10%}
+colgroup col:nth-child(6){width:10%}
+colgroup col:nth-child(7){width:14%}
+colgroup col:nth-child(8){width:14%}
+
+/* ALIGN */
+td:nth-child(1){text-align:right;}
+td:nth-child(2){text-align:left;}
+td:nth-child(n+3){text-align:center;}
+
+/* SIGN */
+.sign-section {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.sign-box {
+    width: 30%;
+    font-weight: bold;
+}
+
+/* BUTTON */
+.buttons {
+    text-align: center;
+    margin-top: 15px;
+}
+
+button {
+    background: maroon;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+/* PRINT */
+@media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .buttons { display: none; }
+
+    textarea {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    table, th, td {
+        border: 1.5px solid black !important;
+    }
+
+    body { background: white; }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">MECL</div>
+
+<div class="page">
+
+<table class="details">
+
+<tr>
+<td class="label">Division:</td>
+<td colspan="3"><input></td>
+</tr>
+
+<tr>
+<td class="label">Name of Work:</td>
+<td colspan="3"><input></td>
+</tr>
+
+<tr>
+<td class="label">Agency by which work is executed:</td>
+<td colspan="3"><input></td>
+</tr>
+
+<tr>
+<td class="label">Work Order No.:</td>
+<td><input></td>
+<td class="label">Date:</td>
+<td><input type="text" placeholder="mm/dd/yyyy" onfocus="this.type='date'" onblur="formatDate(this)"></td>
+</tr>
+
+<tr>
+<td class="label">Date of Start/Handling Over the Site:</td>
+<td><input type="text" placeholder="mm/dd/yyyy" onfocus="this.type='date'" onblur="formatDate(this)"></td>
+<td class="label">Date of Completion of the Work:</td>
+<td><input type="text" placeholder="mm/dd/yyyy" onfocus="this.type='date'" onblur="formatDate(this)"></td>
+</tr>
+
+</table>
+
+<h3 style="text-align:center;">MEASUREMENT</h3>
+
+<table class="main">
+<colgroup>
+<col><col><col><col><col><col><col><col>
+</colgroup>
+
+<thead>
+<tr>
+<th>Sr. No.</th>
+<th>Description</th>
+<th>No.</th>
+<th>L (m)</th>
+<th>B (m)</th>
+<th>D (m)</th>
+<th>Contents</th>
+<th>Unit</th>
+</tr>
+</thead>
+
+<tbody id="tbody">
+<tr>
+<td>1</td>
+<td><textarea oninput="autoGrow(this)"></textarea></td>
+<td><input type="number"></td>
+<td><input type="number" oninput="calc(this)"></td>
+<td><input type="number" oninput="calc(this)"></td>
+<td><input type="number" oninput="calc(this)"></td>
+<td><input readonly></td>
+<td><input readonly></td>
+</tr>
+</tbody>
+
+<tfoot>
+<tr>
+<td colspan="6"><b>Total</b></td>
+<td id="total">0.00</td>
+<td></td>
+</tr>
+</tfoot>
+
+</table>
+
+<div class="sign-section">
+<div class="sign-box">
+<br><br><br>
+_________________________<br>
+Contractor
+</div>
+
+<div class="sign-box">
+<br><br><br>
+_________________________<br>
+Junior Engineer
+</div>
+
+<div class="sign-box">
+<br><br><br>
+_________________________<br>
+Assistant Engineer
+</div>
+</div>
+
+<div class="buttons">
+<button onclick="addRow()">Add Row</button>
+<button onclick="window.print()">Print</button>
+<button onclick="resetForm()">Reset</button>
+</div>
+
+</div>
+
+<script>
+
+function calc(el){
+    let row = el.closest("tr");
+    let inputs = row.querySelectorAll("input");
+
+    let l = parseFloat(inputs[1].value) || 0;
+    let b = parseFloat(inputs[2].value) || 0;
+    let d = parseFloat(inputs[3].value) || 0;
+
+    let result = 0;
+    let unit = "";
+
+    if(d > 0){
+        result = l * b * d;
+        unit = "m³";
+    } else {
+        result = l * b;
+        unit = "m²";
+    }
+
+    inputs[4].value = result.toFixed(2);
+    inputs[5].value = unit;
+
+    updateTotal();
+}
+
+function updateTotal(){
+    let total = 0;
+
+    document.querySelectorAll("#tbody tr").forEach(row=>{
+        let val = parseFloat(row.querySelectorAll("input")[4].value) || 0;
+        total += val;
+    });
+
+    document.getElementById("total").innerText = total.toFixed(2);
+}
+
+function addRow(){
+    let tbody = document.getElementById("tbody");
+    let n = tbody.rows.length + 1;
+
+    let row = tbody.insertRow();
+
+    row.innerHTML = `
+    <td>${n}</td>
+    <td><textarea oninput="autoGrow(this)"></textarea></td>
+    <td><input type="number"></td>
+    <td><input type="number" oninput="calc(this)"></td>
+    <td><input type="number" oninput="calc(this)"></td>
+    <td><input type="number" oninput="calc(this)"></td>
+    <td><input readonly></td>
+    <td><input readonly></td>`;
+}
+
+function resetForm(){
+    document.querySelectorAll("input,textarea").forEach(e=>e.value="");
+    document.getElementById("total").innerText="0.00";
+}
+
+function autoGrow(el){
+    el.style.height="auto";
+    el.style.height=el.scrollHeight+"px";
+}
+
+/* DATE FORMAT */
+function formatDate(el){
+    if(el.value){
+        let date = new Date(el.value);
+
+        let mm = String(date.getMonth()+1).padStart(2,'0');
+        let dd = String(date.getDate()).padStart(2,'0');
+        let yyyy = date.getFullYear();
+
+        el.type="text";
+        el.value = mm+"/"+dd+"/"+yyyy;
+    } else {
+        el.type="text";
+    }
+}
+
+</script>
+
+</body>
+</html>
