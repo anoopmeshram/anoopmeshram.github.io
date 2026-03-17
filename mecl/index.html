@@ -35,15 +35,14 @@ body {
 
 .details td {
     padding: 6px 10px;
-    text-align: left;
 }
 
 .label {
-    width: 30%;
     font-weight: bold;
     white-space: nowrap;
 }
 
+/* INPUT */
 input {
     width: 100%;
     border: none;
@@ -121,6 +120,7 @@ button {
     border: none;
     padding: 8px 15px;
     margin: 5px;
+    cursor: pointer;
 }
 
 /* PRINT */
@@ -174,14 +174,14 @@ button {
 <td class="label">Work Order No.:</td>
 <td><input></td>
 <td class="label">Date:</td>
-<td><input type="text" placeholder="mm/dd/yyyy"></td>
+<td><input type="text" placeholder="mm/dd/yyyy" onfocus="this.type='date'" onblur="formatDate(this)"></td>
 </tr>
 
 <tr>
 <td class="label">Date of Start/Handling Over the Site:</td>
-<td><input type="text" placeholder="mm/dd/yyyy"></td>
+<td><input type="text" placeholder="mm/dd/yyyy" onfocus="this.type='date'" onblur="formatDate(this)"></td>
 <td class="label">Date of Completion of the Work:</td>
-<td><input type="text" placeholder="mm/dd/yyyy"></td>
+<td><input type="text" placeholder="mm/dd/yyyy" onfocus="this.type='date'" onblur="formatDate(this)"></td>
 </tr>
 
 </table>
@@ -221,7 +221,7 @@ button {
 
 <tfoot>
 <tr>
-<td colspan="6" style="font-weight:bold;">Total</td>
+<td colspan="6"><b>Total</b></td>
 <td id="total">0.00</td>
 <td></td>
 </tr>
@@ -320,6 +320,22 @@ function resetForm(){
 function autoGrow(el){
     el.style.height="auto";
     el.style.height=el.scrollHeight+"px";
+}
+
+/* DATE FORMAT */
+function formatDate(el){
+    if(el.value){
+        let date = new Date(el.value);
+
+        let mm = String(date.getMonth()+1).padStart(2,'0');
+        let dd = String(date.getDate()).padStart(2,'0');
+        let yyyy = date.getFullYear();
+
+        el.type="text";
+        el.value = mm+"/"+dd+"/"+yyyy;
+    } else {
+        el.type="text";
+    }
 }
 
 </script>
