@@ -2,88 +2,91 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>MECL Measurement Sheet</title>
+<title>Measurement Book (MB)</title>
 
 <style>
 body {
     font-family: "Times New Roman", serif;
     margin: 0;
-    background: #e6e6e6;
+    background: #ccc;
 }
 
-/* HEADER */
-.header {
-    background: maroon;
-    color: white;
-    text-align: center;
-    padding: 12px;
-    font-size: 22px;
-    font-weight: bold;
-}
-
-/* CONTAINER */
-.container {
-    width: 85%;
+/* PAGE */
+.page {
+    width: 900px;
     margin: 20px auto;
     background: white;
     border: 2px solid black;
     padding: 20px;
 }
 
-/* FORM */
-.row {
-    display: flex;
-    margin-bottom: 10px;
-    align-items: center;
-}
-
-.label {
-    width: 30%;
-    font-weight: bold;
-}
-
-.input {
-    width: 70%;
-}
-
-input, textarea {
-    width: 95%;
-    padding: 4px;
-    border: 1px solid black;
+/* HEADER */
+.header {
     text-align: center;
-    box-sizing: border-box;
-    margin: auto;
-    display: block;
-    font-family: "Times New Roman";
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.sub-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* DETAILS BOX */
+.details {
+    border: 1px solid black;
+    margin-bottom: 10px;
+}
+
+.details div {
+    border-bottom: 1px solid black;
+    padding: 5px;
+}
+
+.details div:last-child {
+    border-bottom: none;
 }
 
 /* TABLE */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
     table-layout: fixed;
 }
 
-th {
-    background: #d9d9d9;
-}
-
-table, th, td {
+th, td {
     border: 1px solid black;
-}
-
-td, th {
     padding: 5px;
     text-align: center;
-    height: 35px;
     vertical-align: middle;
+}
+
+th {
+    background: #e6e6e6;
+}
+
+/* INPUT */
+input {
+    width: 95%;
+    border: none;
+    text-align: center;
+    font-family: "Times New Roman";
 }
 
 /* TOTAL */
 .total-row td {
     font-weight: bold;
-    background: #f2f2f2;
+}
+
+/* SIGNATURE */
+.sign {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
 }
 
 /* BUTTONS */
@@ -100,10 +103,6 @@ button {
     cursor: pointer;
 }
 
-button:hover {
-    background: #ddd;
-}
-
 /* PRINT */
 @media print {
     .buttons { display: none; }
@@ -115,50 +114,32 @@ button:hover {
 
 <body>
 
-<div class="header">
-MECL MEASUREMENT SHEET
+<div class="page">
+
+<div class="header">MEASUREMENT BOOK</div>
+
+<div class="sub-header">
+<div>MB No: <input></div>
+<div>Page No: <input></div>
 </div>
 
-<div class="container">
-
-<h3 style="text-align:center;">General Details</h3>
-
-<div class="row">
-<div class="label">Division:</div>
-<div class="input"><input></div>
+<div class="details">
+<div>Division: <input></div>
+<div>Name of Work: <input></div>
+<div>Agency: <input></div>
+<div>Work Order No: <input></div>
+<div>Date: <input type="date"></div>
 </div>
-
-<div class="row">
-<div class="label">Name of Work:</div>
-<div class="input"><textarea></textarea></div>
-</div>
-
-<div class="row">
-<div class="label">Agency:</div>
-<div class="input"><input></div>
-</div>
-
-<div class="row">
-<div class="label">Work Order No:</div>
-<div class="input"><input></div>
-</div>
-
-<div class="row">
-<div class="label">Date:</div>
-<div class="input"><input type="date"></div>
-</div>
-
-<h3 style="text-align:center;">Measurement</h3>
 
 <table>
 <thead>
 <tr>
-<th>Sr. No.</th>
-<th>Description</th>
-<th>No.</th>
-<th>L (m)</th>
-<th>B (m)</th>
-<th>D (m)</th>
+<th>Sr</th>
+<th>Description of Item</th>
+<th>No</th>
+<th>L</th>
+<th>B</th>
+<th>D</th>
 <th>Contents</th>
 </tr>
 </thead>
@@ -183,6 +164,26 @@ MECL MEASUREMENT SHEET
 </tfoot>
 
 </table>
+
+<div class="sign">
+<div>
+<br><br>
+_________________<br>
+Contractor
+</div>
+
+<div>
+<br><br>
+_________________<br>
+Junior Engineer
+</div>
+
+<div>
+<br><br>
+_________________<br>
+Assistant Engineer
+</div>
+</div>
 
 <div class="buttons">
 <button onclick="addRow()">➕ Add Row</button>
@@ -239,7 +240,7 @@ function addRow() {
 }
 
 function resetForm() {
-    document.querySelectorAll("input, textarea").forEach(el => el.value = "");
+    document.querySelectorAll("input").forEach(el => el.value = "");
 
     let tbody = document.getElementById("tbody");
     tbody.innerHTML = `
