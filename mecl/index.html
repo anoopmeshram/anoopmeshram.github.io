@@ -11,7 +11,6 @@ body {
     background: #f2f2f2;
 }
 
-    
 /* HEADER */
 .header {
     background: maroon;
@@ -28,19 +27,26 @@ body {
     margin: 20px auto;
     background: white;
     border: 2px solid black;
-    padding: 15px;
+    padding: 20px;
 }
 
-/* DETAILS */
+/* DETAILS (LEFT ALIGNED DASHBOARD STYLE) */
 .details {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
 }
 
 .details td {
-    padding: 6px;
+    padding: 6px 8px;
     vertical-align: middle;
+    text-align: left;
+}
+
+/* LABEL STYLE */
+.label {
+    width: 32%;
+    font-weight: bold;
+    white-space: nowrap;
 }
 
 /* INPUT */
@@ -59,14 +65,13 @@ textarea {
     outline: none;
     resize: none;
     overflow: hidden;
-    background: transparent;
 }
 
 /* TABLE */
-table {
+table.main {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 15px;
     table-layout: fixed;
 }
 
@@ -98,7 +103,7 @@ td:nth-child(1){text-align:right;}
 td:nth-child(2){text-align:left;}
 td:nth-child(n+3){text-align:center;}
 
-/* BUTTONS */
+/* BUTTON */
 .buttons {
     text-align: center;
     margin-top: 10px;
@@ -112,25 +117,13 @@ button {
     margin: 5px;
 }
 
-/* PRINT DARK */
+/* PRINT FIX */
 @media print {
     * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
-
-    .buttons { display: none; }
-
-    table, th, td {
-        border: 1.5px solid black !important;
-    }
-
-    textarea {
-        height: auto !important;
-        overflow: visible !important;
-    }
-
-    body { background: white; }
+    .buttons { display:none; }
 }
 </style>
 
@@ -146,37 +139,37 @@ button {
 <table class="details">
 
 <tr>
-<td style="width:25%;"><b>Division:</b></td>
+<td class="label">Division:</td>
 <td colspan="3"><input></td>
 </tr>
 
 <tr>
-<td><b>Name of Work:</b></td>
+<td class="label">Name of Work:</td>
 <td colspan="3"><input></td>
 </tr>
 
 <tr>
-<td><b>Agency by which work is executed:</b></td>
+<td class="label">Agency by which work is executed:</td>
 <td colspan="3"><input></td>
 </tr>
 
 <tr>
-<td><b>Work Order No.:</b></td>
+<td class="label">Work Order No.:</td>
 <td><input></td>
-<td><b>Date:</b></td>
+<td class="label">Date:</td>
 <td><input type="date"></td>
 </tr>
 
 <tr>
-<td><b>Date of Start/Handling Over the Site:</b></td>
-<td><input type="date" placeholder="dd/mm/yyyy"></td>
+<td class="label">Date of Start/Handling Over the Site:</td>
+<td><input type="date"></td>
 <td></td>
 <td></td>
 </tr>
 
 <tr>
-<td><b>Date of Completion of the Work:</b></td>
-<td><input type="date" placeholder="dd/mm/yyyy"></td>
+<td class="label">Date of Completion of the Work:</td>
+<td><input type="date"></td>
 <td></td>
 <td></td>
 </tr>
@@ -186,7 +179,7 @@ button {
 <h3 style="text-align:center;">MEASUREMENT</h3>
 
 <!-- TABLE -->
-<table>
+<table class="main">
 <colgroup>
 <col><col><col><col><col><col><col>
 </colgroup>
@@ -217,7 +210,7 @@ button {
 
 <tfoot>
 <tr>
-<td colspan="6" style="font-weight:bold;">Total</td>
+<td colspan="6"><b>Total</b></td>
 <td id="total">0.00</td>
 </tr>
 </tfoot>
@@ -234,32 +227,40 @@ button {
 
 <script>
 
+/* FIXED CALCULATION */
 function calc(el){
     let row = el.closest("tr");
     let inputs = row.querySelectorAll("input");
 
-    let l = parseFloat(inputs[2].value)||0;
-    let b = parseFloat(inputs[3].value)||0;
-    let d = parseFloat(inputs[4].value)||0;
+    let l = parseFloat(inputs[1].value) || 0;
+    let b = parseFloat(inputs[2].value) || 0;
+    let d = parseFloat(inputs[3].value) || 0;
 
-    inputs[5].value = (l*b*d).toFixed(2);
+    let result = l * b * d;
+
+    inputs[4].value = result.toFixed(2);
+
     updateTotal();
 }
 
 function updateTotal(){
-    let total=0;
-    document.querySelectorAll("#tbody tr").forEach(r=>{
-        total+=parseFloat(r.querySelectorAll("input")[5].value)||0;
+    let total = 0;
+
+    document.querySelectorAll("#tbody tr").forEach(row=>{
+        let val = parseFloat(row.querySelectorAll("input")[4].value) || 0;
+        total += val;
     });
-    document.getElementById("total").innerText=total.toFixed(2);
+
+    document.getElementById("total").innerText = total.toFixed(2);
 }
 
 function addRow(){
-    let tbody=document.getElementById("tbody");
-    let n=tbody.rows.length+1;
+    let tbody = document.getElementById("tbody");
+    let n = tbody.rows.length + 1;
 
-    let row=tbody.insertRow();
-    row.innerHTML=`
+    let row = tbody.insertRow();
+
+    row.innerHTML = `
     <td>${n}</td>
     <td><textarea oninput="autoGrow(this)"></textarea></td>
     <td><input type="number"></td>
