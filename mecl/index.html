@@ -126,7 +126,7 @@ MECL MEASUREMENT SYSTEM
 <th>L</th>
 <th>B</th>
 <th>D</th>
-<th>Result</th>
+<th>Contents or area</th>
 </tr>
 </thead>
 
@@ -167,9 +167,9 @@ function calc(el) {
     let b = parseFloat(inputs[3].value) || 0;
     let d = parseFloat(inputs[4].value) || 0;
 
-    let result = d > 0 ? no*l*b*d : no*l*b;
+    let Contents or area = d > 0 ? no*l*b*d : no*l*b;
 
-    inputs[5].value = result.toFixed(2);
+    inputs[5].value = Contents or area.toFixed(2);
 
     updateTotal();
 }
