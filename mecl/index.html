@@ -37,29 +37,24 @@ body {
     font-weight: bold;
 }
 
-/* MB INFO */
-.mbinfo {
-    display: flex;
-    justify-content: space-between;
+/* DETAILS TABLE */
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
     margin-top: 10px;
 }
 
-/* DETAILS */
-.details {
+.details-table td {
     border: 1px solid black;
-    margin-top: 10px;
-}
-
-.details div {
-    border-bottom: 1px solid black;
     padding: 5px;
 }
 
-.details div:last-child {
-    border-bottom: none;
+.details-table td:first-child {
+    width: 25%;
+    font-weight: bold;
 }
 
-/* TABLE */
+/* MAIN TABLE */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -82,6 +77,15 @@ td, th {
     vertical-align: middle;
 }
 
+/* COLUMN WIDTHS */
+colgroup col:nth-child(1) { width: 6%; }
+colgroup col:nth-child(2) { width: 34%; }
+colgroup col:nth-child(3) { width: 10%; }
+colgroup col:nth-child(4) { width: 12%; }
+colgroup col:nth-child(5) { width: 12%; }
+colgroup col:nth-child(6) { width: 12%; }
+colgroup col:nth-child(7) { width: 14%; }
+
 /* ALIGNMENT */
 td:nth-child(1) { text-align: right; }
 td:nth-child(2) { text-align: left; }
@@ -89,9 +93,19 @@ td:nth-child(n+3) { text-align: center; }
 
 /* INPUT */
 input {
-    width: 95%;
+    width: 98%;
     border: none;
     text-align: center;
+    font-family: "Times New Roman";
+}
+
+/* TEXTAREA */
+textarea {
+    width: 98%;
+    border: none;
+    resize: none;
+    overflow: hidden;
+    min-height: 30px;
     font-family: "Times New Roman";
 }
 
@@ -101,7 +115,7 @@ input {
     background: #eee;
 }
 
-/* SIGNATURE */
+/* SIGN */
 .sign {
     margin-top: 40px;
     display: flex;
@@ -131,6 +145,10 @@ button:hover {
 /* PRINT */
 @media print {
     .buttons { display: none; }
+    textarea {
+        height: auto !important;
+        overflow: visible !important;
+    }
     body { background: white; }
 }
 </style>
@@ -139,28 +157,40 @@ button:hover {
 
 <body>
 
-<div class="topbar">
-MECL MEASUREMENT BOOK
-</div>
+<div class="topbar">MECL MEASUREMENT BOOK</div>
 
 <div class="page">
 
 <div class="header">Measurement Book</div>
 
-<div class="mbinfo">
-<div>MB No: <input></div>
-<div>Page No: <input></div>
-</div>
-
-<div class="details">
-<div>Division: <input></div>
-<div>Name of Work: <input></div>
-<div>Agency: <input></div>
-<div>Work Order No: <input></div>
-<div>Date: <input type="date"></div>
-</div>
+<table class="details-table">
+<tr>
+<td>Division:</td>
+<td><input></td>
+</tr>
+<tr>
+<td>Name of Work:</td>
+<td><input></td>
+</tr>
+<tr>
+<td>Agency:</td>
+<td><input></td>
+</tr>
+<tr>
+<td>Work Order No:</td>
+<td><input></td>
+</tr>
+<tr>
+<td>Date:</td>
+<td><input type="date"></td>
+</tr>
+</table>
 
 <table>
+<colgroup>
+<col><col><col><col><col><col><col>
+</colgroup>
+
 <thead>
 <tr>
 <th>Sr. No.</th>
@@ -176,7 +206,7 @@ MECL MEASUREMENT BOOK
 <tbody id="tbody">
 <tr>
 <td>1</td>
-<td><input></td>
+<td><textarea oninput="autoGrow(this)"></textarea></td>
 <td><input type="number"></td>
 <td><input type="number" oninput="calc(this)"></td>
 <td><input type="number" oninput="calc(this)"></td>
@@ -196,21 +226,13 @@ MECL MEASUREMENT BOOK
 
 <div class="sign">
 <div>
-<br><br>
-_________________<br>
-Contractor
+<br><br>_________________<br>Contractor
 </div>
-
 <div>
-<br><br>
-_________________<br>
-Junior Engineer
+<br><br>_________________<br>Junior Engineer
 </div>
-
 <div>
-<br><br>
-_________________<br>
-Assistant Engineer
+<br><br>_________________<br>Assistant Engineer
 </div>
 </div>
 
@@ -233,7 +255,6 @@ function calc(el) {
     let d = parseFloat(inputs[4].value) || 0;
 
     let contents = l * b * d;
-
     inputs[5].value = contents.toFixed(2);
 
     updateTotal();
@@ -259,7 +280,7 @@ function addRow() {
 
     row.innerHTML = `
         <td>${rowCount}</td>
-        <td><input></td>
+        <td><textarea oninput="autoGrow(this)"></textarea></td>
         <td><input type="number"></td>
         <td><input type="number" oninput="calc(this)"></td>
         <td><input type="number" oninput="calc(this)"></td>
@@ -269,13 +290,13 @@ function addRow() {
 }
 
 function resetForm() {
-    document.querySelectorAll("input").forEach(el => el.value = "");
+    document.querySelectorAll("input, textarea").forEach(el => el.value = "");
 
     let tbody = document.getElementById("tbody");
     tbody.innerHTML = `
         <tr>
             <td>1</td>
-            <td><input></td>
+            <td><textarea oninput="autoGrow(this)"></textarea></td>
             <td><input type="number"></td>
             <td><input type="number" oninput="calc(this)"></td>
             <td><input type="number" oninput="calc(this)"></td>
@@ -285,6 +306,11 @@ function resetForm() {
     `;
 
     document.getElementById("total").innerText = "0.00";
+}
+
+function autoGrow(el) {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
 }
 
 </script>
