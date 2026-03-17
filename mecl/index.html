@@ -30,7 +30,7 @@ body {
     padding: 20px;
 }
 
-/* DETAILS (LEFT ALIGNED DASHBOARD STYLE) */
+/* DETAILS */
 .details {
     width: 100%;
     border-collapse: collapse;
@@ -38,15 +38,13 @@ body {
 
 .details td {
     padding: 6px 8px;
-    vertical-align: middle;
     text-align: left;
 }
 
-/* LABEL STYLE */
+/* LABEL */
 .label {
     width: 32%;
     font-weight: bold;
-    white-space: nowrap;
 }
 
 /* INPUT */
@@ -103,10 +101,23 @@ td:nth-child(1){text-align:right;}
 td:nth-child(2){text-align:left;}
 td:nth-child(n+3){text-align:center;}
 
+/* SIGNATURE */
+.sign-section {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.sign-box {
+    width: 30%;
+    font-weight: bold;
+}
+
 /* BUTTON */
 .buttons {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 button {
@@ -123,7 +134,19 @@ button {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
-    .buttons { display:none; }
+
+    .buttons { display: none; }
+
+    textarea {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    table, th, td {
+        border: 1.5px solid black !important;
+    }
+
+    body { background: white; }
 }
 </style>
 
@@ -217,6 +240,28 @@ button {
 
 </table>
 
+<!-- SIGNATURE -->
+<div class="sign-section">
+<div class="sign-box">
+<br><br><br>
+_________________________<br>
+Contractor
+</div>
+
+<div class="sign-box">
+<br><br><br>
+_________________________<br>
+Junior Engineer
+</div>
+
+<div class="sign-box">
+<br><br><br>
+_________________________<br>
+Assistant Engineer
+</div>
+</div>
+
+<!-- BUTTONS -->
 <div class="buttons">
 <button onclick="addRow()">Add Row</button>
 <button onclick="window.print()">Print</button>
@@ -227,7 +272,6 @@ button {
 
 <script>
 
-/* FIXED CALCULATION */
 function calc(el){
     let row = el.closest("tr");
     let inputs = row.querySelectorAll("input");
