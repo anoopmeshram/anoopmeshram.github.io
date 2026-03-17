@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>MECL Measurement Book</title>
+<title>MECL Measurement</title>
 
 <style>
 body {
@@ -11,35 +11,31 @@ body {
     background: #f2f2f2;
 }
 
-/* HEADER */
 .header {
     background: maroon;
     color: white;
     text-align: center;
-    padding: 12px;
-    font-size: 24px;
+    padding: 10px;
+    font-size: 22px;
     font-weight: bold;
 }
 
-/* PAGE */
 .page {
     width: 900px;
     margin: 20px auto;
     background: white;
     border: 2px solid black;
-    padding: 20px;
+    padding: 15px;
 }
 
-/* DETAILS TABLE */
+/* DETAILS */
 .details {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
 }
 
 .details td {
     padding: 6px;
-    vertical-align: middle;
 }
 
 .label {
@@ -48,10 +44,9 @@ body {
 }
 
 input {
-    width: 98%;
+    width: 100%;
     border: none;
     border-bottom: 1px solid black;
-    font-family: "Times New Roman";
 }
 
 /* TABLE */
@@ -73,7 +68,7 @@ table, th, td {
 
 td, th {
     padding: 5px;
-    height: 35px;
+    height: 30px;
 }
 
 /* COLUMN WIDTH */
@@ -85,36 +80,29 @@ colgroup col:nth-child(5){width:12%}
 colgroup col:nth-child(6){width:12%}
 colgroup col:nth-child(7){width:14%}
 
-/* ALIGNMENT */
+/* ALIGN */
 td:nth-child(1){text-align:right;}
 td:nth-child(2){text-align:left;}
 td:nth-child(n+3){text-align:center;}
 
-/* TEXTAREA */
 textarea {
-    width: 98%;
+    width: 100%;
     border: none;
     resize: none;
     overflow: hidden;
 }
 
-/* TOTAL */
-.total-row td {
-    font-weight: bold;
-}
-
-/* BUTTONS */
+/* BUTTON */
 .buttons {
     text-align: center;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 button {
-    padding: 8px 15px;
-    margin: 5px;
     background: maroon;
     color: white;
     border: none;
+    padding: 8px 15px;
 }
 
 /* PRINT */
@@ -165,7 +153,7 @@ button {
 </tr>
 </table>
 
-<h3 style="text-align:center; margin-top:15px;">MEASUREMENT</h3>
+<h3 style="text-align:center;">MEASUREMENT</h3>
 
 <table>
 <colgroup>
@@ -177,9 +165,9 @@ button {
 <th>Sr. No.</th>
 <th>Description</th>
 <th>No.</th>
-<th>L (m)</th>
-<th>B (m)</th>
-<th>D (m)</th>
+<th>L</th>
+<th>B</th>
+<th>D</th>
 <th>Contents</th>
 </tr>
 </thead>
@@ -197,11 +185,12 @@ button {
 </tbody>
 
 <tfoot>
-<tr class="total-row">
-<td colspan="6">Total</td>
+<tr>
+<td colspan="6" style="font-weight:bold;">Total</td>
 <td id="total">0.00</td>
 </tr>
 </tfoot>
+
 </table>
 
 <div class="buttons">
@@ -222,43 +211,35 @@ function calc(el){
     let b = parseFloat(inputs[3].value)||0;
     let d = parseFloat(inputs[4].value)||0;
 
-    let result = l*b*d;
-    inputs[5].value = result.toFixed(2);
-
+    inputs[5].value = (l*b*d).toFixed(2);
     updateTotal();
 }
 
 function updateTotal(){
-    let rows = document.querySelectorAll("#tbody tr");
-    let total = 0;
-
-    rows.forEach(r=>{
-        let val = parseFloat(r.querySelectorAll("input")[5].value)||0;
-        total+=val;
+    let total=0;
+    document.querySelectorAll("#tbody tr").forEach(r=>{
+        total+=parseFloat(r.querySelectorAll("input")[5].value)||0;
     });
-
-    document.getElementById("total").innerText = total.toFixed(2);
+    document.getElementById("total").innerText=total.toFixed(2);
 }
 
 function addRow(){
-    let tbody = document.getElementById("tbody");
-    let n = tbody.rows.length+1;
+    let tbody=document.getElementById("tbody");
+    let n=tbody.rows.length+1;
 
-    let row = tbody.insertRow();
-
-    row.innerHTML = `
+    let row=tbody.insertRow();
+    row.innerHTML=`
     <td>${n}</td>
     <td><textarea oninput="autoGrow(this)"></textarea></td>
     <td><input type="number"></td>
     <td><input type="number" oninput="calc(this)"></td>
     <td><input type="number" oninput="calc(this)"></td>
     <td><input type="number" oninput="calc(this)"></td>
-    <td><input readonly></td>
-    `;
+    <td><input readonly></td>`;
 }
 
 function resetForm(){
-    document.querySelectorAll("input, textarea").forEach(e=>e.value="");
+    document.querySelectorAll("input,textarea").forEach(e=>e.value="");
     document.getElementById("total").innerText="0.00";
 }
 
