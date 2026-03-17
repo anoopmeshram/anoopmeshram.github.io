@@ -2,13 +2,23 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Measurement Book (MB)</title>
+<title>MECL Measurement Book</title>
 
 <style>
 body {
     font-family: "Times New Roman", serif;
     margin: 0;
-    background: #ccc;
+    background: #f2f2f2;
+}
+
+/* TOP BAR (MECL STYLE) */
+.topbar {
+    background: maroon;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 /* PAGE */
@@ -23,22 +33,21 @@ body {
 /* HEADER */
 .header {
     text-align: center;
+    font-size: 18px;
     font-weight: bold;
-    font-size: 20px;
-    margin-bottom: 10px;
 }
 
-.sub-header {
+/* MB INFO */
+.mbinfo {
     display: flex;
     justify-content: space-between;
-    font-weight: bold;
-    margin-bottom: 10px;
+    margin-top: 10px;
 }
 
-/* DETAILS BOX */
+/* DETAILS */
 .details {
     border: 1px solid black;
-    margin-bottom: 10px;
+    margin-top: 10px;
 }
 
 .details div {
@@ -54,18 +63,23 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
     table-layout: fixed;
 }
 
-th, td {
-    border: 1px solid black;
-    padding: 5px;
-    text-align: center;
-    vertical-align: middle;
+th {
+    background: maroon;
+    color: white;
 }
 
-th {
-    background: #e6e6e6;
+table, th, td {
+    border: 1px solid black;
+}
+
+td, th {
+    padding: 5px;
+    text-align: center;
+    height: 35px;
 }
 
 /* INPUT */
@@ -79,6 +93,7 @@ input {
 /* TOTAL */
 .total-row td {
     font-weight: bold;
+    background: #eee;
 }
 
 /* SIGNATURE */
@@ -98,9 +113,14 @@ input {
 button {
     padding: 8px 15px;
     margin: 5px;
-    border: 1px solid black;
-    background: white;
+    border: 1px solid maroon;
+    background: maroon;
+    color: white;
     cursor: pointer;
+}
+
+button:hover {
+    background: darkred;
 }
 
 /* PRINT */
@@ -114,11 +134,15 @@ button {
 
 <body>
 
+<div class="topbar">
+MECL MEASUREMENT BOOK
+</div>
+
 <div class="page">
 
-<div class="header">MEASUREMENT BOOK</div>
+<div class="header">Measurement Book</div>
 
-<div class="sub-header">
+<div class="mbinfo">
 <div>MB No: <input></div>
 <div>Page No: <input></div>
 </div>
@@ -135,8 +159,8 @@ button {
 <thead>
 <tr>
 <th>Sr</th>
-<th>Description of Item</th>
-<th>No</th>
+<th>Description</th>
+<th>No.</th>
 <th>L</th>
 <th>B</th>
 <th>D</th>
