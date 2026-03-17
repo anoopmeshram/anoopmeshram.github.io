@@ -109,7 +109,7 @@ MECL MEASUREMENT SYSTEM
 <label>Agency by which work is executed</label>
 <input type="text">
 
-<label>Work Order No</label>
+<label>Work Order No.</label>
 <input type="text">
 
 <label>Date of measurement</label>
@@ -120,13 +120,13 @@ MECL MEASUREMENT SYSTEM
 <table id="table">
 <thead>
 <tr>
-<th>Sr</th>
+<th>Sr. No.</th>
 <th>Description</th>
-<th>No</th>
-<th>L</th>
-<th>B</th>
-<th>D</th>
-<th>Contents or area</th>
+<th>No.</th>
+<th>L (m)</th>
+<th>B (m)</th>
+<th>D (m)</th>
+<th>Contents</th>
 </tr>
 </thead>
 
@@ -163,19 +163,19 @@ function calc(el) {
     let row = el.parentElement.parentElement;
     let inputs = row.querySelectorAll("input");
 
-    let no = parseFloat(inputs[1].value) || 0;
+    let no. = parseFloat(inputs[1].value) || 0;
     let l = parseFloat(inputs[2].value) || 0;
     let b = parseFloat(inputs[3].value) || 0;
     let d = parseFloat(inputs[4].value) || 0;
 
-    let Contents or area = d > 0 ? no*l*b*d : no*l*b;
+    let Contents = d > 0 ? no*l*b*d : no*l*b;
 
-    inputs[5].value = Contents or area.toFixed(2);
+    inputs[5].value = Contents.toFixed(2);
 
-    updateTotal();
+    updateContents();
 }
 
-function updateTotal() {
+function updateContents() {
     let rows = document.querySelectorAll("#tbody tr");
     let total = 0;
 
@@ -184,7 +184,7 @@ function updateTotal() {
         total += val;
     });
 
-    document.getElementById("total").innerText = total.toFixed(2);
+    document.getElementById("total").innerText = Contents.toFixed(2);
 }
 
 function addRow() {
