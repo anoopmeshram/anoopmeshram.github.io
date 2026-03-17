@@ -11,7 +11,6 @@ body {
     background: #f5f5f5;
 }
 
-/* HEADER */
 .header {
     background: maroon;
     color: white;
@@ -21,7 +20,6 @@ body {
     font-weight: bold;
 }
 
-/* CONTAINER */
 .container {
     width: 90%;
     margin: 20px auto;
@@ -30,14 +28,12 @@ body {
     box-shadow: 0 0 10px gray;
 }
 
-/* FORM */
 input, textarea, select {
     width: 100%;
     padding: 6px;
     margin: 5px 0;
 }
 
-/* TABLE */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -63,7 +59,6 @@ td, th {
     background: #eee;
 }
 
-/* BUTTON */
 button {
     padding: 10px;
     margin-top: 10px;
@@ -77,14 +72,9 @@ button:hover {
     background: darkred;
 }
 
-/* PRINT */
 @media print {
-    button {
-        display: none;
-    }
-    input, textarea {
-        border: none;
-    }
+    button { display: none; }
+    input, textarea { border: none; }
 }
 </style>
 
@@ -117,7 +107,7 @@ MECL MEASUREMENT SYSTEM
 
 <h3>Measurement</h3>
 
-<table id="table">
+<table>
 <thead>
 <tr>
 <th>Sr. No.</th>
@@ -126,7 +116,7 @@ MECL MEASUREMENT SYSTEM
 <th>L (m)</th>
 <th>B (m)</th>
 <th>D (m)</th>
-<th>result</th>
+<th>Contents</th>
 </tr>
 </thead>
 
@@ -145,7 +135,7 @@ MECL MEASUREMENT SYSTEM
 <tfoot>
 <tr class="total">
 <td colspan="6">Total</td>
-<td id="total">0</td>
+<td id="total">0.00</td>
 </tr>
 </tfoot>
 
@@ -163,19 +153,19 @@ function calc(el) {
     let row = el.parentElement.parentElement;
     let inputs = row.querySelectorAll("input");
 
-    let no. = parseFloat(inputs[1].value) || 0;
+    let no = parseFloat(inputs[1].value) || 0;
     let l = parseFloat(inputs[2].value) || 0;
     let b = parseFloat(inputs[3].value) || 0;
     let d = parseFloat(inputs[4].value) || 0;
 
-    let Contents = d > 0 ? no*l*b*d : no*l*b;
+    let contents = d > 0 ? no*l*b*d : no*l*b;
 
-    inputs[5].value = Contents.toFixed(2);
+    inputs[5].value = contents.toFixed(2);
 
-    updateContents();
+    updateTotal();
 }
 
-function updateContents() {
+function updateTotal() {
     let rows = document.querySelectorAll("#tbody tr");
     let total = 0;
 
@@ -184,7 +174,7 @@ function updateContents() {
         total += val;
     });
 
-    document.getElementById("total").innerText = Contents.toFixed(2);
+    document.getElementById("total").innerText = total.toFixed(2);
 }
 
 function addRow() {
@@ -202,6 +192,25 @@ function addRow() {
         <td><input type="number" oninput="calc(this)"></td>
         <td><input readonly></td>
     `;
+}
+
+function resetForm() {
+    document.querySelectorAll("input, textarea").forEach(el => el.value = "");
+
+    let tbody = document.getElementById("tbody");
+    tbody.innerHTML = `
+        <tr>
+            <td>1</td>
+            <td><input></td>
+            <td><input type="number" oninput="calc(this)"></td>
+            <td><input type="number" oninput="calc(this)"></td>
+            <td><input type="number" oninput="calc(this)"></td>
+            <td><input type="number" oninput="calc(this)"></td>
+            <td><input readonly></td>
+        </tr>
+    `;
+
+    document.getElementById("total").innerText = "0.00";
 }
 
 </script>
