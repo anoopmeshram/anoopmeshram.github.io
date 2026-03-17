@@ -11,13 +11,13 @@ body {
     background: #f2f2f2;
 }
 
-/* TOP BAR */
-.topbar {
+/* HEADER */
+.header {
     background: maroon;
     color: white;
-    padding: 10px;
     text-align: center;
-    font-size: 20px;
+    padding: 12px;
+    font-size: 24px;
     font-weight: bold;
 }
 
@@ -30,31 +30,31 @@ body {
     padding: 20px;
 }
 
-/* HEADER */
-.header {
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-}
-
 /* DETAILS TABLE */
-.details-table {
+.details {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
 }
 
-.details-table td {
-    border: 1px solid black;
-    padding: 5px;
+.details td {
+    padding: 6px;
+    vertical-align: middle;
 }
 
-.details-table td:first-child {
-    width: 25%;
+.label {
+    width: 30%;
     font-weight: bold;
 }
 
-/* MAIN TABLE */
+input {
+    width: 98%;
+    border: none;
+    border-bottom: 1px solid black;
+    font-family: "Times New Roman";
+}
+
+/* TABLE */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -74,30 +74,21 @@ table, th, td {
 td, th {
     padding: 5px;
     height: 35px;
-    vertical-align: middle;
 }
 
-/* COLUMN WIDTHS */
-colgroup col:nth-child(1) { width: 6%; }
-colgroup col:nth-child(2) { width: 34%; }
-colgroup col:nth-child(3) { width: 10%; }
-colgroup col:nth-child(4) { width: 12%; }
-colgroup col:nth-child(5) { width: 12%; }
-colgroup col:nth-child(6) { width: 12%; }
-colgroup col:nth-child(7) { width: 14%; }
+/* COLUMN WIDTH */
+colgroup col:nth-child(1){width:6%}
+colgroup col:nth-child(2){width:34%}
+colgroup col:nth-child(3){width:10%}
+colgroup col:nth-child(4){width:12%}
+colgroup col:nth-child(5){width:12%}
+colgroup col:nth-child(6){width:12%}
+colgroup col:nth-child(7){width:14%}
 
 /* ALIGNMENT */
-td:nth-child(1) { text-align: right; }
-td:nth-child(2) { text-align: left; }
-td:nth-child(n+3) { text-align: center; }
-
-/* INPUT */
-input {
-    width: 98%;
-    border: none;
-    text-align: center;
-    font-family: "Times New Roman";
-}
+td:nth-child(1){text-align:right;}
+td:nth-child(2){text-align:left;}
+td:nth-child(n+3){text-align:center;}
 
 /* TEXTAREA */
 textarea {
@@ -105,22 +96,11 @@ textarea {
     border: none;
     resize: none;
     overflow: hidden;
-    min-height: 30px;
-    font-family: "Times New Roman";
 }
 
 /* TOTAL */
 .total-row td {
     font-weight: bold;
-    background: #eee;
-}
-
-/* SIGN */
-.sign {
-    margin-top: 40px;
-    display: flex;
-    justify-content: space-between;
-    text-align: center;
 }
 
 /* BUTTONS */
@@ -132,24 +112,14 @@ textarea {
 button {
     padding: 8px 15px;
     margin: 5px;
-    border: 1px solid maroon;
     background: maroon;
     color: white;
-    cursor: pointer;
-}
-
-button:hover {
-    background: darkred;
+    border: none;
 }
 
 /* PRINT */
 @media print {
-    .buttons { display: none; }
-    textarea {
-        height: auto !important;
-        overflow: visible !important;
-    }
-    body { background: white; }
+    .buttons {display:none;}
 }
 </style>
 
@@ -157,34 +127,45 @@ button:hover {
 
 <body>
 
-<div class="topbar">MECL MEASUREMENT BOOK</div>
+<div class="header">MECL</div>
 
 <div class="page">
 
-<div class="header">Measurement Book</div>
+<table class="details">
+<tr>
+<td class="label">Division:</td>
+<td><input></td>
+</tr>
 
-<table class="details-table">
 <tr>
-<td>Division:</td>
+<td class="label">Name of Work:</td>
 <td><input></td>
 </tr>
+
 <tr>
-<td>Name of Work:</td>
+<td class="label">Agency by which work is executed:</td>
 <td><input></td>
 </tr>
+
 <tr>
-<td>Agency:</td>
+<td class="label">Work Order No:</td>
 <td><input></td>
+<td class="label">Date:</td>
+<td><input type="date"></td>
 </tr>
+
 <tr>
-<td>Work Order No:</td>
-<td><input></td>
+<td class="label">Date of Start/Handling Over the Site:</td>
+<td><input type="date"></td>
 </tr>
+
 <tr>
-<td>Date:</td>
+<td class="label">Date of Completion of the Work:</td>
 <td><input type="date"></td>
 </tr>
 </table>
+
+<h3 style="text-align:center; margin-top:15px;">MEASUREMENT</h3>
 
 <table>
 <colgroup>
@@ -221,96 +202,69 @@ button:hover {
 <td id="total">0.00</td>
 </tr>
 </tfoot>
-
 </table>
 
-<div class="sign">
-<div>
-<br><br>_________________<br>Contractor
-</div>
-<div>
-<br><br>_________________<br>Junior Engineer
-</div>
-<div>
-<br><br>_________________<br>Assistant Engineer
-</div>
-</div>
-
 <div class="buttons">
-<button onclick="addRow()">➕ Add Row</button>
-<button onclick="window.print()">🖨️ Print</button>
-<button onclick="resetForm()">🔄 Reset</button>
+<button onclick="addRow()">Add Row</button>
+<button onclick="window.print()">Print</button>
+<button onclick="resetForm()">Reset</button>
 </div>
 
 </div>
 
 <script>
 
-function calc(el) {
+function calc(el){
     let row = el.closest("tr");
     let inputs = row.querySelectorAll("input");
 
-    let l = parseFloat(inputs[2].value) || 0;
-    let b = parseFloat(inputs[3].value) || 0;
-    let d = parseFloat(inputs[4].value) || 0;
+    let l = parseFloat(inputs[2].value)||0;
+    let b = parseFloat(inputs[3].value)||0;
+    let d = parseFloat(inputs[4].value)||0;
 
-    let contents = l * b * d;
-    inputs[5].value = contents.toFixed(2);
+    let result = l*b*d;
+    inputs[5].value = result.toFixed(2);
 
     updateTotal();
 }
 
-function updateTotal() {
+function updateTotal(){
     let rows = document.querySelectorAll("#tbody tr");
     let total = 0;
 
-    rows.forEach(row => {
-        let val = parseFloat(row.querySelectorAll("input")[5].value) || 0;
-        total += val;
+    rows.forEach(r=>{
+        let val = parseFloat(r.querySelectorAll("input")[5].value)||0;
+        total+=val;
     });
 
     document.getElementById("total").innerText = total.toFixed(2);
 }
 
-function addRow() {
+function addRow(){
     let tbody = document.getElementById("tbody");
-    let rowCount = tbody.rows.length + 1;
+    let n = tbody.rows.length+1;
 
     let row = tbody.insertRow();
 
     row.innerHTML = `
-        <td>${rowCount}</td>
-        <td><textarea oninput="autoGrow(this)"></textarea></td>
-        <td><input type="number"></td>
-        <td><input type="number" oninput="calc(this)"></td>
-        <td><input type="number" oninput="calc(this)"></td>
-        <td><input type="number" oninput="calc(this)"></td>
-        <td><input readonly></td>
+    <td>${n}</td>
+    <td><textarea oninput="autoGrow(this)"></textarea></td>
+    <td><input type="number"></td>
+    <td><input type="number" oninput="calc(this)"></td>
+    <td><input type="number" oninput="calc(this)"></td>
+    <td><input type="number" oninput="calc(this)"></td>
+    <td><input readonly></td>
     `;
 }
 
-function resetForm() {
-    document.querySelectorAll("input, textarea").forEach(el => el.value = "");
-
-    let tbody = document.getElementById("tbody");
-    tbody.innerHTML = `
-        <tr>
-            <td>1</td>
-            <td><textarea oninput="autoGrow(this)"></textarea></td>
-            <td><input type="number"></td>
-            <td><input type="number" oninput="calc(this)"></td>
-            <td><input type="number" oninput="calc(this)"></td>
-            <td><input type="number" oninput="calc(this)"></td>
-            <td><input readonly></td>
-        </tr>
-    `;
-
-    document.getElementById("total").innerText = "0.00";
+function resetForm(){
+    document.querySelectorAll("input, textarea").forEach(e=>e.value="");
+    document.getElementById("total").innerText="0.00";
 }
 
-function autoGrow(el) {
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
+function autoGrow(el){
+    el.style.height="auto";
+    el.style.height=el.scrollHeight+"px";
 }
 
 </script>
