@@ -21,7 +21,7 @@ body {
 }
 
 .page {
-    width: 900px;
+    width: 950px;
     margin: 20px auto;
     background: white;
     border: 2px solid black;
@@ -64,14 +64,6 @@ td, th {
     padding: 5px;
 }
 
-/* WIDTH */
-colgroup col:nth-child(1){width:40%}
-colgroup col:nth-child(2){width:12%}
-colgroup col:nth-child(3){width:12%}
-colgroup col:nth-child(4){width:12%}
-colgroup col:nth-child(5){width:12%}
-colgroup col:nth-child(6){width:12%}
-
 /* SIGN */
 .sign {
     margin-top: 40px;
@@ -111,13 +103,50 @@ button {
 
 <div class="page">
 
+<!-- ================= MEASUREMENT ================= -->
+
+<h3 style="text-align:center;">MEASUREMENT</h3>
+
+<table>
+<thead>
+<tr>
+<th>Sr. No.</th>
+<th>Description</th>
+<th>L (m)</th>
+<th>B (m)</th>
+<th>D (m)</th>
+<th>Contents</th>
+<th>Unit</th>
+</tr>
+</thead>
+
+<tbody id="mBody">
+<tr>
+<td>1</td>
+<td><textarea></textarea></td>
+<td><input type="number" oninput="calcM(this)"></td>
+<td><input type="number" oninput="calcM(this)"></td>
+<td><input type="number" oninput="calcM(this)"></td>
+<td><input readonly></td>
+<td><input readonly></td>
+</tr>
+</tbody>
+
+<tfoot>
+<tr>
+<td colspan="5"><b>Total</b></td>
+<td id="mTotal">0.00</td>
+<td></td>
+</tr>
+</tfoot>
+
+</table>
+
+<!-- ================= BOQ ================= -->
+
 <h3 style="text-align:center;">ABSTRACT / BILL</h3>
 
 <table>
-<colgroup>
-<col><col><col><col><col><col>
-</colgroup>
-
 <thead>
 <tr>
 <th>Description of Work</th>
@@ -128,17 +157,17 @@ button {
 </tr>
 </thead>
 
-<tbody id="tbody">
+<tbody id="bBody">
 <tr>
 <td><textarea></textarea></td>
-<td><input type="number" oninput="calc(this)"></td>
+<td><input type="number" oninput="calcB(this)"></td>
 <td>
 <select>
-<option value="m²">m²</option>
-<option value="m³">m³</option>
+<option>m²</option>
+<option>m³</option>
 </select>
 </td>
-<td><input type="number" oninput="calc(this)"></td>
+<td><input type="number" oninput="calcB(this)"></td>
 <td><input readonly></td>
 </tr>
 </tbody>
@@ -146,20 +175,23 @@ button {
 <tfoot>
 <tr>
 <td colspan="4"><b>Total Amount</b></td>
-<td id="total">0.00</td>
+<td id="bTotal">0.00</td>
 </tr>
 </tfoot>
 
 </table>
 
+<!-- SIGNATURE -->
 <div class="sign">
 <div><br><br>__________<br>Contractor</div>
 <div><br><br>__________<br>Engineer</div>
 <div><br><br>__________<br>Authority</div>
 </div>
 
+<!-- BUTTONS -->
 <div class="buttons">
-<button onclick="addRow()">Add Row</button>
+<button onclick="addM()">Add Measurement Row</button>
+<button onclick="addB()">Add BOQ Row</button>
 <button onclick="window.print()">Print</button>
 </div>
 
@@ -167,50 +199,96 @@ button {
 
 <script>
 
-function calc(el){
+/* MEASUREMENT CALC */
+function calcM(el){
     let row = el.closest("tr");
     let inputs = row.querySelectorAll("input");
 
-    let qty = parseFloat(inputs[0].value) || 0;
-    let rate = parseFloat(inputs[1].value) || 0;
+    let l = parseFloat(inputs[0].value)||0;
+    let b = parseFloat(inputs[1].value)||0;
+    let d = parseFloat(inputs[2].value)||0;
 
-    let amount = qty * rate;
+    let result = 0;
+    let unit = "";
 
-    inputs[2].value = amount.toFixed(2);
+    if(d>0){
+        result = l*b*d;
+        unit = "m³";
+    } else {
+        result = l*b;
+        unit = "m²";
+    }
 
-    updateTotal();
+    inputs[3].value = result.toFixed(2);
+    inputs[4].value = unit;
+
+    updateM();
 }
 
-function updateTotal(){
+function updateM(){
     let total = 0;
-
-    document.querySelectorAll("#tbody tr").forEach(row=>{
-        let val = parseFloat(row.querySelectorAll("input")[2].value) || 0;
-        total += val;
+    document.querySelectorAll("#mBody tr").forEach(r=>{
+        total += parseFloat(r.querySelectorAll("input")[3].value)||0;
     });
-
-    document.getElementById("total").innerText = total.toFixed(2);
+    document.getElementById("mTotal").innerText = total.toFixed(2);
 }
 
-function addRow(){
-    let tbody = document.getElementById("tbody");
+function addM(){
+    let tbody = document.getElementById("mBody");
+    let n = tbody.rows.length+1;
+
+    let row = tbody.insertRow();
+
+    row.innerHTML = `
+    <td>${n}</td>
+    <td><textarea></textarea></td>
+    <td><input type="number" oninput="calcM(this)"></td>
+    <td><input type="number" oninput="calcM(this)"></td>
+    <td><input type="number" oninput="calcM(this)"></td>
+    <td><input readonly></td>
+    <td><input readonly></td>`;
+}
+
+/* BOQ CALC */
+function calcB(el){
+    let row = el.closest("tr");
+    let inputs = row.querySelectorAll("input");
+
+    let qty = parseFloat(inputs[0].value)||0;
+    let rate = parseFloat(inputs[1].value)||0;
+
+    inputs[2].value = (qty*rate).toFixed(2);
+
+    updateB();
+}
+
+function updateB(){
+    let total = 0;
+    document.querySelectorAll("#bBody tr").forEach(r=>{
+        total += parseFloat(r.querySelectorAll("input")[2].value)||0;
+    });
+    document.getElementById("bTotal").innerText = total.toFixed(2);
+}
+
+function addB(){
+    let tbody = document.getElementById("bBody");
 
     let row = tbody.insertRow();
 
     row.innerHTML = `
     <td><textarea></textarea></td>
-    <td><input type="number" oninput="calc(this)"></td>
+    <td><input type="number" oninput="calcB(this)"></td>
     <td>
     <select>
-        <option value="m²">m²</option>
-        <option value="m³">m³</option>
+        <option>m²</option>
+        <option>m³</option>
     </select>
     </td>
-    <td><input type="number" oninput="calc(this)"></td>
+    <td><input type="number" oninput="calcB(this)"></td>
     <td><input readonly></td>`;
 }
 
 </script>
 
 </body>
-</html>fff
+</html>
