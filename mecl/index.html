@@ -30,20 +30,16 @@ body {
     padding: 15px;
 }
 
-/* DETAILS */
+/* DETAILS TABLE */
 .details {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 
 .details td {
     padding: 6px;
     vertical-align: middle;
-}
-
-.label {
-    width: 30%;
-    font-weight: bold;
 }
 
 /* INPUT (NO UNDERLINE) */
@@ -53,7 +49,6 @@ input {
     outline: none;
     background: transparent;
     font-family: "Times New Roman";
-    padding: 2px;
 }
 
 /* TEXTAREA */
@@ -136,42 +131,36 @@ button {
 
 <div class="page">
 
+<!-- DETAILS -->
 <table class="details">
 <tr>
-<td class="label">Division:</td>
-<td><input></td>
+<td style="width:25%;"><b>Division:</b></td>
+<td colspan="3"><input></td>
 </tr>
 
 <tr>
-<td class="label">Name of Work:</td>
-<td><input></td>
+<td><b>Name of Work:</b></td>
+<td colspan="3"><input></td>
 </tr>
 
 <tr>
-<td class="label">Agency by which work is executed:</td>
+<td><b>Agency by which work is executed:</b></td>
 <td><input></td>
-</tr>
-
-<tr>
-<td class="label">Work Order No:</td>
-<td><input></td>
-<td class="label">Date:</td>
+<td><b>Date of Start/Handling Over the Site:</b></td>
 <td><input type="date"></td>
 </tr>
 
 <tr>
-<td class="label">Date of Start/Handling Over the Site:</td>
+<td><b>Date of Completion of the Work:</b></td>
 <td><input type="date"></td>
-</tr>
-
-<tr>
-<td class="label">Date of Completion of the Work:</td>
-<td><input type="date"></td>
+<td></td>
+<td></td>
 </tr>
 </table>
 
 <h3 style="text-align:center;">MEASUREMENT</h3>
 
+<!-- MEASUREMENT TABLE -->
 <table>
 <colgroup>
 <col><col><col><col><col><col><col>
