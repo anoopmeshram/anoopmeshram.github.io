@@ -7,76 +7,120 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI;}
 
-
-
-    
 body{
-    background: radial-gradient(circle at top,#0f172a,#020617);
+    background:linear-gradient(270deg,#020617,#0f172a,#020617);
+    background-size:600% 600%;
+    animation:bgMove 10s ease infinite;
     color:white;
     text-align:center;
 }
 
-/* TOP BAR */
+/* BACKGROUND ANIMATION */
+@keyframes bgMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+/* FLOATING BALL */
+.ball{
+    position:absolute;
+    width:200px;
+    height:200px;
+    background:radial-gradient(circle,#22c55e55,transparent);
+    border-radius:50%;
+    animation:float 6s ease-in-out infinite;
+}
+.ball2{
+    left:70%;
+    top:60%;
+    animation-delay:2s;
+}
+@keyframes float{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-40px);}
+}
+
+/* TOPBAR */
 .topbar{
     position:fixed;
     top:0;
     width:100%;
     padding:14px;
     backdrop-filter:blur(15px);
-    background:rgba(2,6,23,0.7);
-    border-bottom:1px solid rgba(255,255,255,0.08);
+    background:rgba(0,0,0,0.3);
 }
 
-.status{font-weight:600;color:#22c55e;}
+.status{color:#22c55e;font-weight:bold;}
 .timer{font-size:13px;color:#94a3b8;}
 
 /* CARD */
 .card{
     margin-top:120px;
     background:rgba(255,255,255,0.05);
-    border-radius:24px;
-    padding:35px;
+    border-radius:20px;
+    padding:30px;
     width:90%;
     max-width:420px;
     margin:auto;
     backdrop-filter:blur(20px);
     box-shadow:0 20px 60px rgba(0,0,0,0.6);
-    animation:fade 0.6s ease;
-}
-
-@keyframes fade{
-    from{opacity:0;transform:translateY(25px);}
-    to{opacity:1;}
-}
-
-h1{margin-bottom:10px;}
-p{color:#94a3b8;}
-
-button{
-    margin-top:18px;
-    padding:13px;
-    width:100%;
-    border:none;
-    border-radius:12px;
-    background:linear-gradient(90deg,#22c55e,#16a34a);
-    color:white;
-    cursor:pointer;
+    animation:fadeUp 0.8s ease;
     transition:0.3s;
 }
 
-button:hover{transform:scale(1.05);}
-
-input{
-    width:100%;
-    padding:13px;
-    border-radius:12px;
-    border:none;
-    margin-top:12px;
-    background:#020617;
-    color:white;
+.card:hover{
+    transform:translateY(-10px) scale(1.02);
 }
 
-.block{color:#ef4444;}
+/* FADE */
+@keyframes fadeUp{
+    from{opacity:0;transform:translateY(30px);}
+    to{opacity:1;}
+}
+
+/* BUTTON */
+button{
+    margin-top:15px;
+    padding:12px;
+    width:100%;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(90deg,#22c55e,#16a34a);
+    color:white;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+}
+
+button::after{
+    content:"";
+    position:absolute;
+    width:0;
+    height:0;
+    background:rgba(255,255,255,0.3);
+    border-radius:50%;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    transition:0.4s;
+}
+
+button:active::after{
+    width:200%;
+    height:200%;
+}
+
+/* INPUT */
+input{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:10px;
+    border:none;
+}
+
+/* HIDDEN */
 .hidden{display:none;}
 
 footer{
@@ -90,83 +134,36 @@ footer{
 
 <body>
 
+<div class="ball"></div>
+<div class="ball ball2"></div>
+
 <div class="topbar">
-    <div id="status" class="status"></div>
-    <div id="timer" class="timer"></div>
+    <div id="status"></div>
+    <div id="timer"></div>
 </div>
 
-<!-- MAIN -->
 <div id="main" class="card">
     <h1>🚀 BPMS Premium Tool</h1>
-    <p>Fast • Secure • Powerful</p>
+    <p>Interactive • Animated • Premium UI</p>
 </div>
 
-<!-- PAYMENT -->
 <div id="payment" class="card hidden">
-    <h1>💳 Unlock Premium</h1>
-    <p>Pay ₹80 (~$1) for 30 days</p>
-    <p><b>UPI: abmcollection@ybl</b></p>
-
-    <input id="utr" placeholder="Enter UTR / Code">
+    <h2>💳 Unlock Premium</h2>
+    <p>UPI: abmcollection@ybl</p>
+    <input id="utr" placeholder="Enter Code">
     <button onclick="verify()">Activate</button>
 </div>
 
-<!-- BLOCK -->
-<div id="blocked" class="card hidden">
-    <h1 class="block">❌ Access Denied</h1>
-    <p id="reason"></p>
-
-    <br>
-    <p>✔ Use Normal Browser</p>
-    <p>✔ Turn OFF VPN</p>
-    <p>✔ Use Indian Network</p>
-</div>
-
 <footer>
-Premium BPMS Tool • Built for Speed ⚡ • © 2026 Anoop Meshram ❤️
+© 2026 Anoop Meshram ❤️
 </footer>
 
 <script>
 
 // CONFIG
 const ADMIN_CODE="ANOOP123";
-
-// STORAGE
-const trialKey="bpms_trial";
-const subKey="bpms_sub";
-
-// BLOCK
-function block(msg){
-    main.classList.add("hidden");
-    payment.classList.add("hidden");
-    blocked.classList.remove("hidden");
-    reason.innerText=msg;
-}
-
-// INCOGNITO
-function detectIncognito(){
-    return new Promise(resolve=>{
-        let fs=window.RequestFileSystem||window.webkitRequestFileSystem;
-        if(!fs) resolve(false);
-        else fs(window.TEMPORARY,100,()=>resolve(false),()=>resolve(true));
-    });
-}
-
-// LOCATION
-async function checkLocation(){
-    try{
-        let r=await fetch("https://ipapi.co/json/");
-        let d=await r.json();
-        if(d.country_name!=="India"){
-            block("VPN / Non-India detected 🚫");
-            return false;
-        }
-        return true;
-    }catch{
-        block("Network verification failed 🚫");
-        return false;
-    }
-}
+const trialKey="trial";
+const subKey="sub";
 
 // INIT
 let now=Date.now();
@@ -176,73 +173,40 @@ if(!localStorage.getItem(trialKey)){
 }
 
 let trialStart=localStorage.getItem(trialKey);
-let trialEnd=parseInt(trialStart)+(1*60*1000); // 1 min trial
+let trialEnd=parseInt(trialStart)+(60*1000); // 1 min
 let subEnd=localStorage.getItem(subKey);
-
-// TIMER
-function setStatus(text,ms){
-    status.innerText=text;
-
-    let h=Math.floor(ms/(1000*60*60));
-    let m=Math.floor((ms%(1000*60*60))/(1000*60));
-    let s=Math.floor((ms%(1000*60))/1000);
-
-    timer.innerText=h+"h "+m+"m "+s+"s";
-}
 
 // LOOP
 setInterval(()=>{
     let current=Date.now();
 
     if(subEnd && current<subEnd){
-        setStatus("Subscription Active ✅",subEnd-current);
-        main.classList.remove("hidden");
-        payment.classList.add("hidden");
+        status.innerText="Subscription Active ✅";
     }
     else if(current<trialEnd){
-        setStatus("Free Trial ⏳",trialEnd-current);
+        status.innerText="Free Trial ⏳";
+
+        let sec=Math.floor((trialEnd-current)/1000);
+        timer.innerText=sec+" sec left";
     }
     else{
         status.innerText="Trial Expired ❌";
-        timer.innerText="";
         main.classList.add("hidden");
         payment.classList.remove("hidden");
     }
+
 },1000);
 
 // VERIFY
 function verify(){
-    let val=utr.value;
-
-    if(val===ADMIN_CODE){
-        let newSub=Date.now()+(30*24*60*60*1000);
-        localStorage.setItem(subKey,newSub);
-        alert("Subscription Activated ✅");
+    if(utr.value===ADMIN_CODE){
+        localStorage.setItem(subKey,Date.now()+2592000000);
+        alert("Activated ✅");
         location.reload();
     }else{
-        alert("Invalid ❌");
+        alert("Wrong Code ❌");
     }
 }
-
-// SECURITY (FIXED)
-(async()=>{
-    let current=Date.now();
-
-    // ✅ Skip security if subscribed
-    if(subEnd && current<subEnd){
-        return;
-    }
-
-    let incog=await detectIncognito();
-    if(incog){
-        block("Incognito Mode Detected 🚫");
-        return;
-    }
-
-    let ok=await checkLocation();
-    if(!ok) return;
-
-})();
 
 </script>
 
