@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>BPMS Premium Access</title>
+
+<style>
+body {
+    margin:0;
+    font-family: 'Segoe UI';
+    background: linear-gradient(135deg,#0f172a,#020617);
+    color:white;
+    text-align:center;
+}
+
+.topbar {
+    background:#111827;
+    padding:12px;
+    position:sticky;
+    top:0;
+    box-shadow:0 0 10px #000;
+}
+
+.status {
+    font-weight:bold;
+    color:#22c55e;
+}
+
+.timer {
+    font-size:14px;
+    color:#94a3b8;
+}
+
+.box {
+    margin-top:50px;
+}
+
+input {
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    margin-top:10px;
+}
+
+button {
+    padding:10px 20px;
+    border:none;
+    border-radius:6px;
+    background:#22c55e;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover {
+    background:#16a34a;
+}
+
+.hidden {
+    display:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+    <div id="status" class="status"></div>
+    <div id="timer" class="timer"></div>
+</div>
+
+<div class="box" id="main">
+    <h1>🚀 BPMS Premium Tool</h1>
+    <p>All premium features unlocked here</p>
+</div>
+
+<div class="box hidden" id="payment">
+    <h2>Trial Expired ❌</h2>
+    <p>Pay ₹80 (~$1) for 1 Month</p>
+    <p><b>UPI: abmcollection@ybl</b></p>
+
+    <input id="utr" placeholder="Enter UTR / Admin Code">
+    <br><br>
+    <button onclick="verify()">Submit</button>
+</div>
+
+<script>
+
+// ====== CONFIG ======
+const ADMIN_CODE = "ANOOP123"; // change anytime
+
+// ====== STORAGE KEYS ======
+const trialKey = "bpms_trial";
+const subKey = "bpms_sub";
+const deviceKey = "bpms_device";
+
+// ====== DEVICE LOCK ======
+if (!localStorage.getItem(deviceKey)) {
+    localStorage.setItem(deviceKey, Math.random().toString(36));
+}
+
+// ====== TIME ======
+let now = Date.now();
+
+// ====== TRIAL INIT ======
+let trial = localStorage.getItem(trialKey);
+if (!trial) {
+    localStorage.setItem(trialKey, now);
+    trial = now;
+}
+
+// ====== TIMES ======
+let trialEnd = parseInt(trial) + (24*60*60*1000);
+let subEnd = localStorage.getItem(subKey);
+
+// ====== LOOP ======
+setInterval(()=>{
+
+    let current = Date.now();
+
+    if (subEnd && current < subEnd) {
+        setStatus("Subscription Active ✅", subEnd-current, true);
+    }
+    else if (current < trialEnd) {
+        setStatus("Free Trial ⏳", trialEnd-current, true);
+    }
+    else {
+        document.getElementById("status").innerText = "Trial Expired ❌";
+        document.getElementById("timer").innerText = "";
+        document.getElementById("main").classList.add("hidden");
+        document.getElementById("payment").classList.remove("hidden");
+    }
+
+},1000);
+
+// ====== TIMER ======
+function setStatus(text, ms, showMain) {
+    document.getElementById("status").innerText = text;
+
+    let h = Math.floor(ms/(1000*60*60));
+    let m = Math.floor((ms%(1000*60*60))/(1000*60));
+    let s = Math.floor((ms%(1000*60))/1000);
+
+    document.getElementById("timer").innerText = h+"h "+m+"m "+s+"s";
+
+    document.getElementById("main").classList.remove("hidden");
+    document.getElementById("payment").classList.add("hidden");
+}
+
+// ====== VERIFY ======
+function verify() {
+
+    let val = document.getElementById("utr").value;
+
+    if (val === ADMIN_CODE) {
+        activate();
+    } else {
+        alert("Payment pending verification ❌");
+    }
+}
+
+// ====== ACTIVATE ======
+function activate() {
+    let newSub = Date.now() + (30*24*60*60*1000);
+    localStorage.setItem(subKey, newSub);
+
+    alert("Subscription Activated ✅");
+    location.reload();
+}
+
+// ====== BASIC ANTI RESET ======
+window.addEventListener("storage", ()=>{
+    alert("Suspicious activity detected ⚠️");
+});
+
+</script>
+
+</body>
+</html>
