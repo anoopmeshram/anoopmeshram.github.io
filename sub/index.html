@@ -8,9 +8,10 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI;}
 
 body{
-    background:linear-gradient(135deg,#020617,#0f172a);
+    background: radial-gradient(circle at top,#0f172a,#020617);
     color:white;
     text-align:center;
+    overflow-x:hidden;
 }
 
 /* ===== TOP BAR ===== */
@@ -18,37 +19,46 @@ body{
     position:fixed;
     top:0;
     width:100%;
-    padding:12px;
-    backdrop-filter:blur(10px);
-    background:rgba(15,23,42,0.7);
-    border-bottom:1px solid rgba(255,255,255,0.1);
+    padding:14px;
+    backdrop-filter:blur(15px);
+    background:rgba(2,6,23,0.7);
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    z-index:999;
 }
 
-.status{font-weight:bold;color:#22c55e;}
-.timer{font-size:13px;color:#94a3b8;}
+.status{
+    font-weight:600;
+    color:#22c55e;
+}
+
+.timer{
+    font-size:13px;
+    color:#94a3b8;
+}
 
 /* ===== CARD ===== */
 .card{
     margin-top:120px;
     background:rgba(255,255,255,0.05);
-    border-radius:20px;
-    padding:30px;
+    border-radius:24px;
+    padding:35px;
     width:90%;
-    max-width:400px;
+    max-width:420px;
     margin-left:auto;
     margin-right:auto;
-    backdrop-filter:blur(15px);
-    box-shadow:0 0 30px rgba(0,0,0,0.5);
-    animation:fade 0.8s ease;
+    backdrop-filter:blur(20px);
+    box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    animation:fade 0.6s ease;
 }
 
 @keyframes fade{
-    from{opacity:0;transform:translateY(20px);}
+    from{opacity:0;transform:translateY(25px);}
     to{opacity:1;}
 }
 
 h1{
     margin-bottom:10px;
+    font-size:24px;
 }
 
 p{
@@ -57,33 +67,37 @@ p{
 
 /* ===== BUTTON ===== */
 button{
-    margin-top:15px;
-    padding:12px;
+    margin-top:18px;
+    padding:13px;
     width:100%;
     border:none;
-    border-radius:10px;
+    border-radius:12px;
     background:linear-gradient(90deg,#22c55e,#16a34a);
     color:white;
-    font-weight:bold;
+    font-weight:600;
     cursor:pointer;
     transition:0.3s;
+    box-shadow:0 0 20px rgba(34,197,94,0.4);
 }
 
 button:hover{
-    transform:scale(1.05);
+    transform:scale(1.06);
+    box-shadow:0 0 30px rgba(34,197,94,0.7);
 }
 
 /* ===== INPUT ===== */
 input{
     width:100%;
-    padding:12px;
-    border-radius:10px;
+    padding:13px;
+    border-radius:12px;
     border:none;
-    margin-top:10px;
+    margin-top:12px;
     outline:none;
+    background:#020617;
+    color:white;
 }
 
-/* ===== BLOCK PAGE ===== */
+/* ===== BLOCK ===== */
 .block{
     color:#ef4444;
 }
@@ -96,11 +110,25 @@ footer{
     font-size:12px;
     color:#64748b;
 }
+
+/* glow */
+.glow{
+    position:absolute;
+    width:300px;
+    height:300px;
+    background:radial-gradient(circle,#22c55e33,transparent);
+    top:0;
+    left:50%;
+    transform:translateX(-50%);
+    filter:blur(60px);
+}
 </style>
 
 </head>
 
 <body>
+
+<div class="glow"></div>
 
 <div class="topbar">
     <div id="status" class="status"></div>
@@ -110,17 +138,17 @@ footer{
 <!-- MAIN -->
 <div id="main" class="card">
     <h1>🚀 BPMS Premium Tool</h1>
-    <p>Fast • Secure • Powerful</p>
+    <p>Fast • Secure • Powerful Experience</p>
 </div>
 
 <!-- PAYMENT -->
 <div id="payment" class="card hidden">
     <h1>💳 Unlock Premium</h1>
-    <p>Pay ₹80 (~$1) for 30 days</p>
+    <p>Pay ₹80 (~$1) for 30 days access</p>
     <p><b>UPI: abmcollection@ybl</b></p>
 
     <input id="utr" placeholder="Enter UTR / Code">
-    <button onclick="verify()">Activate</button>
+    <button onclick="verify()">Activate Now</button>
 </div>
 
 <!-- BLOCK -->
@@ -129,9 +157,9 @@ footer{
     <p id="reason"></p>
 
     <br>
-    <p>📌 Use Normal Browser</p>
-    <p>📌 Turn OFF VPN</p>
-    <p>📌 Use Indian Network</p>
+    <p>✔ Use Normal Browser</p>
+    <p>✔ Turn OFF VPN</p>
+    <p>✔ Use Indian Network</p>
 </div>
 
 <footer>
@@ -147,7 +175,7 @@ const ADMIN_CODE = "ANOOP123";
 const trialKey="bpms_trial";
 const subKey="bpms_sub";
 
-// ===== BLOCK UI =====
+// ===== BLOCK FUNCTION =====
 function block(msg){
     main.classList.add("hidden");
     payment.classList.add("hidden");
@@ -155,7 +183,7 @@ function block(msg){
     reason.innerText=msg;
 }
 
-// ===== INCOGNITO =====
+// ===== INCOGNITO DETECT =====
 function detectIncognito(){
     return new Promise(resolve=>{
         let fs=window.RequestFileSystem||window.webkitRequestFileSystem;
@@ -164,7 +192,7 @@ function detectIncognito(){
     });
 }
 
-// ===== LOCATION =====
+// ===== LOCATION CHECK =====
 async function checkLocation(){
     try{
         let r=await fetch("https://ipapi.co/json/");
@@ -175,7 +203,7 @@ async function checkLocation(){
         }
         return true;
     }catch{
-        block("Network error 🚫");
+        block("Network verification failed 🚫");
         return false;
     }
 }
@@ -188,7 +216,10 @@ if(!localStorage.getItem(trialKey)){
 }
 
 let trialStart=localStorage.getItem(trialKey);
-let trialEnd=parseInt(trialStart)+(24*60*60*1000);
+
+// ⏳ 1 MINUTE TRIAL
+let trialEnd=parseInt(trialStart)+(1*60*1000);
+
 let subEnd=localStorage.getItem(subKey);
 
 // ===== TIMER =====
@@ -229,7 +260,7 @@ function verify(){
     if(val===ADMIN_CODE){
         let newSub=Date.now()+(30*24*60*60*1000);
         localStorage.setItem(subKey,newSub);
-        alert("Activated ✅");
+        alert("Subscription Activated ✅");
         location.reload();
     }else{
         alert("Invalid / Pending ❌");
