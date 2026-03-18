@@ -11,10 +11,9 @@ body{
     background: radial-gradient(circle at top,#0f172a,#020617);
     color:white;
     text-align:center;
-    overflow-x:hidden;
 }
 
-/* ===== TOP BAR ===== */
+/* TOP BAR */
 .topbar{
     position:fixed;
     top:0;
@@ -23,20 +22,12 @@ body{
     backdrop-filter:blur(15px);
     background:rgba(2,6,23,0.7);
     border-bottom:1px solid rgba(255,255,255,0.08);
-    z-index:999;
 }
 
-.status{
-    font-weight:600;
-    color:#22c55e;
-}
+.status{font-weight:600;color:#22c55e;}
+.timer{font-size:13px;color:#94a3b8;}
 
-.timer{
-    font-size:13px;
-    color:#94a3b8;
-}
-
-/* ===== CARD ===== */
+/* CARD */
 .card{
     margin-top:120px;
     background:rgba(255,255,255,0.05);
@@ -44,8 +35,7 @@ body{
     padding:35px;
     width:90%;
     max-width:420px;
-    margin-left:auto;
-    margin-right:auto;
+    margin:auto;
     backdrop-filter:blur(20px);
     box-shadow:0 20px 60px rgba(0,0,0,0.6);
     animation:fade 0.6s ease;
@@ -56,16 +46,9 @@ body{
     to{opacity:1;}
 }
 
-h1{
-    margin-bottom:10px;
-    font-size:24px;
-}
+h1{margin-bottom:10px;}
+p{color:#94a3b8;}
 
-p{
-    color:#94a3b8;
-}
-
-/* ===== BUTTON ===== */
 button{
     margin-top:18px;
     padding:13px;
@@ -74,35 +57,23 @@ button{
     border-radius:12px;
     background:linear-gradient(90deg,#22c55e,#16a34a);
     color:white;
-    font-weight:600;
     cursor:pointer;
     transition:0.3s;
-    box-shadow:0 0 20px rgba(34,197,94,0.4);
 }
 
-button:hover{
-    transform:scale(1.06);
-    box-shadow:0 0 30px rgba(34,197,94,0.7);
-}
+button:hover{transform:scale(1.05);}
 
-/* ===== INPUT ===== */
 input{
     width:100%;
     padding:13px;
     border-radius:12px;
     border:none;
     margin-top:12px;
-    outline:none;
     background:#020617;
     color:white;
 }
 
-/* ===== BLOCK ===== */
-.block{
-    color:#ef4444;
-}
-
-/* ===== HIDDEN ===== */
+.block{color:#ef4444;}
 .hidden{display:none;}
 
 footer{
@@ -110,25 +81,11 @@ footer{
     font-size:12px;
     color:#64748b;
 }
-
-/* glow */
-.glow{
-    position:absolute;
-    width:300px;
-    height:300px;
-    background:radial-gradient(circle,#22c55e33,transparent);
-    top:0;
-    left:50%;
-    transform:translateX(-50%);
-    filter:blur(60px);
-}
 </style>
 
 </head>
 
 <body>
-
-<div class="glow"></div>
 
 <div class="topbar">
     <div id="status" class="status"></div>
@@ -138,17 +95,17 @@ footer{
 <!-- MAIN -->
 <div id="main" class="card">
     <h1>🚀 BPMS Premium Tool</h1>
-    <p>Fast • Secure • Powerful Experience</p>
+    <p>Fast • Secure • Powerful</p>
 </div>
 
 <!-- PAYMENT -->
 <div id="payment" class="card hidden">
     <h1>💳 Unlock Premium</h1>
-    <p>Pay ₹80 (~$1) for 30 days access</p>
+    <p>Pay ₹80 (~$1) for 30 days</p>
     <p><b>UPI: abmcollection@ybl</b></p>
 
     <input id="utr" placeholder="Enter UTR / Code">
-    <button onclick="verify()">Activate Now</button>
+    <button onclick="verify()">Activate</button>
 </div>
 
 <!-- BLOCK -->
@@ -168,14 +125,14 @@ Premium BPMS Tool • Built for Speed ⚡ • © 2026 Anoop Meshram ❤️
 
 <script>
 
-// ===== CONFIG =====
-const ADMIN_CODE = "ANOOP123";
+// CONFIG
+const ADMIN_CODE="ANOOP123";
 
-// ===== STORAGE =====
+// STORAGE
 const trialKey="bpms_trial";
 const subKey="bpms_sub";
 
-// ===== BLOCK FUNCTION =====
+// BLOCK
 function block(msg){
     main.classList.add("hidden");
     payment.classList.add("hidden");
@@ -183,7 +140,7 @@ function block(msg){
     reason.innerText=msg;
 }
 
-// ===== INCOGNITO DETECT =====
+// INCOGNITO
 function detectIncognito(){
     return new Promise(resolve=>{
         let fs=window.RequestFileSystem||window.webkitRequestFileSystem;
@@ -192,7 +149,7 @@ function detectIncognito(){
     });
 }
 
-// ===== LOCATION CHECK =====
+// LOCATION
 async function checkLocation(){
     try{
         let r=await fetch("https://ipapi.co/json/");
@@ -208,7 +165,7 @@ async function checkLocation(){
     }
 }
 
-// ===== INIT =====
+// INIT
 let now=Date.now();
 
 if(!localStorage.getItem(trialKey)){
@@ -216,13 +173,10 @@ if(!localStorage.getItem(trialKey)){
 }
 
 let trialStart=localStorage.getItem(trialKey);
-
-// ⏳ 1 MINUTE TRIAL
-let trialEnd=parseInt(trialStart)+(1*60*1000);
-
+let trialEnd=parseInt(trialStart)+(1*60*1000); // 1 min trial
 let subEnd=localStorage.getItem(subKey);
 
-// ===== TIMER =====
+// TIMER
 function setStatus(text,ms){
     status.innerText=text;
 
@@ -233,7 +187,7 @@ function setStatus(text,ms){
     timer.innerText=h+"h "+m+"m "+s+"s";
 }
 
-// ===== LOOP =====
+// LOOP
 setInterval(()=>{
     let current=Date.now();
 
@@ -253,7 +207,7 @@ setInterval(()=>{
     }
 },1000);
 
-// ===== VERIFY =====
+// VERIFY
 function verify(){
     let val=utr.value;
 
@@ -263,12 +217,19 @@ function verify(){
         alert("Subscription Activated ✅");
         location.reload();
     }else{
-        alert("Invalid / Pending ❌");
+        alert("Invalid ❌");
     }
 }
 
-// ===== RUN SECURITY =====
+// SECURITY (FIXED)
 (async()=>{
+    let current=Date.now();
+
+    // ✅ Skip security if subscribed
+    if(subEnd && current<subEnd){
+        return;
+    }
+
     let incog=await detectIncognito();
     if(incog){
         block("Incognito Mode Detected 🚫");
@@ -277,6 +238,7 @@ function verify(){
 
     let ok=await checkLocation();
     if(!ok) return;
+
 })();
 
 </script>
