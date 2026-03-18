@@ -1,61 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <title>BPMS Premium Access</title>
 
 <style>
-body {
-    margin:0;
-    font-family: 'Segoe UI';
-    background: linear-gradient(135deg,#0f172a,#020617);
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI;}
+
+body{
+    background:linear-gradient(135deg,#020617,#0f172a);
     color:white;
     text-align:center;
 }
 
-.topbar {
-    background:#111827;
-    padding:12px;
-    position:sticky;
+/* ===== TOP BAR ===== */
+.topbar{
+    position:fixed;
     top:0;
-    box-shadow:0 0 10px #000;
+    width:100%;
+    padding:12px;
+    backdrop-filter:blur(10px);
+    background:rgba(15,23,42,0.7);
+    border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
-.status {
-    font-weight:bold;
-    color:#22c55e;
+.status{font-weight:bold;color:#22c55e;}
+.timer{font-size:13px;color:#94a3b8;}
+
+/* ===== CARD ===== */
+.card{
+    margin-top:120px;
+    background:rgba(255,255,255,0.05);
+    border-radius:20px;
+    padding:30px;
+    width:90%;
+    max-width:400px;
+    margin-left:auto;
+    margin-right:auto;
+    backdrop-filter:blur(15px);
+    box-shadow:0 0 30px rgba(0,0,0,0.5);
+    animation:fade 0.8s ease;
 }
 
-.timer {
-    font-size:14px;
+@keyframes fade{
+    from{opacity:0;transform:translateY(20px);}
+    to{opacity:1;}
+}
+
+h1{
+    margin-bottom:10px;
+}
+
+p{
     color:#94a3b8;
 }
 
-.box {
-    margin-top:50px;
-}
-
-input {
-    padding:10px;
+/* ===== BUTTON ===== */
+button{
+    margin-top:15px;
+    padding:12px;
+    width:100%;
     border:none;
-    border-radius:6px;
-    margin-top:10px;
-}
-
-button {
-    padding:10px 20px;
-    border:none;
-    border-radius:6px;
-    background:#22c55e;
+    border-radius:10px;
+    background:linear-gradient(90deg,#22c55e,#16a34a);
     color:white;
+    font-weight:bold;
     cursor:pointer;
+    transition:0.3s;
 }
 
-button:hover {
-    background:#16a34a;
+button:hover{
+    transform:scale(1.05);
 }
 
-.hidden {
-    display:none;
+/* ===== INPUT ===== */
+input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    margin-top:10px;
+    outline:none;
+}
+
+/* ===== BLOCK PAGE ===== */
+.block{
+    color:#ef4444;
+}
+
+/* ===== HIDDEN ===== */
+.hidden{display:none;}
+
+footer{
+    margin-top:40px;
+    font-size:12px;
+    color:#64748b;
 }
 </style>
 
@@ -68,109 +107,146 @@ button:hover {
     <div id="timer" class="timer"></div>
 </div>
 
-<div class="box" id="main">
+<!-- MAIN -->
+<div id="main" class="card">
     <h1>🚀 BPMS Premium Tool</h1>
-    <p>All premium features unlocked here</p>
+    <p>Fast • Secure • Powerful</p>
 </div>
 
-<div class="box hidden" id="payment">
-    <h2>Trial Expired ❌</h2>
-    <p>Pay ₹80 (~$1) for 1 Month</p>
+<!-- PAYMENT -->
+<div id="payment" class="card hidden">
+    <h1>💳 Unlock Premium</h1>
+    <p>Pay ₹80 (~$1) for 30 days</p>
     <p><b>UPI: abmcollection@ybl</b></p>
 
-    <input id="utr" placeholder="Enter UTR / Admin Code">
-    <br><br>
-    <button onclick="verify()">Submit</button>
+    <input id="utr" placeholder="Enter UTR / Code">
+    <button onclick="verify()">Activate</button>
 </div>
+
+<!-- BLOCK -->
+<div id="blocked" class="card hidden">
+    <h1 class="block">❌ Access Denied</h1>
+    <p id="reason"></p>
+
+    <br>
+    <p>📌 Use Normal Browser</p>
+    <p>📌 Turn OFF VPN</p>
+    <p>📌 Use Indian Network</p>
+</div>
+
+<footer>
+Premium BPMS Tool • Built for Speed ⚡ • © 2026 Anoop Meshram ❤️
+</footer>
 
 <script>
 
-// ====== CONFIG ======
-const ADMIN_CODE = "ANOOP123"; // change anytime
+// ===== CONFIG =====
+const ADMIN_CODE = "ANOOP123";
 
-// ====== STORAGE KEYS ======
-const trialKey = "bpms_trial";
-const subKey = "bpms_sub";
-const deviceKey = "bpms_device";
+// ===== STORAGE =====
+const trialKey="bpms_trial";
+const subKey="bpms_sub";
 
-// ====== DEVICE LOCK ======
-if (!localStorage.getItem(deviceKey)) {
-    localStorage.setItem(deviceKey, Math.random().toString(36));
+// ===== BLOCK UI =====
+function block(msg){
+    main.classList.add("hidden");
+    payment.classList.add("hidden");
+    blocked.classList.remove("hidden");
+    reason.innerText=msg;
 }
 
-// ====== TIME ======
-let now = Date.now();
-
-// ====== TRIAL INIT ======
-let trial = localStorage.getItem(trialKey);
-if (!trial) {
-    localStorage.setItem(trialKey, now);
-    trial = now;
+// ===== INCOGNITO =====
+function detectIncognito(){
+    return new Promise(resolve=>{
+        let fs=window.RequestFileSystem||window.webkitRequestFileSystem;
+        if(!fs) resolve(false);
+        else fs(window.TEMPORARY,100,()=>resolve(false),()=>resolve(true));
+    });
 }
 
-// ====== TIMES ======
-let trialEnd = parseInt(trial) + (24*60*60*1000);
-let subEnd = localStorage.getItem(subKey);
+// ===== LOCATION =====
+async function checkLocation(){
+    try{
+        let r=await fetch("https://ipapi.co/json/");
+        let d=await r.json();
+        if(d.country_name!=="India"){
+            block("VPN / Non-India detected 🚫");
+            return false;
+        }
+        return true;
+    }catch{
+        block("Network error 🚫");
+        return false;
+    }
+}
 
-// ====== LOOP ======
+// ===== INIT =====
+let now=Date.now();
+
+if(!localStorage.getItem(trialKey)){
+    localStorage.setItem(trialKey,now);
+}
+
+let trialStart=localStorage.getItem(trialKey);
+let trialEnd=parseInt(trialStart)+(24*60*60*1000);
+let subEnd=localStorage.getItem(subKey);
+
+// ===== TIMER =====
+function setStatus(text,ms){
+    status.innerText=text;
+
+    let h=Math.floor(ms/(1000*60*60));
+    let m=Math.floor((ms%(1000*60*60))/(1000*60));
+    let s=Math.floor((ms%(1000*60))/1000);
+
+    timer.innerText=h+"h "+m+"m "+s+"s";
+}
+
+// ===== LOOP =====
 setInterval(()=>{
+    let current=Date.now();
 
-    let current = Date.now();
-
-    if (subEnd && current < subEnd) {
-        setStatus("Subscription Active ✅", subEnd-current, true);
+    if(subEnd && current<subEnd){
+        setStatus("Subscription Active ✅",subEnd-current);
+        main.classList.remove("hidden");
+        payment.classList.add("hidden");
     }
-    else if (current < trialEnd) {
-        setStatus("Free Trial ⏳", trialEnd-current, true);
+    else if(current<trialEnd){
+        setStatus("Free Trial ⏳",trialEnd-current);
     }
-    else {
-        document.getElementById("status").innerText = "Trial Expired ❌";
-        document.getElementById("timer").innerText = "";
-        document.getElementById("main").classList.add("hidden");
-        document.getElementById("payment").classList.remove("hidden");
+    else{
+        status.innerText="Trial Expired ❌";
+        timer.innerText="";
+        main.classList.add("hidden");
+        payment.classList.remove("hidden");
     }
-
 },1000);
 
-// ====== TIMER ======
-function setStatus(text, ms, showMain) {
-    document.getElementById("status").innerText = text;
+// ===== VERIFY =====
+function verify(){
+    let val=utr.value;
 
-    let h = Math.floor(ms/(1000*60*60));
-    let m = Math.floor((ms%(1000*60*60))/(1000*60));
-    let s = Math.floor((ms%(1000*60))/1000);
-
-    document.getElementById("timer").innerText = h+"h "+m+"m "+s+"s";
-
-    document.getElementById("main").classList.remove("hidden");
-    document.getElementById("payment").classList.add("hidden");
-}
-
-// ====== VERIFY ======
-function verify() {
-
-    let val = document.getElementById("utr").value;
-
-    if (val === ADMIN_CODE) {
-        activate();
-    } else {
-        alert("Payment pending verification ❌");
+    if(val===ADMIN_CODE){
+        let newSub=Date.now()+(30*24*60*60*1000);
+        localStorage.setItem(subKey,newSub);
+        alert("Activated ✅");
+        location.reload();
+    }else{
+        alert("Invalid / Pending ❌");
     }
 }
 
-// ====== ACTIVATE ======
-function activate() {
-    let newSub = Date.now() + (30*24*60*60*1000);
-    localStorage.setItem(subKey, newSub);
+// ===== RUN SECURITY =====
+(async()=>{
+    let incog=await detectIncognito();
+    if(incog){
+        block("Incognito Mode Detected 🚫");
+        return;
+    }
 
-    alert("Subscription Activated ✅");
-    location.reload();
-}
-
-// ====== BASIC ANTI RESET ======
-window.addEventListener("storage", ()=>{
-    alert("Suspicious activity detected ⚠️");
-});
+    let ok=await checkLocation();
+    if(!ok) return;
+})();
 
 </script>
 
