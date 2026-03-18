@@ -15,14 +15,14 @@ body{
     text-align:center;
 }
 
-/* BACKGROUND ANIMATION */
+/* BG ANIMATION */
 @keyframes bgMove{
     0%{background-position:0% 50%;}
     50%{background-position:100% 50%;}
     100%{background-position:0% 50%;}
 }
 
-/* FLOATING BALL */
+/* FLOAT BALLS */
 .ball{
     position:absolute;
     width:200px;
@@ -31,13 +31,9 @@ body{
     border-radius:50%;
     animation:float 6s ease-in-out infinite;
 }
-.ball2{
-    left:70%;
-    top:60%;
-    animation-delay:2s;
-}
+.ball2{left:70%;top:60%;animation-delay:2s;}
+
 @keyframes float{
-    0%,100%{transform:translateY(0);}
     50%{transform:translateY(-40px);}
 }
 
@@ -73,7 +69,6 @@ body{
     transform:translateY(-10px) scale(1.02);
 }
 
-/* FADE */
 @keyframes fadeUp{
     from{opacity:0;transform:translateY(30px);}
     to{opacity:1;}
@@ -89,26 +84,6 @@ button{
     background:linear-gradient(90deg,#22c55e,#16a34a);
     color:white;
     cursor:pointer;
-    position:relative;
-    overflow:hidden;
-}
-
-button::after{
-    content:"";
-    position:absolute;
-    width:0;
-    height:0;
-    background:rgba(255,255,255,0.3);
-    border-radius:50%;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    transition:0.4s;
-}
-
-button:active::after{
-    width:200%;
-    height:200%;
 }
 
 /* INPUT */
@@ -122,6 +97,8 @@ input{
 
 /* HIDDEN */
 .hidden{display:none;}
+
+.block{color:#ef4444;}
 
 footer{
     margin-top:40px;
@@ -142,28 +119,74 @@ footer{
     <div id="timer"></div>
 </div>
 
+<!-- MAIN -->
 <div id="main" class="card">
     <h1>🚀 BPMS Premium Tool</h1>
-    <p>Interactive • Animated • Premium UI</p>
+    <p>Animated • Secure • Premium</p>
 </div>
 
+<!-- PAYMENT -->
 <div id="payment" class="card hidden">
     <h2>💳 Unlock Premium</h2>
-    <p>UPI: abmcollection@ybl</p>
-    <input id="utr" placeholder="Enter Code">
+    <p>Pay ₹80 (~$1)</p>
+    <p><b>UPI: abmcollection@ybl</b></p>
+
+    <input id="utr" placeholder="Enter UTR / Code">
     <button onclick="verify()">Activate</button>
 </div>
 
-<footer>
-© 2026 Anoop Meshram ❤️
-</footer>
+<!-- BLOCK -->
+<div id="blocked" class="card hidden">
+    <h2 class="block">❌ Access Denied</h2>
+    <p id="reason"></p>
+
+    <p>✔ Normal Browser use karo</p>
+    <p>✔ VPN band karo</p>
+</div>
+
+<footer>© 2026 Anoop Meshram ❤️</footer>
 
 <script>
 
 // CONFIG
 const ADMIN_CODE="ANOOP123";
+
+// STORAGE
 const trialKey="trial";
 const subKey="sub";
+
+// BLOCK
+function block(msg){
+    main.classList.add("hidden");
+    payment.classList.add("hidden");
+    blocked.classList.remove("hidden");
+    reason.innerText=msg;
+}
+
+// INCOGNITO
+function detectIncognito(){
+    return new Promise(resolve=>{
+        let fs=window.RequestFileSystem||window.webkitRequestFileSystem;
+        if(!fs) resolve(false);
+        else fs(window.TEMPORARY,100,()=>resolve(false),()=>resolve(true));
+    });
+}
+
+// LOCATION
+async function checkLocation(){
+    try{
+        let r=await fetch("https://ipapi.co/json/");
+        let d=await r.json();
+        if(d.country_name!=="India"){
+            block("VPN / Non-India 🚫");
+            return false;
+        }
+        return true;
+    }catch{
+        block("Network error 🚫");
+        return false;
+    }
+}
 
 // INIT
 let now=Date.now();
@@ -182,6 +205,8 @@ setInterval(()=>{
 
     if(subEnd && current<subEnd){
         status.innerText="Subscription Active ✅";
+        main.classList.remove("hidden");
+        payment.classList.add("hidden");
     }
     else if(current<trialEnd){
         status.innerText="Free Trial ⏳";
@@ -204,9 +229,25 @@ function verify(){
         alert("Activated ✅");
         location.reload();
     }else{
-        alert("Wrong Code ❌");
+        alert("Invalid ❌");
     }
 }
+
+// SECURITY
+(async()=>{
+    let current=Date.now();
+
+    if(subEnd && current<subEnd) return;
+
+    let incog=await detectIncognito();
+    if(incog){
+        block("Incognito detected 🚫");
+        return;
+    }
+
+    let ok=await checkLocation();
+    if(!ok) return;
+})();
 
 </script>
 
