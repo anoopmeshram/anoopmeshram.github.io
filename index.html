@@ -130,7 +130,7 @@ function setStatus(msg,type="success"){
   el.innerText=msg
 }
 
-// SAFE VALUE (IMPORTANT FIX)
+// SAFE VALUE
 function safe(v){
   if(!v || v.trim()==="") return "-"
   return v.trim()
@@ -161,7 +161,7 @@ async function autoPasteAndProcess(){
 
 setInterval(autoPasteAndProcess,2000)
 
-// EXTRACT
+// EXTRACT TABLE 3
 function extractTable3(text){
   let i=text.toLowerCase().indexOf("table 3")
   if(i===-1){
@@ -171,7 +171,7 @@ function extractTable3(text){
   return text.substring(i)
 }
 
-// PARSE (FIXED CLEAN LOGIC)
+// PARSE DATA (FINAL LOGIC)
 function parseData(text){
 
   let lines=text.split(/\n+/).map(x=>x.trim()).filter(x=>x)
@@ -191,8 +191,21 @@ function parseData(text){
     else if(l.includes("technical person contact"))
       r.techContact=lines[i+1]
 
-    else if(l.includes("owner name"))
-      r.owner=lines[i+1]
+    // 🔥 GOVERNMENT RULE APPLIED
+    else if(
+      l.includes("owner name") ||
+      l.includes("individual owner") ||
+      l.includes("government") ||
+      l.includes("semi government")
+    ){
+      let val = lines[i+1] || lines[i]
+
+      if(l.includes("government") || l.includes("semi government")){
+        r.owner = val.replace(/government|semi government/ig,"").trim()
+      }else{
+        r.owner = val
+      }
+    }
 
     else if(l.includes("owner contact"))
       r.ownerContact=lines[i+1]
@@ -209,7 +222,7 @@ function parseData(text){
   return r
 }
 
-// ADD
+// ADD ENTRY
 function addEntry(){
 
   let text=document.getElementById("report").value
@@ -251,7 +264,7 @@ function addEntry(){
   return "success"
 }
 
-// TABLE
+// GENERATE TABLE
 function generateTable(n=false){
 
   let tb=document.querySelector("#table tbody")
@@ -281,7 +294,7 @@ function deleteRow(i){
   setStatus("🗑️ Row Deleted","info")
 }
 
-// CLEAR
+// CLEAR INPUT
 function clearInput(){
   document.getElementById("report").value=""
   setStatus("🧹 Input Cleared","info")
@@ -296,7 +309,7 @@ function resetData(){
   setStatus("Reset Completed ✅")
 }
 
-// EXPORT
+// EXPORT EXCEL
 function exportExcel(){
 
   if(!data.length){
