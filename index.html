@@ -133,7 +133,7 @@ tr:nth-child(even){background:#f9fafb;}
 
 let data=[]
 
-// ✅ AUTO CLIPBOARD SYSTEM
+// 🔥 AUTO CLIPBOARD + AUTO BUTTON CLICK
 async function autoPasteAndProcess(){
   try{
     const text = await navigator.clipboard.readText()
@@ -142,15 +142,15 @@ async function autoPasteAndProcess(){
 
       let input = document.getElementById("report")
 
-      // same content dubara add na ho
+      // duplicate avoid
       if(input.value.trim() === text.trim()) return
 
       input.value = text
 
-      // auto entry add
-      addEntry()
+      // ✅ AUTO CLICK "Extract Table 3"
+      document.querySelector("button[onclick='addEntry()']").click()
 
-      setStatus("⚡ Auto Paste + Entry Added","success")
+      setStatus("⚡ Auto Paste + Auto Extract Done","success")
     }
 
   }catch(err){
@@ -158,14 +158,14 @@ async function autoPasteAndProcess(){
   }
 }
 
-// tab pe aate hi run
+// tab active hone par
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible"){
     autoPasteAndProcess()
   }
 })
 
-// first load pe bhi run
+// page load par
 window.addEventListener("load",()=>{
   setTimeout(autoPasteAndProcess,500)
 })
