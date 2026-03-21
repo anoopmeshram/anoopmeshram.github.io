@@ -8,23 +8,36 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body{font-family:'Segoe UI';background:#f1f5f9;padding:20px;}
+body{
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#eef2ff,#f8fafc);
+  padding:20px;
+}
 
 .container{
-  max-width:1200px;margin:auto;background:white;
-  padding:20px;border-radius:12px;
-  box-shadow:0 5px 20px rgba(0,0,0,0.1);
+  max-width:1200px;margin:auto;
+  background:white;padding:20px;
+  border-radius:14px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.1);
+}
+
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
 }
 
 textarea{
   width:100%;height:130px;padding:10px;
-  border-radius:8px;border:1px solid #ccc;
+  border-radius:10px;border:1px solid #ccc;
 }
 
 button{
-  padding:10px;margin:5px;border:none;
-  border-radius:8px;background:#2563eb;color:white;
+  padding:10px 15px;margin:5px;
+  border:none;border-radius:10px;
+  background:#2563eb;color:white;
+  cursor:pointer;
 }
+
+button:hover{background:#1d4ed8;}
 
 .danger{background:#dc2626;}
 .edit{background:#16a34a;}
@@ -33,17 +46,42 @@ table{
   width:100%;margin-top:20px;border-collapse:collapse;
 }
 
-th,td{border:1px solid #ddd;padding:10px;}
-th{
-  background:#111827;color:white;
-  font-weight:bold;cursor:pointer;
+th,td{
+  border:1px solid #ddd;padding:10px;
 }
 
-.status{color:green;font-weight:bold;margin-top:10px;}
+th{
+  background:#0f172a;color:white;
+  font-weight:bold;
+}
 
-#filterBox{
-  position:absolute;background:white;border:1px solid #ccc;
-  padding:10px;display:none;z-index:1000;
+tr:nth-child(even){background:#f9fafb;}
+
+.status{
+  margin-top:10px;
+  color:#16a34a;
+  font-weight:bold;
+}
+
+/* FILTER PANEL */
+#filterPanel{
+  position:absolute;
+  top:70px;
+  right:30px;
+  background:white;
+  border-radius:12px;
+  padding:15px;
+  width:280px;
+  display:none;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+input,select{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  border-radius:8px;
+  border:1px solid #ccc;
 }
 </style>
 </head>
@@ -52,7 +90,11 @@ th{
 
 <div class="container">
 
+<div class="topbar">
 <h2>🏗️ Scrutiny Extractor</h2>
+
+<button onclick="toggleFilterPanel()">🔍 Filter</button>
+</div>
 
 <input type="file" id="pdfUpload"><br><br>
 
@@ -62,7 +104,7 @@ th{
 
 <button onclick="addEntry()">➕ Extract Table 3</button>
 <button onclick="exportExcel()">⬇ Download Excel</button>
-<button onclick="clearInput()">🧹 Clear Input</button>
+<button onclick="clearInput()">🧹 Clear</button>
 <button onclick="resetData()" class="danger">♻ Reset</button>
 
 <p id="status" class="status"></p>
@@ -71,13 +113,13 @@ th{
 <thead>
 <tr>
 <th>Sr. No.</th>
-<th onclick="openFilter(1)">Technical Person Name ⬇</th>
-<th onclick="openFilter(2)">Technical Person Contact No. ⬇</th>
-<th onclick="openFilter(3)">Technical Person Type ⬇</th>
-<th onclick="openFilter(4)">Owner Name ⬇</th>
-<th onclick="openFilter(5)">Owner Contact No. ⬇</th>
-<th onclick="openFilter(6)">Owner Address ⬇</th>
-<th onclick="openFilter(7)">Structural Engineer ⬇</th>
+<th>Technical Person Name</th>
+<th>Technical Person Contact No.</th>
+<th>Technical Person Type</th>
+<th>Owner Name</th>
+<th>Owner Contact No.</th>
+<th>Owner Address</th>
+<th>Structural Engineer</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -86,19 +128,33 @@ th{
 
 </div>
 
-<!-- FILTER BOX -->
-<div id="filterBox">
-<input type="text" id="filterSearch" placeholder="Search..." onkeyup="filterOptions()"><br><br>
-<div id="filterOptions"></div>
-<br>
-<button onclick="applyColumnFilter()">OK</button>
-<button onclick="closeFilter()">Cancel</button>
+<!-- FILTER PANEL -->
+<div id="filterPanel">
+<b>Filter Column</b>
+<select id="filterColumn" onchange="applyFilter()">
+<option value="all">All Columns</option>
+<option value="techName">Technical Person Name</option>
+<option value="techContact">Technical Person Contact No.</option>
+<option value="type">Technical Person Type</option>
+<option value="owner">Owner Name</option>
+<option value="ownerContact">Owner Contact No.</option>
+<option value="ownerAddress">Owner Address</option>
+<option value="structural">Structural Engineer</option>
+</select>
+
+<br><br>
+
+<b>Search</b>
+<input type="text" id="search" placeholder="Type to filter..." onkeyup="applyFilter()">
+
+<br><br>
+
+<button onclick="closePanel()">Close</button>
 </div>
 
 <script>
 
 let data=[]
-let currentColumn=null
 
 // TABLE 3
 function extractTable3(text){
@@ -110,8 +166,9 @@ function extractTable3(text){
   return text.substring(start)
 }
 
-// PARSE
+// PARSER
 function parseData(text){
+
   let lines=text.split(/\n+/).map(l=>l.trim()).filter(l=>l)
   let r={}
 
@@ -197,52 +254,46 @@ function generateTable(){
       </td>
     </tr>`
   })
+
+  applyFilter()
 }
 
 // FILTER
-function openFilter(col){
-  currentColumn=col
+function applyFilter(){
 
-  let values=[...new Set(data.map(d=>Object.values(d)[col-1]))]
+  let val=document.getElementById("search").value.toLowerCase()
+  let col=document.getElementById("filterColumn").value
 
-  let html=`<label><input type="checkbox" checked onclick="toggleAll(this)"> (Select All)</label><br>`
-
-  values.forEach(v=>{
-    html+=`<label><input type="checkbox" value="${v}" checked> ${v}</label><br>`
-  })
-
-  document.getElementById("filterOptions").innerHTML=html
-  document.getElementById("filterBox").style.display="block"
-}
-
-function toggleAll(src){
-  document.querySelectorAll("#filterOptions input").forEach(cb=>cb.checked=src.checked)
-}
-
-function applyColumnFilter(){
-
-  let checked=[...document.querySelectorAll("#filterOptions input:checked")].map(cb=>cb.value)
+  let map={techName:1,techContact:2,type:3,owner:4,ownerContact:5,ownerAddress:6,structural:7}
 
   document.querySelectorAll("#table tbody tr").forEach(row=>{
-    let val=row.children[currentColumn].innerText
-    row.style.display=checked.includes(val)?"":"none"
-  })
 
-  closeFilter()
-}
-
-function filterOptions(){
-
-  let val=document.getElementById("filterSearch").value.toLowerCase()
-
-  document.querySelectorAll("#filterOptions label").forEach(l=>{
-    l.style.display=l.innerText.toLowerCase().includes(val)?"":"none"
+    if(col==="all"){
+      row.style.display=row.innerText.toLowerCase().includes(val)?"":"none"
+    }else{
+      let text=row.children[map[col]].innerText.toLowerCase()
+      row.style.display=text.includes(val)?"":"none"
+    }
   })
 }
 
-function closeFilter(){
-  document.getElementById("filterBox").style.display="none"
+// FILTER PANEL
+function toggleFilterPanel(){
+  let p=document.getElementById("filterPanel")
+  p.style.display=p.style.display==="block"?"none":"block"
 }
+
+function closePanel(){
+  document.getElementById("filterPanel").style.display="none"
+}
+
+// CLICK OUTSIDE CLOSE
+document.addEventListener("click",function(e){
+  let panel=document.getElementById("filterPanel")
+  if(!panel.contains(e.target) && !e.target.innerText.includes("Filter")){
+    panel.style.display="none"
+  }
+})
 
 // EXPORT
 function exportExcel(){
@@ -250,7 +301,7 @@ function exportExcel(){
   let rows=[...document.querySelectorAll("#table tbody tr")]
     .filter(r=>r.style.display!=="none")
 
-  let dataExport=rows.map((r,i)=>({
+  let exportData=rows.map((r,i)=>({
     "Sr. No.":i+1,
     "Technical Person Name":r.children[1].innerText,
     "Technical Person Contact No.":r.children[2].innerText,
@@ -261,7 +312,7 @@ function exportExcel(){
     "Structural Engineer":r.children[7].innerText
   }))
 
-  let ws=XLSX.utils.json_to_sheet(dataExport)
+  let ws=XLSX.utils.json_to_sheet(exportData)
   let wb=XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb,ws,"Data")
   XLSX.writeFile(wb,"filtered_data.xlsx")
@@ -275,6 +326,7 @@ function resetData(){
   data=[]
   document.querySelector("#table tbody").innerHTML=""
   document.getElementById("report").value=""
+  document.getElementById("search").value=""
   document.getElementById("status").innerText="Reset Successful ✅"
 }
 
