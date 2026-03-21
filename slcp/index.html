@@ -5,6 +5,7 @@
 <title>Scrutiny AI Extractor PRO</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 body{
@@ -22,9 +23,7 @@ body{
   box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
-h2{
-  text-align:center;
-}
+h2{text-align:center;}
 
 textarea{
   width:100%;
@@ -92,7 +91,7 @@ tr:nth-child(even){background:#f9fafb;}
 
 <button onclick="addEntry()">➕ Add Entry</button>
 <button onclick="generateTable()">📊 Generate Table</button>
-<button onclick="exportExcel()">⬇ Download Excel</button>
+<button onclick="exportExcel()">⬇ Download Excel (.xlsx)</button>
 <button onclick="resetData()">♻ Reset</button>
 
 <br><br>
@@ -136,7 +135,7 @@ function cleanAddress(address){
     .trim()
 }
 
-// 🔥 SMART EXTRACTION ENGINE
+// 🔥 SMART EXTRACTION
 function parseData(text){
 
   let lines=text.split(/\n+/).map(l=>l.trim()).filter(l=>l)
@@ -223,7 +222,7 @@ function addEntry(){
     structural:parsed.structural
   })
 
-  document.getElementById("status").innerText="✅ Auto Extracted Successfully (Sr "+sr+")"
+  document.getElementById("status").innerText="✅ Auto Extracted (Sr "+sr+")"
 
   sr++
   document.getElementById("report").value=""
@@ -284,13 +283,83 @@ function searchTable(){
   })
 }
 
+// 🔥 FINAL XLSX EXPORT (EXACT FORMAT)
 function exportExcel(){
-  let table=document.getElementById("table").outerHTML
-  let url='data:application/vnd.ms-excel,'+encodeURIComponent(table)
-  let a=document.createElement("a")
-  a.href=url
-  a.download="scrutiny_data.xls"
-  a.click()
+
+  if(data.length === 0){
+    alert("No data to export!")
+    return
+  }
+
+  function cleanSite(site){
+    let match = site.match(/MOUZA\s*[-–]?\s*([A-Z ]+)/i)
+    if(match){
+      return "Mouza – " + match[1].trim() + ", Nagpur"
+    }
+    return site
+  }
+
+  function cleanOwnerAddress(addr){
+    let parts = addr.split(",")
+    if(parts.length >= 2){
+      return parts[1].trim() + ", Nagpur"
+    }
+    return addr
+  }
+
+  let allRows = []
+
+  data.forEach((d, index)=>{
+
+    allRows.push(
+      ["Applicant/Technical Person and Site Details(Table 3)"],
+      [""],
+
+      ["Technical Person Name"],
+      [d.techName],
+      [""],
+
+      ["Technical Person Contact No."],
+      [d.techContact],
+      [""],
+
+      ["Site Address"],
+      [cleanSite(d.site)],
+      [""],
+
+      ["Technical Person Type"],
+      [d.type],
+      [""],
+
+      ["Owner Name"],
+      [d.owner],
+      [""],
+
+      ["Owner Contact No."],
+      [d.ownerContact],
+      [""],
+
+      ["Owner Address"],
+      [cleanOwnerAddress(d.ownerAddress)],
+      [""],
+
+      ["Structural Engineer Name"],
+      [d.structural ? d.structural : "-"]
+    )
+
+    if(index !== data.length - 1){
+      allRows.push([""],["----------------------------------------"],[""])
+    }
+
+  })
+
+  let ws = XLSX.utils.aoa_to_sheet(allRows)
+  ws['!cols'] = [{wch:90}]
+
+  let wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, "Scrutiny Data")
+
+  XLSX.writeFile(wb, "scrutiny_final_format.xlsx")
 }
 
 function resetData(){
