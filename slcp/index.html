@@ -8,17 +8,12 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body{
-  font-family:'Segoe UI';
-  background:linear-gradient(135deg,#eef2ff,#f8fafc);
-  padding:20px;
-}
+body{font-family:'Segoe UI';background:#f1f5f9;padding:20px;}
 
 .container{
-  max-width:1200px;margin:auto;
-  background:white;padding:20px;
-  border-radius:14px;
-  box-shadow:0 8px 30px rgba(0,0,0,0.1);
+  max-width:1200px;margin:auto;background:white;
+  padding:20px;border-radius:12px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
 .topbar{
@@ -27,17 +22,14 @@ body{
 
 textarea{
   width:100%;height:130px;padding:10px;
-  border-radius:10px;border:1px solid #ccc;
+  border-radius:8px;border:1px solid #ccc;
 }
 
 button{
-  padding:10px 15px;margin:5px;
-  border:none;border-radius:10px;
-  background:#2563eb;color:white;
+  padding:10px;margin:5px;border:none;
+  border-radius:8px;background:#2563eb;color:white;
   cursor:pointer;
 }
-
-button:hover{background:#1d4ed8;}
 
 .danger{background:#dc2626;}
 .edit{background:#16a34a;}
@@ -46,42 +38,22 @@ table{
   width:100%;margin-top:20px;border-collapse:collapse;
 }
 
-th,td{
-  border:1px solid #ddd;padding:10px;
-}
+th,td{border:1px solid #ddd;padding:10px;}
+th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
 
-th{
-  background:#0f172a;color:white;
-  font-weight:bold;
-}
+.status{color:green;font-weight:bold;margin-top:10px;}
 
-tr:nth-child(even){background:#f9fafb;}
-
-.status{
-  margin-top:10px;
-  color:#16a34a;
-  font-weight:bold;
-}
-
-/* FILTER PANEL */
 #filterPanel{
+  display:none;
   position:absolute;
   top:70px;
   right:30px;
   background:white;
-  border-radius:12px;
-  padding:15px;
-  width:280px;
-  display:none;
-  box-shadow:0 10px 30px rgba(0,0,0,0.2);
-}
-
-input,select{
-  width:100%;
-  padding:8px;
-  margin-top:5px;
-  border-radius:8px;
   border:1px solid #ccc;
+  padding:10px;
+  width:260px;
+  z-index:1000;
+  box-shadow:0 5px 20px rgba(0,0,0,0.2);
 }
 </style>
 </head>
@@ -92,8 +64,6 @@ input,select{
 
 <div class="topbar">
 <h2>🏗️ Scrutiny Extractor</h2>
-
-<button onclick="toggleFilterPanel()">🔍 Filter</button>
 </div>
 
 <input type="file" id="pdfUpload"><br><br>
@@ -113,13 +83,13 @@ input,select{
 <thead>
 <tr>
 <th>Sr. No.</th>
-<th>Technical Person Name</th>
-<th>Technical Person Contact No.</th>
-<th>Technical Person Type</th>
-<th>Owner Name</th>
-<th>Owner Contact No.</th>
-<th>Owner Address</th>
-<th>Structural Engineer</th>
+<th onclick="openFilter('techName')">Technical Person Name ⬇</th>
+<th onclick="openFilter('techContact')">Technical Person Contact No. ⬇</th>
+<th onclick="openFilter('type')">Technical Person Type ⬇</th>
+<th onclick="openFilter('owner')">Owner Name ⬇</th>
+<th onclick="openFilter('ownerContact')">Owner Contact No. ⬇</th>
+<th onclick="openFilter('ownerAddress')">Owner Address ⬇</th>
+<th onclick="openFilter('structural')">Structural Engineer ⬇</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -130,31 +100,28 @@ input,select{
 
 <!-- FILTER PANEL -->
 <div id="filterPanel">
-<b>Filter Column</b>
-<select id="filterColumn" onchange="applyFilter()">
-<option value="all">All Columns</option>
-<option value="techName">Technical Person Name</option>
-<option value="techContact">Technical Person Contact No.</option>
-<option value="type">Technical Person Type</option>
-<option value="owner">Owner Name</option>
-<option value="ownerContact">Owner Contact No.</option>
-<option value="ownerAddress">Owner Address</option>
-<option value="structural">Structural Engineer</option>
-</select>
 
-<br><br>
+<b>Text Filters</b><br><br>
 
-<b>Search</b>
-<input type="text" id="search" placeholder="Type to filter..." onkeyup="applyFilter()">
+<input type="text" id="filterSearch" placeholder="Search..." 
+onkeyup="filterOptions()" style="width:100%;padding:6px;"><br><br>
 
-<br><br>
+<div id="filterOptions" style="max-height:180px;overflow:auto;border:1px solid #ddd;padding:5px">
+</div>
 
-<button onclick="closePanel()">Close</button>
+<br>
+
+<div style="text-align:right">
+<button onclick="applyFilter()">OK</button>
+<button onclick="closePanel()">Cancel</button>
+</div>
+
 </div>
 
 <script>
 
 let data=[]
+let currentFilterKey=null
 
 // TABLE 3
 function extractTable3(text){
@@ -168,12 +135,10 @@ function extractTable3(text){
 
 // PARSER
 function parseData(text){
-
   let lines=text.split(/\n+/).map(l=>l.trim()).filter(l=>l)
   let r={}
 
   for(let i=0;i<lines.length;i++){
-
     let line=lines[i].toLowerCase()
 
     if(line.includes("technical person name"))
@@ -205,7 +170,6 @@ function parseData(text){
 
 // ADD
 function addEntry(){
-
   let text=document.getElementById("report").value
   let table3=extractTable3(text)
 
@@ -223,9 +187,7 @@ function addEntry(){
     structural:p.structural||"-"
   })
 
-  document.getElementById("status").innerText=
-  `✅ Entry Added (Sr. No. ${data.length})`
-
+  document.getElementById("status").innerText=`✅ Entry Added (Sr. No. ${data.length})`
   document.getElementById("report").value=""
 
   generateTable()
@@ -233,7 +195,6 @@ function addEntry(){
 
 // TABLE
 function generateTable(){
-
   let tbody=document.querySelector("#table tbody")
   tbody.innerHTML=""
 
@@ -254,46 +215,58 @@ function generateTable(){
       </td>
     </tr>`
   })
-
-  applyFilter()
 }
 
-// FILTER
-function applyFilter(){
+// FILTER OPEN
+function openFilter(key){
+  currentFilterKey = key
 
-  let val=document.getElementById("search").value.toLowerCase()
-  let col=document.getElementById("filterColumn").value
+  let values=[...new Set(data.map(d=>d[key]))]
 
-  let map={techName:1,techContact:2,type:3,owner:4,ownerContact:5,ownerAddress:6,structural:7}
+  let html=`<label><input type="checkbox" id="selectAll" checked onchange="toggleAll()"> (Select All)</label><br>`
 
-  document.querySelectorAll("#table tbody tr").forEach(row=>{
+  values.forEach(v=>{
+    html+=`<label><input type="checkbox" value="${v}" checked> ${v}</label><br>`
+  })
 
-    if(col==="all"){
-      row.style.display=row.innerText.toLowerCase().includes(val)?"":"none"
-    }else{
-      let text=row.children[map[col]].innerText.toLowerCase()
-      row.style.display=text.includes(val)?"":"none"
-    }
+  document.getElementById("filterOptions").innerHTML=html
+  document.getElementById("filterPanel").style.display="block"
+}
+
+// SELECT ALL
+function toggleAll(){
+  let checked=document.getElementById("selectAll").checked
+  document.querySelectorAll("#filterOptions input[type=checkbox]").forEach(cb=>cb.checked=checked)
+}
+
+// SEARCH FILTER
+function filterOptions(){
+  let val=document.getElementById("filterSearch").value.toLowerCase()
+  document.querySelectorAll("#filterOptions label").forEach(l=>{
+    l.style.display=l.innerText.toLowerCase().includes(val)?"":"none"
   })
 }
 
-// FILTER PANEL
-function toggleFilterPanel(){
-  let p=document.getElementById("filterPanel")
-  p.style.display=p.style.display==="block"?"none":"block"
+// APPLY FILTER
+function applyFilter(){
+  let selected=[...document.querySelectorAll("#filterOptions input:checked")].map(cb=>cb.value)
+
+  let map={
+    techName:1,techContact:2,type:3,
+    owner:4,ownerContact:5,ownerAddress:6,structural:7
+  }
+
+  document.querySelectorAll("#table tbody tr").forEach(row=>{
+    let val=row.children[map[currentFilterKey]].innerText
+    row.style.display=selected.includes(val)?"":"none"
+  })
+
+  closePanel()
 }
 
 function closePanel(){
   document.getElementById("filterPanel").style.display="none"
 }
-
-// CLICK OUTSIDE CLOSE
-document.addEventListener("click",function(e){
-  let panel=document.getElementById("filterPanel")
-  if(!panel.contains(e.target) && !e.target.innerText.includes("Filter")){
-    panel.style.display="none"
-  }
-})
 
 // EXPORT
 function exportExcel(){
@@ -326,7 +299,6 @@ function resetData(){
   data=[]
   document.querySelector("#table tbody").innerHTML=""
   document.getElementById("report").value=""
-  document.getElementById("search").value=""
   document.getElementById("status").innerText="Reset Successful ✅"
 }
 
