@@ -2,19 +2,77 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Scrutiny Table 3 Extractor</title>
+<title>Scrutiny Extractor PRO FINAL</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body{font-family:Segoe UI;background:#f1f5f9;padding:20px;}
-.container{max-width:1200px;margin:auto;background:white;padding:20px;border-radius:12px;}
-textarea{width:100%;height:120px;padding:10px;}
-button{padding:10px;margin:5px;background:#2563eb;color:white;border:none;border-radius:6px;}
-table{width:100%;margin-top:20px;border-collapse:collapse;}
-th,td{border:1px solid #ddd;padding:8px;}
-th{background:#111;color:white;}
+body{
+  font-family:'Segoe UI';
+  background:#f1f5f9;
+  padding:20px;
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+h2{text-align:center;}
+
+textarea{
+  width:100%;
+  height:140px;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button{
+  padding:10px 15px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{background:#1d4ed8;}
+
+input[type="text"]{
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+table{
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
+}
+
+th,td{
+  border:1px solid #ddd;
+  padding:10px;
+}
+
+th{
+  background:#111827;
+  color:white;
+}
+
+tr:nth-child(even){background:#f9fafb;}
+
+.actions button{background:#dc2626;}
+.actions .edit{background:#16a34a;}
+
+.status{color:green;font-weight:bold;margin-top:10px;}
 </style>
 </head>
 
@@ -22,12 +80,23 @@ th{background:#111;color:white;}
 
 <div class="container">
 
-<h2>📊 Table 3 Extractor (Smart AI)</h2>
+<h2>🏗️ Scrutiny Extractor PRO (Table 3 Smart)</h2>
 
-<textarea id="report" placeholder="Paste full data..."></textarea><br>
+<input type="file" id="pdfUpload"><br><br>
 
-<button onclick="addEntry()">Extract Table 3</button>
-<button onclick="exportExcel()">Download Excel</button>
+<textarea id="report" placeholder="Paste full data or upload PDF..."></textarea>
+
+<br>
+
+<button onclick="addEntry()">➕ Extract Table 3</button>
+<button onclick="exportExcel()">⬇ Download Excel</button>
+<button onclick="resetData()">♻ Reset</button>
+
+<br><br>
+
+<input type="text" id="search" placeholder="Search..." onkeyup="searchTable()">
+
+<p id="status" class="status"></p>
 
 <table id="table">
 <thead>
@@ -41,6 +110,7 @@ th{background:#111;color:white;}
 <th>Owner Contact No.</th>
 <th>Owner Address</th>
 <th>Structural Engineer</th>
+<th>Action</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -53,18 +123,14 @@ th{background:#111;color:white;}
 let data=[]
 let sr=1
 
-// 🔥 SHORT ADDRESS CLEANER
+// 🔥 CLEAN ADDRESS
 function cleanAddress(addr){
-
   if(!addr) return ""
 
-  // remove plot/flat numbers etc.
   addr = addr.replace(/PLOT NO.*?,|FLAT NO.*?,|HOUSE NO.*?,|CTS NO.*?,|KH.NO.*?,|SURVEY NO.*?,/gi,"")
 
-  // extract meaningful part
   let parts = addr.split(",").map(x=>x.trim())
 
-  // keep area + city (last 2 useful parts)
   if(parts.length >= 2){
     return parts[parts.length-2] + ", " + parts[parts.length-1]
   }
@@ -72,25 +138,29 @@ function cleanAddress(addr){
   return addr
 }
 
-// 🔥 TABLE 3 FILTER
+// 🔥 TABLE 3 EXTRACTOR
 function extractTable3(text){
 
   let start = text.toLowerCase().indexOf("table 3")
-  if(start === -1) return ""
+
+  if(start === -1){
+    start = text.toLowerCase().indexOf("applicant/technical person")
+    if(start === -1) return ""
+  }
 
   let sub = text.substring(start)
 
-  // stop at next table (if exists)
-  let endMatch = sub.toLowerCase().match(/table\s*\d+/g)
-  if(endMatch && endMatch.length > 1){
-    let nextIndex = sub.toLowerCase().indexOf(endMatch[1])
-    sub = sub.substring(0,nextIndex)
+  let next = sub.toLowerCase().match(/table\s*\d+/g)
+
+  if(next && next.length > 1){
+    let idx = sub.toLowerCase().indexOf(next[1])
+    sub = sub.substring(0,idx)
   }
 
   return sub
 }
 
-// 🔥 PARSE TABLE 3
+// 🔥 PARSER
 function parseData(text){
 
   let lines=text.split(/\n+/).map(l=>l.trim()).filter(l=>l)
@@ -138,11 +208,12 @@ function parseData(text){
   return r
 }
 
+// ADD
 function addEntry(){
 
-  let fullText=document.getElementById("report").value
+  let full=document.getElementById("report").value
 
-  let table3 = extractTable3(fullText)
+  let table3 = extractTable3(full)
 
   if(!table3){
     alert("Table 3 not found!")
@@ -164,15 +235,19 @@ function addEntry(){
   })
 
   sr++
+  document.getElementById("report").value=""
+  document.getElementById("status").innerText="✅ Extracted Successfully"
+
   generateTable()
 }
 
+// TABLE
 function generateTable(){
 
   let tbody=document.querySelector("#table tbody")
   tbody.innerHTML=""
 
-  data.forEach(d=>{
+  data.forEach((d,i)=>{
     tbody.innerHTML+=`
     <tr>
       <td>${d.sr}</td>
@@ -184,11 +259,46 @@ function generateTable(){
       <td>${d.ownerContact}</td>
       <td>${d.ownerAddress}</td>
       <td>${d.structural}</td>
+      <td class="actions">
+        <button class="edit" onclick="editRow(${i})">Edit</button>
+        <button onclick="deleteRow(${i})">Delete</button>
+      </td>
     </tr>`
   })
 }
 
-// 🔥 EXCEL TABLE EXPORT
+// DELETE
+function deleteRow(i){
+  data.splice(i,1)
+  generateTable()
+}
+
+// EDIT
+function editRow(i){
+  let d=data[i]
+
+  document.getElementById("report").value=
+`Technical Person Name ${d.techName}
+Contact Number ${d.techContact}
+Site Address ${d.site}
+Technical Person Type ${d.type}
+Individual Owner ${d.owner}
+Contact Number ${d.ownerContact}
+Postal Address ${d.ownerAddress}`
+
+  data.splice(i,1)
+  generateTable()
+}
+
+// SEARCH
+function searchTable(){
+  let val=document.getElementById("search").value.toLowerCase()
+  document.querySelectorAll("#table tbody tr").forEach(r=>{
+    r.style.display=r.innerText.toLowerCase().includes(val)?"":"none"
+  })
+}
+
+// EXCEL
 function exportExcel(){
 
   let ws=XLSX.utils.json_to_sheet(data.map(d=>({
@@ -208,6 +318,48 @@ function exportExcel(){
 
   XLSX.writeFile(wb,"table3_data.xlsx")
 }
+
+// RESET
+function resetData(){
+  data=[]
+  sr=1
+  generateTable()
+}
+
+// PDF
+document.getElementById('pdfUpload').addEventListener('change',function(e){
+
+  let file=e.target.files[0]
+  let reader=new FileReader()
+
+  reader.onload=function(){
+    let typedarray=new Uint8Array(this.result)
+
+    pdfjsLib.getDocument(typedarray).promise.then(function(pdf){
+
+      let text=""
+      let pages=[]
+
+      for(let i=1;i<=pdf.numPages;i++){
+        pages.push(
+          pdf.getPage(i).then(page=>{
+            return page.getTextContent().then(content=>{
+              let strings=content.items.map(item=>item.str)
+              text+=strings.join("\n")+"\n"
+            })
+          })
+        )
+      }
+
+      Promise.all(pages).then(()=>{
+        document.getElementById("report").value=text
+      })
+
+    })
+  }
+
+  reader.readAsArrayBuffer(file)
+})
 
 </script>
 
