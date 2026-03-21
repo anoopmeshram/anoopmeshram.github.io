@@ -9,42 +9,16 @@
 
 <style>
 body{font-family:'Segoe UI';background:#f1f5f9;padding:20px;}
-
-.container{
-  max-width:1200px;margin:auto;background:white;
-  padding:20px;border-radius:12px;
-  box-shadow:0 5px 20px rgba(0,0,0,0.1);
-}
-
-.topbar{
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
-}
-
-textarea{
-  width:100%;height:130px;padding:10px;
-  border-radius:8px;border:1px solid #ccc;
-}
-
-button{
-  padding:10px;margin:5px;border:none;
-  border-radius:8px;background:#2563eb;color:white;
-  cursor:pointer;
-}
-
+.container{max-width:1200px;margin:auto;background:white;padding:20px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+.topbar{display:flex;justify-content:space-between;flex-wrap:wrap;}
+textarea{width:100%;height:130px;padding:10px;border-radius:8px;border:1px solid #ccc;}
+button{padding:10px;margin:5px;border:none;border-radius:8px;background:#2563eb;color:white;cursor:pointer;}
 .danger{background:#dc2626;}
 .edit{background:#16a34a;}
-
-input,select{
-  padding:8px;border-radius:6px;border:1px solid #ccc;margin:5px;
-}
-
-table{
-  width:100%;margin-top:20px;border-collapse:collapse;
-}
-
+input,select{padding:8px;border-radius:6px;border:1px solid #ccc;margin:5px;}
+table{width:100%;margin-top:20px;border-collapse:collapse;}
 th,td{border:1px solid #ddd;padding:10px;}
 th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
-
 .status{color:green;font-weight:bold;margin-top:10px;}
 </style>
 </head>
@@ -58,18 +32,38 @@ th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
 
 <div>
 <select id="filterColumn">
-  <option value="all">All</option>
+  <option value="all">All Columns</option>
   <option value="techName">Technical Person Name</option>
-  <option value="techContact">Tech Contact</option>
-  <option value="type">Type</option>
-  <option value="owner">Owner</option>
-  <option value="ownerContact">Owner Contact</option>
+  <option value="techContact">Technical Person Contact No.</option>
+  <option value="type">Technical Person Type</option>
+  <option value="owner">Owner Name</option>
+  <option value="ownerContact">Owner Contact No.</option>
   <option value="ownerAddress">Owner Address</option>
-  <option value="structural">Structural</option>
+  <option value="structural">Structural Engineer</option>
 </select>
 
 <input type="text" id="search" placeholder="Search..." onkeyup="applyFilter()">
 </div>
+</div>
+
+<!-- MULTI SORT -->
+<div>
+<b>Sort By:</b><br>
+
+<label><input type="checkbox" value="techName"> Technical Person Name</label>
+<label><input type="checkbox" value="techContact"> Technical Person Contact No.</label>
+<label><input type="checkbox" value="type"> Technical Person Type</label>
+<label><input type="checkbox" value="owner"> Owner Name</label>
+<label><input type="checkbox" value="ownerContact"> Owner Contact No.</label>
+<label><input type="checkbox" value="ownerAddress"> Owner Address</label>
+<label><input type="checkbox" value="structural"> Structural Engineer</label>
+
+<select id="sortOrder">
+  <option value="asc">Ascending</option>
+  <option value="desc">Descending</option>
+</select>
+
+<button onclick="applyMultiSort()">Apply Sort</button>
 </div>
 
 <input type="file" id="pdfUpload"><br><br>
@@ -107,10 +101,8 @@ th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
 <script>
 
 let data=[]
-let sr=1
-let sortDir = true
+let sortDir=true
 
-// TABLE 3 FILTER
 function extractTable3(text){
   let start=text.toLowerCase().indexOf("table 3")
   if(start===-1){
@@ -120,7 +112,6 @@ function extractTable3(text){
   return text.substring(start)
 }
 
-// PARSER
 function parseData(text){
 
   let lines=text.split(/\n+/).map(l=>l.trim()).filter(l=>l)
@@ -157,16 +148,12 @@ function parseData(text){
   return r
 }
 
-// ADD ENTRY
 function addEntry(){
 
   let text=document.getElementById("report").value
   let table3=extractTable3(text)
 
-  if(!table3){
-    alert("Table 3 not found!")
-    return
-  }
+  if(!table3){alert("Table 3 not found!");return}
 
   let p=parseData(table3)
 
@@ -177,18 +164,15 @@ function addEntry(){
     owner:p.owner?.trim(),
     ownerContact:p.ownerContact?.trim(),
     ownerAddress:p.ownerAddress?.trim(),
-    structural:p.structural || "-"
+    structural:p.structural||"-"
   })
 
-  document.getElementById("status").innerText=
-  `✅ Entry Added (Sr. No. ${data.length})`
-
-  document.getElementById("report").value="" // AUTO CLEAR
+  document.getElementById("status").innerText=`✅ Entry Added (Sr. No. ${data.length})`
+  document.getElementById("report").value=""
 
   generateTable()
 }
 
-// TABLE RENDER
 function generateTable(){
 
   let tbody=document.querySelector("#table tbody")
@@ -215,51 +199,61 @@ function generateTable(){
   applyFilter()
 }
 
-// FILTER (REALTIME)
 function applyFilter(){
 
   let val=document.getElementById("search").value.toLowerCase()
   let col=document.getElementById("filterColumn").value
 
-  document.querySelectorAll("#table tbody tr").forEach(row=>{
+  let map={techName:1,techContact:2,type:3,owner:4,ownerContact:5,ownerAddress:6,structural:7}
 
+  document.querySelectorAll("#table tbody tr").forEach(row=>{
     if(col==="all"){
       row.style.display=row.innerText.toLowerCase().includes(val)?"":"none"
     }else{
-      let map={
-        techName:1, techContact:2, type:3,
-        owner:4, ownerContact:5,
-        ownerAddress:6, structural:7
-      }
-
       let text=row.children[map[col]].innerText.toLowerCase()
       row.style.display=text.includes(val)?"":"none"
     }
   })
 }
 
-// SORT
-function sortTable(col){
+function applyMultiSort(){
+
+  let selected=[...document.querySelectorAll("input[type=checkbox]:checked")].map(cb=>cb.value)
+  let order=document.getElementById("sortOrder").value
 
   data.sort((a,b)=>{
-    let keys=["sr","techName","techContact","type","owner","ownerContact","ownerAddress","structural"]
-    let valA=(a[keys[col]]||"").toString().toLowerCase()
-    let valB=(b[keys[col]]||"").toString().toLowerCase()
+    for(let key of selected){
+      let A=(a[key]||"").toLowerCase()
+      let B=(b[key]||"").toLowerCase()
+      if(A<B) return order==="asc"?-1:1
+      if(A>B) return order==="asc"?1:-1
+    }
+    return 0
+  })
 
-    return sortDir ? valA.localeCompare(valB) : valB.localeCompare(valA)
+  generateTable()
+}
+
+function sortTable(col){
+
+  let keys=["","techName","techContact","type","owner","ownerContact","ownerAddress","structural"]
+
+  data.sort((a,b)=>{
+    let A=(a[keys[col]]||"").toLowerCase()
+    let B=(b[keys[col]]||"").toLowerCase()
+    return sortDir?A.localeCompare(B):B.localeCompare(A)
   })
 
   sortDir=!sortDir
   generateTable()
 }
 
-// EXCEL (FILTERED)
 function exportExcel(){
 
-  let visibleRows=[...document.querySelectorAll("#table tbody tr")]
+  let rows=[...document.querySelectorAll("#table tbody tr")]
     .filter(r=>r.style.display!=="none")
 
-  let exportData=visibleRows.map((r,i)=>({
+  let dataExport=rows.map((r,i)=>({
     "Sr. No.":i+1,
     "Technical Person Name":r.children[1].innerText,
     "Technical Person Contact No.":r.children[2].innerText,
@@ -270,17 +264,24 @@ function exportExcel(){
     "Structural Engineer":r.children[7].innerText
   }))
 
-  let ws=XLSX.utils.json_to_sheet(exportData)
+  let ws=XLSX.utils.json_to_sheet(dataExport)
   let wb=XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb,ws,"Data")
-
   XLSX.writeFile(wb,"filtered_data.xlsx")
 }
 
-// OTHER
 function deleteRow(i){data.splice(i,1);generateTable()}
 function clearInput(){document.getElementById("report").value=""}
-function resetData(){data=[];generateTable()}
+
+function resetData(){
+  data=[]
+  document.querySelector("#table tbody").innerHTML=""
+  document.getElementById("report").value=""
+  document.getElementById("search").value=""
+  document.getElementById("filterColumn").value="all"
+  document.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.checked=false)
+  document.getElementById("status").innerText="✅ Successfully Reset"
+}
 
 function editRow(i){
   document.getElementById("report").value=data[i].techName
