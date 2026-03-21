@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <title>BPMS Extractor PRO 🚀</title>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<!-- 🔥 IMPORTANT: STYLE VERSION -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-style@0.8.13/dist/xlsx.full.min.js"></script>
 
 <style>
 body{
@@ -43,7 +44,6 @@ button{
 }
 
 button:hover{background:#1d4ed8;}
-
 .danger{background:#dc2626;}
 
 table{
@@ -337,14 +337,15 @@ function resetData(){
   setStatus("Reset Successful ✅")
 }
 
-// EXPORT
+// EXPORT (🔥 HEADER BOLD)
 function exportExcel(){
+
   if(!data.length){
     setStatus("⚠️ No data to export","error")
     return
   }
 
-  let ws=XLSX.utils.json_to_sheet(data.map((d,i)=>({
+  let ws = XLSX.utils.json_to_sheet(data.map((d,i)=>({
     "Sr. No.":i+1,
     "Technical Person Name":d.techName,
     "Technical Person Contact No.":d.techContact,
@@ -355,7 +356,16 @@ function exportExcel(){
     "Structural Engineer":d.structural
   })))
 
-  let wb=XLSX.utils.book_new()
+  // 🔥 HEADER BOLD
+  const range = XLSX.utils.decode_range(ws['!ref'])
+  for(let C = range.s.c; C <= range.e.c; ++C){
+    let cell = ws[XLSX.utils.encode_cell({r:0, c:C})]
+    if(cell){
+      cell.s = { font: { bold: true } }
+    }
+  }
+
+  let wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb,ws,"Data")
   XLSX.writeFile(wb,"Anoop_Meshram-PRO.xlsx")
 
