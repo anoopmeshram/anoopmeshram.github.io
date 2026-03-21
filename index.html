@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BPMS Extractor PRO</title>
+<title>BPMS Extractor PRO 🚀</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -110,7 +110,7 @@ th{
 
 <h2>🏗️ BPMS Extractor PRO 🚀</h2>
 
-<textarea id="report" placeholder="Welcome to Anoop Meshram's BPMS Extractor PRO tool. Paste full data here..."></textarea><br>
+<textarea id="report" placeholder="Paste full data here..."></textarea><br>
 
 <button onclick="addEntry()">➕ Extract Table 3</button>
 <button onclick="exportExcel()">⬇ Download Excel</button>
@@ -146,7 +146,13 @@ th{
 let data=[]
 let lastClipboard=""
 
-// STATUS
+function cleanValue(v){
+  if(!v) return "-"
+  let t=v.toLowerCase().trim()
+  if(t.includes("only in case") || t==="n/a" || t==="-") return "-"
+  return v.trim()
+}
+
 function setStatus(left="",type="success",right=""){
   let el=document.getElementById("statusBar")
   el.className="status-bar "+type
@@ -161,24 +167,24 @@ function setStatus(left="",type="success",right=""){
   }
 }
 
-// DUPLICATE
 function isDuplicate(e){
-  return data.some(d=>JSON.stringify(d)===JSON.stringify(e))
+  return data.some(d =>
+    d.techName===e.techName &&
+    d.techContact===e.techContact &&
+    d.owner===e.owner
+  )
 }
 
-// VALIDATION
 function isValidEntry(e){
   if(!e.techName||!e.techContact||!e.owner) return false
-
-  let bad=["else if","lines[","replace(","||","let ","r.","\":d."]
-  let text=Object.values(e).join(" ").toLowerCase()
-
-  return !bad.some(b=>text.includes(b))
+  let bad=/function|var |let |const |=>|\{|\}/i
+  return !bad.test(Object.values(e).join(" "))
 }
 
-// AUTO
 async function autoPasteAndProcess(){
   try{
+    if(!document.hasFocus()) return
+
     let t=await navigator.clipboard.readText()
     if(!t||t===lastClipboard) return
 
@@ -188,19 +194,14 @@ async function autoPasteAndProcess(){
     let res=addEntry()
 
     if(res==="success"){
-      setStatus(`✅ Entry Added (Sr. No. ${data.length})`,"success","⚡ New Data Auto Processed")
+      setStatus(`✅ Entry Added (Sr. No. ${data.length})`,`success`,`⚡ Auto Processed`)
     }
 
   }catch(e){}
 }
 
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible") autoPasteAndProcess()
-})
-
 setInterval(autoPasteAndProcess,2000)
 
-// EXTRACT
 function extractTable3(text){
   let i=text.toLowerCase().indexOf("table 3")
   if(i===-1){
@@ -210,7 +211,6 @@ function extractTable3(text){
   return text.substring(i)
 }
 
-// PARSE
 function parseData(text){
   let l=text.split(/\n+/).map(x=>x.trim()).filter(x=>x)
   let r={}
@@ -221,31 +221,30 @@ function parseData(text){
     if(line.includes("technical person name"))
       r.techName=l[i].replace(/technical person name/i,"")||l[i+1]
 
-    else if(line.includes("contact number")&&!r.techContact)
-      r.techContact=l[i].replace(/contact number/i,"")||l[i+1]
+    else if(line.includes("technical person contact"))
+      r.techContact=l[i].replace(/.*contact/i,"")||l[i+1]
 
     else if(line.includes("technical person type"))
-      r.type=l[i].replace(/.*technical person type/i,"")||l[i+1]
+      r.type=l[i].replace(/.*type/i,"")||l[i+1]
 
     else if(line.includes("owner")&&!r.owner)
       r.owner=l[i].replace(/individual owner|owner/i,"")||l[i+1]
 
-    else if(line.includes("contact number")&&r.techContact&&!r.ownerContact)
-      r.ownerContact=l[i].replace(/contact number/i,"")||l[i+1]
+    else if(line.includes("owner contact"))
+      r.ownerContact=l[i].replace(/.*contact/i,"")||l[i+1]
 
     else if(line.includes("postal address"))
       r.ownerAddress=l[i].replace(/postal address/i,"")||l[i+1]
 
     else if(line.includes("structural engineer name")){
       let v=l[i].replace(/structural engineer name/i,"")||l[i+1]
-      r.structural=v.toLowerCase().includes("only")?"-":v
+      r.structural=v
     }
   }
 
   return r
 }
 
-// ADD
 function addEntry(){
 
   let text=document.getElementById("report").value
@@ -264,24 +263,22 @@ function addEntry(){
   let p=parseData(t3)
 
   let e={
-    techName:p.techName?.trim(),
-    techContact:p.techContact?.trim(),
-    type:p.type?.trim(),
-    owner:p.owner?.trim(),
-    ownerContact:p.ownerContact?.trim(),
-    ownerAddress:p.ownerAddress?.trim(),
-    structural:p.structural||"-"
+    techName:cleanValue(p.techName),
+    techContact:cleanValue(p.techContact),
+    type:cleanValue(p.type),
+    owner:cleanValue(p.owner),
+    ownerContact:cleanValue(p.ownerContact),
+    ownerAddress:cleanValue(p.ownerAddress),
+    structural:cleanValue(p.structural)
   }
 
   if(!isValidEntry(e)){
-    setStatus("⚠️ Invalid Entry Detected","error")
-    document.getElementById("report").value=""
+    setStatus("⚠️ Invalid Entry","error")
     return "error"
   }
 
   if(isDuplicate(e)){
-    setStatus("⚠️ Duplicate Entry Detected","error")
-    document.getElementById("report").value=""
+    setStatus("⚠️ Duplicate Entry","error")
     return "duplicate"
   }
 
@@ -289,12 +286,12 @@ function addEntry(){
 
   setStatus(`✅ Entry Added (Sr. No. ${data.length})`)
   document.getElementById("report").value=""
+  document.getElementById("report").focus()
   generateTable(true)
 
   return "success"
 }
 
-// TABLE
 function generateTable(n=false){
   let tb=document.querySelector("#table tbody")
   tb.innerHTML=""
@@ -315,32 +312,28 @@ function generateTable(n=false){
   })
 }
 
-// DELETE
 function deleteRow(i){
   data.splice(i,1)
   generateTable()
   setStatus("🗑️ Row Deleted","info")
 }
 
-// CLEAR
 function clearInput(){
   document.getElementById("report").value=""
   setStatus("🧹 Input Cleared","info")
 }
 
-// RESET
 function resetData(){
   data=[]
   lastClipboard=""
   document.querySelector("#table tbody").innerHTML=""
   document.getElementById("report").value=""
-  setStatus("Reset Successful ✅")
+  setStatus("♻️ Reset Completed","success")
 }
 
-// EXPORT
 function exportExcel(){
   if(!data.length){
-    setStatus("⚠️ No data to export","error")
+    setStatus("⚠️ No data","error")
     return
   }
 
@@ -357,7 +350,9 @@ function exportExcel(){
 
   let wb=XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb,ws,"Data")
-  XLSX.writeFile(wb,"Anoop_Meshram-PRO.xlsx")
+
+  let date=new Date().toISOString().split('T')[0]
+  XLSX.writeFile(wb,`BPMS_Data_${date}.xlsx`)
 
   setStatus("⬇️ Excel Downloaded","success")
 }
