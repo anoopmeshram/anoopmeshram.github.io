@@ -52,7 +52,7 @@ button:hover{
 
 table{
   width:100%;
-  margin-top:20px;
+  margin-top:15px;
   border-collapse:collapse;
 }
 
@@ -69,24 +69,38 @@ th{
 
 tr:nth-child(even){background:#f9fafb;}
 
-/* STATUS */
-.status{
-  margin-top:10px;
+/* 🔥 STATUS BAR (ALIGNED BOX) */
+.status-bar{
+  margin-top:15px;
+  padding:10px;
+  border-radius:8px;
   font-weight:bold;
-  opacity:1;
-  transform:translateY(0);
+  text-align:center;
   transition:all 0.3s ease;
 }
 
-.status.show{
-  transform:scale(1.05);
+/* COLORS */
+.success{
+  background:#dcfce7;
+  color:#166534;
 }
 
-.success{color:#16a34a;}
-.error{color:#dc2626;}
-.info{color:#2563eb;}
+.error{
+  background:#fee2e2;
+  color:#991b1b;
+}
 
-/* ROW HIGHLIGHT */
+.info{
+  background:#dbeafe;
+  color:#1e3a8a;
+}
+
+/* ANIMATION */
+.status-bar.show{
+  transform:scale(1.02);
+}
+
+/* ROW ANIMATION */
 @keyframes highlight{
   0%{background:#d1fae5;}
   100%{background:white;}
@@ -113,7 +127,8 @@ tr:nth-child(even){background:#f9fafb;}
 <button onclick="clearInput()">🧹 Clear Input</button>
 <button onclick="resetData()" class="danger">♻ Reset</button>
 
-<p id="status" class="status"></p>
+<!-- ✅ FIXED STATUS BAR -->
+<div id="statusBar" class="status-bar"></div>
 
 <table id="table">
 <thead>
@@ -138,12 +153,11 @@ tr:nth-child(even){background:#f9fafb;}
 
 let data=[]
 
-// STATUS
+// STATUS FUNCTION
 function setStatus(msg,type="success"){
-  let el=document.getElementById("status")
-  el.classList.remove("show")
-  void el.offsetWidth
-  el.className="status show "+type
+  let el=document.getElementById("statusBar")
+
+  el.className="status-bar "+type+" show"
   el.innerText=msg
 }
 
