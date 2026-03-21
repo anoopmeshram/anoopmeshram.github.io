@@ -69,7 +69,6 @@ th{
 
 tr:nth-child(even){background:#f9fafb;}
 
-/* 🔥 SMART STATUS BAR */
 .status-bar{
   margin-top:15px;
   padding:10px;
@@ -78,8 +77,8 @@ tr:nth-child(even){background:#f9fafb;}
   display:flex;
   justify-content:center;
   align-items:center;
-  transition:all 0.3s ease;
   text-align:center;
+  transition:all 0.3s ease;
 }
 
 .status-bar.dual{
@@ -203,13 +202,15 @@ async function autoPasteAndProcess(){
     let input = document.getElementById("report")
     input.value = text
 
-    document.querySelector("button[onclick='addEntry()']").click()
+    let result = addEntry()
 
-    setStatus(
-      `✅ Entry Added (Sr. No. ${data.length})`,
-      "success",
-      "⚡ New Data Auto Processed"
-    )
+    if(result === "success"){
+      setStatus(
+        `✅ Entry Added (Sr. No. ${data.length})`,
+        "success",
+        "⚡ New Data Auto Processed"
+      )
+    }
 
   }catch(err){
     console.log("Clipboard permission needed")
@@ -277,14 +278,14 @@ function addEntry(){
 
   if(!text){
     setStatus("⚠️ Please enter data","error")
-    return
+    return "error"
   }
 
   let table3=extractTable3(text)
 
   if(!table3){
     setStatus("❌ Table 3 not found","error")
-    return
+    return "error"
   }
 
   let p=parseData(table3)
@@ -299,11 +300,11 @@ function addEntry(){
     structural:p.structural||"-"
   }
 
-  // 🔥 DUPLICATE ERROR (FINAL)
+  // DUPLICATE
   if(isDuplicate(newEntry)){
     setStatus("⚠️ Duplicate Entry Detected","error")
     document.getElementById("report").value=""
-    return
+    return "duplicate"
   }
 
   data.push(newEntry)
@@ -313,6 +314,8 @@ function addEntry(){
   document.getElementById("report").value=""
 
   generateTable(true)
+
+  return "success"
 }
 
 // TABLE
