@@ -41,9 +41,13 @@ button{
   background:#2563eb;
   color:white;
   cursor:pointer;
+  transition:0.2s;
 }
 
-button:hover{background:#1d4ed8;}
+button:hover{
+  transform:scale(1.05);
+  background:#1d4ed8;
+}
 
 .danger{background:#dc2626;}
 .edit{background:#16a34a;}
@@ -67,10 +71,33 @@ th{
 
 tr:nth-child(even){background:#f9fafb;}
 
+/* STATUS ANIMATION */
 .status{
   margin-top:10px;
   font-weight:bold;
-  color:#16a34a;
+  opacity:0;
+  transform:translateY(-10px);
+  transition:all 0.4s ease;
+}
+
+.status.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* COLORS */
+.success{color:#16a34a;}
+.error{color:#dc2626;}
+.info{color:#2563eb;}
+
+/* ROW ANIMATION */
+@keyframes highlight{
+  0%{background:#d1fae5;}
+  100%{background:white;}
+}
+
+.new-row{
+  animation:highlight 1.5s ease;
 }
 </style>
 </head>
@@ -117,9 +144,16 @@ tr:nth-child(even){background:#f9fafb;}
 
 let data=[]
 
-// STATUS HELPER
-function setStatus(msg){
-  document.getElementById("status").innerText = msg
+// 🔥 STATUS WITH ANIMATION
+function setStatus(msg,type="success"){
+  let el=document.getElementById("status")
+
+  el.className="status show "+type
+  el.innerText=msg
+
+  setTimeout(()=>{
+    el.classList.remove("show")
+  },3000)
 }
 
 // TABLE 3
@@ -173,14 +207,14 @@ function addEntry(){
   let text=document.getElementById("report").value
 
   if(!text){
-    setStatus("⚠️ Please enter data first")
+    setStatus("⚠️ Please enter data","error")
     return
   }
 
   let table3=extractTable3(text)
 
   if(!table3){
-    setStatus("❌ Table 3 not found")
+    setStatus("❌ Table 3 not found","error")
     return
   }
 
@@ -196,21 +230,22 @@ function addEntry(){
     structural:p.structural||"-"
   })
 
-  setStatus(`✅ Entry Added (Sr. No. ${data.length})`)
+  setStatus(`✅ Entry Added (Sr. No. ${data.length})`,"success")
 
   document.getElementById("report").value=""
 
-  generateTable()
+  generateTable(true)
 }
 
 // TABLE
-function generateTable(){
+function generateTable(newEntry=false){
+
   let tbody=document.querySelector("#table tbody")
   tbody.innerHTML=""
 
   data.forEach((d,i)=>{
     tbody.innerHTML+=`
-    <tr>
+    <tr class="${newEntry && i===data.length-1 ? 'new-row':''}">
       <td>${i+1}</td>
       <td>${d.techName}</td>
       <td>${d.techContact}</td>
@@ -231,7 +266,7 @@ function generateTable(){
 function deleteRow(i){
   data.splice(i,1)
   generateTable()
-  setStatus("🗑️ Row Deleted")
+  setStatus("🗑️ Row Deleted","info")
 }
 
 // EDIT
@@ -239,13 +274,13 @@ function editRow(i){
   document.getElementById("report").value=data[i].techName
   data.splice(i,1)
   generateTable()
-  setStatus("✏️ Editing Mode Enabled")
+  setStatus("✏️ Editing Mode Enabled","info")
 }
 
 // CLEAR
 function clearInput(){
   document.getElementById("report").value=""
-  setStatus("🧹 Input Cleared")
+  setStatus("🧹 Input Cleared","info")
 }
 
 // RESET
@@ -253,14 +288,14 @@ function resetData(){
   data=[]
   document.querySelector("#table tbody").innerHTML=""
   document.getElementById("report").value=""
-  setStatus("Reset Successful ✅")
+  setStatus("Reset Successful ✅","success")
 }
 
 // EXPORT
 function exportExcel(){
 
   if(data.length===0){
-    setStatus("⚠️ No data to export")
+    setStatus("⚠️ No data to export","error")
     return
   }
 
@@ -279,7 +314,7 @@ function exportExcel(){
   XLSX.utils.book_append_sheet(wb,ws,"Data")
   XLSX.writeFile(wb,"table3_data.xlsx")
 
-  setStatus("⬇️ Excel Downloaded Successfully")
+  setStatus("⬇️ Excel Downloaded","success")
 }
 
 // PDF
@@ -287,7 +322,7 @@ document.getElementById('pdfUpload').addEventListener('change',function(e){
 
   let file=e.target.files[0]
   if(!file){
-    setStatus("⚠️ No file selected")
+    setStatus("⚠️ No file selected","error")
     return
   }
 
@@ -314,7 +349,7 @@ document.getElementById('pdfUpload').addEventListener('change',function(e){
 
       Promise.all(pages).then(()=>{
         document.getElementById("report").value=text
-        setStatus("📄 PDF Loaded Successfully")
+        setStatus("📄 PDF Loaded Successfully","success")
       })
 
     })
