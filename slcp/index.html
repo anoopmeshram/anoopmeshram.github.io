@@ -368,6 +368,19 @@ function exportExcel(){
 }
 
 </script>
+<script>
+window.addEventListener("load", () => {
+  let data = localStorage.getItem("bpmsData");
 
+  if (data) {
+    data = JSON.parse(data);
+
+    // ⚠️ IMPORTANT: Ye tera existing function hona chahiye
+    addRowToTable(data);
+
+    localStorage.removeItem("bpmsData");
+  }
+});
+</script>
 </body>
 </html>
