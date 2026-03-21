@@ -125,17 +125,24 @@ tr:nth-child(even){background:#f9fafb;}
 let data=[]
 let sr=1
 
-function cleanAddress(address){
-  return address
-    .replace(/PLOT NO.*?,/gi,"")
-    .replace(/HOUSE NO.*?,/gi,"")
-    .replace(/CTS NO.*?,/gi,"")
-    .replace(/KH.NO.*?,/gi,"")
-    .replace(/SURVEY NO.*?,/gi,"")
-    .trim()
+// 🔥 CLEANING FUNCTIONS (GLOBAL)
+function formatSite(site){
+  let match = site.match(/MOUZA\s*[-–]?\s*([A-Z ]+)/i)
+  if(match){
+    return "Mouza – " + match[1].trim() + ", Nagpur"
+  }
+  return site
 }
 
-// 🔥 SMART EXTRACTION
+function formatOwnerAddress(addr){
+  let parts = addr.split(",")
+  if(parts.length >= 2){
+    return parts[1].trim() + ", Nagpur"
+  }
+  return addr
+}
+
+// 🔥 EXTRACTION ENGINE
 function parseData(text){
 
   let lines=text.split(/\n+/).map(l=>l.trim()).filter(l=>l)
@@ -164,7 +171,7 @@ function parseData(text){
     }
 
     else if(line.includes("site address")){
-      result.site = cleanAddress(lines[i].replace(/site address/i,"").trim() || lines[i+1] || "")
+      result.site = lines[i].replace(/site address/i,"").trim() || lines[i+1] || ""
     }
 
     else if(line.includes("technical person type")){
@@ -194,56 +201,61 @@ function parseData(text){
   return result
 }
 
+// ADD ENTRY
 function addEntry(){
 
   let text=document.getElementById("report").value
 
   if(!text.trim()){
-    alert("Enter or upload data first!")
+    alert("Enter data first!")
     return
   }
 
-  let parsed=parseData(text)
+  let p=parseData(text)
 
-  if(!parsed.techName && !parsed.owner){
-    alert("Data not detected properly!")
+  if(!p.techName && !p.owner){
+    alert("Extraction failed!")
     return
   }
 
   data.push({
     sr,
-    techName:parsed.techName,
-    techContact:parsed.techContact,
-    site:parsed.site,
-    type:parsed.type,
-    owner:parsed.owner,
-    ownerContact:parsed.ownerContact,
-    ownerAddress:parsed.ownerAddress,
-    structural:parsed.structural
+    techName:p.techName,
+    techContact:p.techContact,
+    site:p.site,
+    type:p.type,
+    owner:p.owner,
+    ownerContact:p.ownerContact,
+    ownerAddress:p.ownerAddress,
+    structural:p.structural
   })
 
-  document.getElementById("status").innerText="✅ Auto Extracted (Sr "+sr+")"
-
+  document.getElementById("status").innerText="✅ Extracted (Sr "+sr+")"
   sr++
   document.getElementById("report").value=""
+
+  generateTable() // auto refresh
 }
 
+// TABLE
 function generateTable(){
+
   let tbody=document.querySelector("#table tbody")
   tbody.innerHTML=""
 
   data.forEach((d,i)=>{
+
     tbody.innerHTML+=`
     <tr>
       <td>${d.sr}</td>
       <td>${d.techName}</td>
       <td>${d.techContact}</td>
-      <td>${d.site}</td>
+      <td>${formatSite(d.site)}</td>
       <td>${d.type}</td>
       <td>${d.owner}</td>
       <td>${d.ownerContact}</td>
-      <td>${d.ownerAddress}</td>
-      <td>${d.structural}</td>
+      <td>${formatOwnerAddress(d.ownerAddress)}</td>
+      <td>${d.structural ? d.structural : "-"}</td>
       <td class="actions">
         <button class="edit" onclick="editRow(${i})">Edit</button>
         <button onclick="deleteRow(${i})">Delete</button>
@@ -252,6 +264,7 @@ function generateTable(){
   })
 }
 
+// DELETE
 function deleteRow(i){
   if(confirm("Delete entry?")){
     data.splice(i,1)
@@ -259,6 +272,7 @@ function deleteRow(i){
   }
 }
 
+// EDIT
 function editRow(i){
   let d=data[i]
 
@@ -276,6 +290,7 @@ Structural Engineer Name ${d.structural}`
   generateTable()
 }
 
+// SEARCH
 function searchTable(){
   let val=document.getElementById("search").value.toLowerCase()
   document.querySelectorAll("#table tbody tr").forEach(r=>{
@@ -283,95 +298,55 @@ function searchTable(){
   })
 }
 
-// 🔥 FINAL XLSX EXPORT (EXACT FORMAT)
+// 🔥 FINAL XLSX
 function exportExcel(){
 
-  if(data.length === 0){
-    alert("No data to export!")
+  if(data.length===0){
+    alert("No data!")
     return
   }
 
-  function cleanSite(site){
-    let match = site.match(/MOUZA\s*[-–]?\s*([A-Z ]+)/i)
-    if(match){
-      return "Mouza – " + match[1].trim() + ", Nagpur"
-    }
-    return site
-  }
+  let rows=[]
 
-  function cleanOwnerAddress(addr){
-    let parts = addr.split(",")
-    if(parts.length >= 2){
-      return parts[1].trim() + ", Nagpur"
-    }
-    return addr
-  }
+  data.forEach((d,i)=>{
 
-  let allRows = []
-
-  data.forEach((d, index)=>{
-
-    allRows.push(
+    rows.push(
       ["Applicant/Technical Person and Site Details(Table 3)"],
       [""],
-
-      ["Technical Person Name"],
-      [d.techName],
-      [""],
-
-      ["Technical Person Contact No."],
-      [d.techContact],
-      [""],
-
-      ["Site Address"],
-      [cleanSite(d.site)],
-      [""],
-
-      ["Technical Person Type"],
-      [d.type],
-      [""],
-
-      ["Owner Name"],
-      [d.owner],
-      [""],
-
-      ["Owner Contact No."],
-      [d.ownerContact],
-      [""],
-
-      ["Owner Address"],
-      [cleanOwnerAddress(d.ownerAddress)],
-      [""],
-
-      ["Structural Engineer Name"],
-      [d.structural ? d.structural : "-"]
+      ["Technical Person Name"],[d.techName],[""],
+      ["Technical Person Contact No."],[d.techContact],[""],
+      ["Site Address"],[formatSite(d.site)],[""],
+      ["Technical Person Type"],[d.type],[""],
+      ["Owner Name"],[d.owner],[""],
+      ["Owner Contact No."],[d.ownerContact],[""],
+      ["Owner Address"],[formatOwnerAddress(d.ownerAddress)],[""],
+      ["Structural Engineer Name"],[d.structural?d.structural:"-"]
     )
 
-    if(index !== data.length - 1){
-      allRows.push([""],["----------------------------------------"],[""])
+    if(i!==data.length-1){
+      rows.push([""],["-----------------------------"],[""])
     }
-
   })
 
-  let ws = XLSX.utils.aoa_to_sheet(allRows)
-  ws['!cols'] = [{wch:90}]
+  let ws=XLSX.utils.aoa_to_sheet(rows)
+  ws['!cols']=[{wch:90}]
 
-  let wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, "Scrutiny Data")
+  let wb=XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb,ws,"Scrutiny Data")
 
-  XLSX.writeFile(wb, "scrutiny_final_format.xlsx")
+  XLSX.writeFile(wb,"scrutiny_final.xlsx")
 }
 
+// RESET
 function resetData(){
-  if(confirm("Reset all data?")){
+  if(confirm("Reset all?")){
     data=[]
     sr=1
     generateTable()
-    document.getElementById("status").innerText="♻ Reset Done"
   }
 }
 
-// PDF Extract
+// PDF
 document.getElementById('pdfUpload').addEventListener('change',function(e){
 
   let file=e.target.files[0]
