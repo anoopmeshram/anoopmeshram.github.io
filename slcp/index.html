@@ -70,23 +70,24 @@ th{
 
 tr:nth-child(even){background:#f9fafb;}
 
+/* STATUS */
 .status{
   margin-top:10px;
   font-weight:bold;
-  opacity:0;
-  transform:translateY(-10px);
-  transition:all 0.4s ease;
+  opacity:1;
+  transform:translateY(0);
+  transition:all 0.3s ease;
 }
 
 .status.show{
-  opacity:1;
-  transform:translateY(0);
+  transform:scale(1.05);
 }
 
 .success{color:#16a34a;}
 .error{color:#dc2626;}
 .info{color:#2563eb;}
 
+/* ROW HIGHLIGHT */
 @keyframes highlight{
   0%{background:#d1fae5;}
   100%{background:white;}
@@ -138,12 +139,15 @@ tr:nth-child(even){background:#f9fafb;}
 
 let data=[]
 
-// STATUS ANIMATION
+// STATUS (ANIMATION WITHOUT HIDING)
 function setStatus(msg,type="success"){
   let el=document.getElementById("status")
+
+  el.classList.remove("show")
+  void el.offsetWidth
+
   el.className="status show "+type
   el.innerText=msg
-  setTimeout(()=>{el.classList.remove("show")},3000)
 }
 
 // TABLE 3
