@@ -69,20 +69,43 @@ th{
 
 tr:nth-child(even){background:#f9fafb;}
 
-/* 🔥 UPDATED STATUS BAR */
+/* 🔥 SMART STATUS BAR */
 .status-bar{
   margin-top:15px;
   padding:10px;
   border-radius:8px;
   font-weight:bold;
   display:flex;
-  justify-content:space-between;
+  justify-content:center;
   align-items:center;
   transition:all 0.3s ease;
+  text-align:center;
 }
 
-.status-left{ text-align:left; }
-.status-right{ text-align:right; color:#2563eb; font-weight:600; }
+.status-bar.dual{
+  justify-content:space-between;
+}
+
+.status-left{
+  width:100%;
+  text-align:center;
+}
+
+.status-right{
+  display:none;
+}
+
+.status-bar.dual .status-left{
+  width:auto;
+  text-align:left;
+}
+
+.status-bar.dual .status-right{
+  display:block;
+  text-align:right;
+  color:#2563eb;
+  font-weight:600;
+}
 
 .success{background:#dcfce7;color:#166534;}
 .error{background:#fee2e2;color:#991b1b;}
@@ -114,7 +137,6 @@ tr:nth-child(even){background:#f9fafb;}
 <button onclick="clearInput()">🧹 Clear Input</button>
 <button onclick="resetData()" class="danger">♻ Reset</button>
 
-<!-- ✅ UPDATED STATUS BAR -->
 <div id="statusBar" class="status-bar">
   <span class="status-left"></span>
   <span class="status-right"></span>
@@ -144,14 +166,28 @@ tr:nth-child(even){background:#f9fafb;}
 let data=[]
 let lastClipboard=""
 
-// 🔥 STATUS FUNCTION (LEFT + RIGHT)
+// 🔥 STATUS CONTROL
 function setStatus(leftMsg="", type="success", rightMsg=""){
   let el=document.getElementById("statusBar")
 
   el.className="status-bar "+type+" show"
 
-  el.querySelector(".status-left").innerText = leftMsg
-  el.querySelector(".status-right").innerText = rightMsg
+  let left = el.querySelector(".status-left")
+  let right = el.querySelector(".status-right")
+
+  left.innerText = leftMsg
+  right.innerText = rightMsg
+
+  if(rightMsg && rightMsg.trim() !== ""){
+    el.classList.add("dual")
+  }else{
+    el.classList.remove("dual")
+  }
+}
+
+// 🔥 DUPLICATE CHECK
+function isDuplicate(newEntry){
+  return data.some(d => JSON.stringify(d) === JSON.stringify(newEntry))
 }
 
 // 🔥 AUTO SYSTEM
@@ -169,7 +205,6 @@ async function autoPasteAndProcess(){
 
     document.querySelector("button[onclick='addEntry()']").click()
 
-    // 🔥 LEFT + RIGHT STATUS
     setStatus(
       `✅ Entry Added (Sr. No. ${data.length})`,
       "success",
@@ -181,14 +216,14 @@ async function autoPasteAndProcess(){
   }
 }
 
-// tab switch
+// TAB SWITCH
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible"){
     autoPasteAndProcess()
   }
 })
 
-// backup loop
+// BACKGROUND CHECK
 setInterval(autoPasteAndProcess,2000)
 
 // TABLE 3
@@ -236,7 +271,7 @@ function parseData(text){
   return r
 }
 
-// ADD
+// ADD ENTRY
 function addEntry(){
 
   let text=document.getElementById("report").value
@@ -255,7 +290,7 @@ function addEntry(){
 
   let p=parseData(table3)
 
-  data.push({
+  let newEntry = {
     techName:p.techName?.trim(),
     techContact:p.techContact?.trim(),
     type:p.type?.trim(),
@@ -263,9 +298,18 @@ function addEntry(){
     ownerContact:p.ownerContact?.trim(),
     ownerAddress:p.ownerAddress?.trim(),
     structural:p.structural||"-"
-  })
+  }
 
-  // ✅ MANUAL → LEFT ONLY
+  // 🔥 DUPLICATE BLOCK
+  if(isDuplicate(newEntry)){
+    setStatus("⚠️ Duplicate Entry Detected","error")
+    document.getElementById("report").value=""
+    return
+  }
+
+  data.push(newEntry)
+
+  // ✅ MANUAL → CENTER
   setStatus(`✅ Entry Added (Sr. No. ${data.length})`)
 
   document.getElementById("report").value=""
