@@ -8,52 +8,69 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body{font-family:'Segoe UI';background:#f1f5f9;padding:20px;}
+body{
+  font-family:'Segoe UI';
+  background:#f1f5f9;
+  padding:20px;
+}
 
 .container{
-  max-width:1200px;margin:auto;background:white;
-  padding:20px;border-radius:12px;
+  max-width:1100px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border-radius:12px;
   box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
-.topbar{
-  display:flex;justify-content:space-between;align-items:center;
-}
+h2{text-align:center;}
 
 textarea{
-  width:100%;height:130px;padding:10px;
-  border-radius:8px;border:1px solid #ccc;
+  width:100%;
+  height:130px;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
 }
 
 button{
-  padding:10px;margin:5px;border:none;
-  border-radius:8px;background:#2563eb;color:white;
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
   cursor:pointer;
 }
+
+button:hover{background:#1d4ed8;}
 
 .danger{background:#dc2626;}
 .edit{background:#16a34a;}
 
 table{
-  width:100%;margin-top:20px;border-collapse:collapse;
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
 }
 
-th,td{border:1px solid #ddd;padding:10px;}
-th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
-
-.status{color:green;font-weight:bold;margin-top:10px;}
-
-#filterPanel{
-  display:none;
-  position:absolute;
-  top:70px;
-  right:30px;
-  background:white;
-  border:1px solid #ccc;
+th,td{
+  border:1px solid #ddd;
   padding:10px;
-  width:260px;
-  z-index:1000;
-  box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+th{
+  background:#111827;
+  color:white;
+  font-weight:bold;
+}
+
+tr:nth-child(even){background:#f9fafb;}
+
+.status{
+  margin-top:10px;
+  font-weight:bold;
+  color:#16a34a;
 }
 </style>
 </head>
@@ -62,9 +79,7 @@ th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
 
 <div class="container">
 
-<div class="topbar">
 <h2>🏗️ Scrutiny Extractor</h2>
-</div>
 
 <input type="file" id="pdfUpload"><br><br>
 
@@ -74,7 +89,7 @@ th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
 
 <button onclick="addEntry()">➕ Extract Table 3</button>
 <button onclick="exportExcel()">⬇ Download Excel</button>
-<button onclick="clearInput()">🧹 Clear</button>
+<button onclick="clearInput()">🧹 Clear Input</button>
 <button onclick="resetData()" class="danger">♻ Reset</button>
 
 <p id="status" class="status"></p>
@@ -83,13 +98,13 @@ th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
 <thead>
 <tr>
 <th>Sr. No.</th>
-<th onclick="openFilter('techName')">Technical Person Name ⬇</th>
-<th onclick="openFilter('techContact')">Technical Person Contact No. ⬇</th>
-<th onclick="openFilter('type')">Technical Person Type ⬇</th>
-<th onclick="openFilter('owner')">Owner Name ⬇</th>
-<th onclick="openFilter('ownerContact')">Owner Contact No. ⬇</th>
-<th onclick="openFilter('ownerAddress')">Owner Address ⬇</th>
-<th onclick="openFilter('structural')">Structural Engineer ⬇</th>
+<th>Technical Person Name</th>
+<th>Technical Person Contact No.</th>
+<th>Technical Person Type</th>
+<th>Owner Name</th>
+<th>Owner Contact No.</th>
+<th>Owner Address</th>
+<th>Structural Engineer</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -98,30 +113,14 @@ th{background:#111827;color:white;font-weight:bold;cursor:pointer;}
 
 </div>
 
-<!-- FILTER PANEL -->
-<div id="filterPanel">
-
-<b>Text Filters</b><br><br>
-
-<input type="text" id="filterSearch" placeholder="Search..." 
-onkeyup="filterOptions()" style="width:100%;padding:6px;"><br><br>
-
-<div id="filterOptions" style="max-height:180px;overflow:auto;border:1px solid #ddd;padding:5px">
-</div>
-
-<br>
-
-<div style="text-align:right">
-<button onclick="applyFilter()">OK</button>
-<button onclick="closePanel()">Cancel</button>
-</div>
-
-</div>
-
 <script>
 
 let data=[]
-let currentFilterKey=null
+
+// STATUS HELPER
+function setStatus(msg){
+  document.getElementById("status").innerText = msg
+}
 
 // TABLE 3
 function extractTable3(text){
@@ -170,10 +169,20 @@ function parseData(text){
 
 // ADD
 function addEntry(){
+
   let text=document.getElementById("report").value
+
+  if(!text){
+    setStatus("⚠️ Please enter data first")
+    return
+  }
+
   let table3=extractTable3(text)
 
-  if(!table3){alert("Table 3 not found!");return}
+  if(!table3){
+    setStatus("❌ Table 3 not found")
+    return
+  }
 
   let p=parseData(table3)
 
@@ -187,7 +196,8 @@ function addEntry(){
     structural:p.structural||"-"
   })
 
-  document.getElementById("status").innerText=`✅ Entry Added (Sr. No. ${data.length})`
+  setStatus(`✅ Entry Added (Sr. No. ${data.length})`)
+
   document.getElementById("report").value=""
 
   generateTable()
@@ -217,101 +227,70 @@ function generateTable(){
   })
 }
 
-// FILTER OPEN
-function openFilter(key){
-  currentFilterKey = key
-
-  let values=[...new Set(data.map(d=>d[key]))]
-
-  let html=`<label><input type="checkbox" id="selectAll" checked onchange="toggleAll()"> (Select All)</label><br>`
-
-  values.forEach(v=>{
-    html+=`<label><input type="checkbox" value="${v}" checked> ${v}</label><br>`
-  })
-
-  document.getElementById("filterOptions").innerHTML=html
-  document.getElementById("filterPanel").style.display="block"
+// DELETE
+function deleteRow(i){
+  data.splice(i,1)
+  generateTable()
+  setStatus("🗑️ Row Deleted")
 }
 
-// SELECT ALL
-function toggleAll(){
-  let checked=document.getElementById("selectAll").checked
-  document.querySelectorAll("#filterOptions input[type=checkbox]").forEach(cb=>cb.checked=checked)
+// EDIT
+function editRow(i){
+  document.getElementById("report").value=data[i].techName
+  data.splice(i,1)
+  generateTable()
+  setStatus("✏️ Editing Mode Enabled")
 }
 
-// SEARCH FILTER
-function filterOptions(){
-  let val=document.getElementById("filterSearch").value.toLowerCase()
-  document.querySelectorAll("#filterOptions label").forEach(l=>{
-    l.style.display=l.innerText.toLowerCase().includes(val)?"":"none"
-  })
+// CLEAR
+function clearInput(){
+  document.getElementById("report").value=""
+  setStatus("🧹 Input Cleared")
 }
 
-// APPLY FILTER
-function applyFilter(){
-  let selected=[...document.querySelectorAll("#filterOptions input:checked")].map(cb=>cb.value)
-
-  let map={
-    techName:1,techContact:2,type:3,
-    owner:4,ownerContact:5,ownerAddress:6,structural:7
-  }
-
-  document.querySelectorAll("#table tbody tr").forEach(row=>{
-    let val=row.children[map[currentFilterKey]].innerText
-    row.style.display=selected.includes(val)?"":"none"
-  })
-
-  closePanel()
-}
-
-function closePanel(){
-  document.getElementById("filterPanel").style.display="none"
+// RESET
+function resetData(){
+  data=[]
+  document.querySelector("#table tbody").innerHTML=""
+  document.getElementById("report").value=""
+  setStatus("Reset Successful ✅")
 }
 
 // EXPORT
 function exportExcel(){
 
-  let rows=[...document.querySelectorAll("#table tbody tr")]
-    .filter(r=>r.style.display!=="none")
+  if(data.length===0){
+    setStatus("⚠️ No data to export")
+    return
+  }
 
-  let exportData=rows.map((r,i)=>({
+  let ws=XLSX.utils.json_to_sheet(data.map((d,i)=>({
     "Sr. No.":i+1,
-    "Technical Person Name":r.children[1].innerText,
-    "Technical Person Contact No.":r.children[2].innerText,
-    "Technical Person Type":r.children[3].innerText,
-    "Owner Name":r.children[4].innerText,
-    "Owner Contact No.":r.children[5].innerText,
-    "Owner Address":r.children[6].innerText,
-    "Structural Engineer":r.children[7].innerText
-  }))
+    "Technical Person Name":d.techName,
+    "Technical Person Contact No.":d.techContact,
+    "Technical Person Type":d.type,
+    "Owner Name":d.owner,
+    "Owner Contact No.":d.ownerContact,
+    "Owner Address":d.ownerAddress,
+    "Structural Engineer":d.structural
+  })))
 
-  let ws=XLSX.utils.json_to_sheet(exportData)
   let wb=XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb,ws,"Data")
-  XLSX.writeFile(wb,"filtered_data.xlsx")
-}
+  XLSX.writeFile(wb,"table3_data.xlsx")
 
-// OTHER
-function deleteRow(i){data.splice(i,1);generateTable()}
-function clearInput(){document.getElementById("report").value=""}
-
-function resetData(){
-  data=[]
-  document.querySelector("#table tbody").innerHTML=""
-  document.getElementById("report").value=""
-  document.getElementById("status").innerText="Reset Successful ✅"
-}
-
-function editRow(i){
-  document.getElementById("report").value=data[i].techName
-  data.splice(i,1)
-  generateTable()
+  setStatus("⬇️ Excel Downloaded Successfully")
 }
 
 // PDF
 document.getElementById('pdfUpload').addEventListener('change',function(e){
 
   let file=e.target.files[0]
+  if(!file){
+    setStatus("⚠️ No file selected")
+    return
+  }
+
   let reader=new FileReader()
 
   reader.onload=function(){
@@ -335,6 +314,7 @@ document.getElementById('pdfUpload').addEventListener('change',function(e){
 
       Promise.all(pages).then(()=>{
         document.getElementById("report").value=text
+        setStatus("📄 PDF Loaded Successfully")
       })
 
     })
