@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Scrutiny AI Extractor PRO</title>
+<title>Scrutiny Table Extractor PRO</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -10,12 +10,12 @@
 <style>
 body{
   font-family:'Segoe UI',sans-serif;
-  background:linear-gradient(135deg,#eef2ff,#f8fafc);
+  background:#f1f5f9;
   padding:20px;
 }
 
 .container{
-  max-width:1100px;
+  max-width:1200px;
   margin:auto;
   background:white;
   padding:20px;
@@ -23,18 +23,18 @@ body{
   box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
-h2{text-align:center;}
+h2{text-align:center;margin-bottom:15px;}
 
 textarea{
   width:100%;
-  height:140px;
+  height:120px;
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
 }
 
 button{
-  padding:10px 16px;
+  padding:10px 14px;
   margin:5px;
   border:none;
   border-radius:8px;
@@ -45,11 +45,10 @@ button{
 
 button:hover{background:#1d4ed8;}
 
-input[type="text"]{
+input{
   padding:8px;
   border-radius:6px;
   border:1px solid #ccc;
-  width:200px;
 }
 
 table{
@@ -60,20 +59,21 @@ table{
 
 th,td{
   border:1px solid #ddd;
-  padding:8px;
+  padding:10px;
+  text-align:left;
 }
 
 th{
-  background:#111827;
+  background:#0f172a;
   color:white;
 }
 
 tr:nth-child(even){background:#f9fafb;}
 
-.status{margin-top:10px;color:green;font-weight:bold;}
-
 .actions button{background:#dc2626;}
 .actions .edit{background:#16a34a;}
+
+.status{color:green;font-weight:bold;margin-top:10px;}
 </style>
 </head>
 
@@ -81,37 +81,34 @@ tr:nth-child(even){background:#f9fafb;}
 
 <div class="container">
 
-<h2>🏗️ Building Scrutiny Extractor PRO</h2>
+<h2>🏗️ Scrutiny Data Extractor (Table Version)</h2>
 
-<input type="file" id="pdfUpload">
+<input type="file" id="pdfUpload"><br><br>
 
-<textarea id="report" placeholder="Paste report or upload PDF..."></textarea>
+<textarea id="report" placeholder="Paste or upload PDF..."></textarea><br>
 
-<br>
-
-<button onclick="addEntry()">➕ Add Entry</button>
-<button onclick="generateTable()">📊 Generate Table</button>
-<button onclick="exportExcel()">⬇ Download Excel (.xlsx)</button>
-<button onclick="resetData()">♻ Reset</button>
+<button onclick="addEntry()">Add Entry</button>
+<button onclick="exportExcel()">Download Excel</button>
+<button onclick="resetData()">Reset</button>
 
 <br><br>
 
-<input type="text" id="search" placeholder="Search..." onkeyup="searchTable()">
+<input type="text" placeholder="Search..." onkeyup="searchTable()" id="search">
 
-<p class="status" id="status"></p>
+<p id="status" class="status"></p>
 
 <table id="table">
 <thead>
 <tr>
 <th>Sr</th>
-<th>Tech Person</th>
-<th>Contact</th>
-<th>Site</th>
-<th>Type</th>
-<th>Owner</th>
-<th>Owner Contact</th>
+<th>Technical Person Name</th>
+<th>Technical Person Contact No.</th>
+<th>Site Address</th>
+<th>Technical Person Type</th>
+<th>Owner Name</th>
+<th>Owner Contact No.</th>
 <th>Owner Address</th>
-<th>Engineer</th>
+<th>Structural Engineer</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -125,7 +122,6 @@ tr:nth-child(even){background:#f9fafb;}
 let data=[]
 let sr=1
 
-// 🔥 CLEANING FUNCTIONS (GLOBAL)
 function formatSite(site){
   let match = site.match(/MOUZA\s*[-–]?\s*([A-Z ]+)/i)
   if(match){
@@ -142,120 +138,96 @@ function formatOwnerAddress(addr){
   return addr
 }
 
-// 🔥 EXTRACTION ENGINE
+// 🔥 Extraction
 function parseData(text){
 
   let lines=text.split(/\n+/).map(l=>l.trim()).filter(l=>l)
 
-  let result={
-    techName:"",
-    techContact:"",
-    site:"",
-    type:"",
-    owner:"",
-    ownerContact:"",
-    ownerAddress:"",
-    structural:""
-  }
+  let r={}
 
   for(let i=0;i<lines.length;i++){
 
     let line=lines[i].toLowerCase()
 
     if(line.includes("technical person name")){
-      result.techName = lines[i].replace(/technical person name/i,"").trim() || lines[i+1] || ""
+      r.techName = lines[i].replace(/technical person name/i,"") || lines[i+1]
     }
 
-    else if(line.includes("contact number") && !result.techContact){
-      result.techContact = lines[i].replace(/contact number/i,"").trim() || lines[i+1] || ""
+    else if(line.includes("contact number") && !r.techContact){
+      r.techContact = lines[i].replace(/contact number/i,"") || lines[i+1]
     }
 
     else if(line.includes("site address")){
-      result.site = lines[i].replace(/site address/i,"").trim() || lines[i+1] || ""
+      r.site = lines[i].replace(/site address/i,"") || lines[i+1]
     }
 
     else if(line.includes("technical person type")){
-      result.type = lines[i].replace(/.*technical person type/i,"").trim() || lines[i+1] || ""
+      r.type = lines[i].replace(/.*technical person type/i,"") || lines[i+1]
     }
 
-    else if(line.includes("individual owner") || (line.includes("owner") && !result.owner)){
-      result.owner = lines[i].replace(/individual owner|owner/i,"").trim() || lines[i+1] || ""
+    else if(line.includes("owner") && !r.owner){
+      r.owner = lines[i].replace(/individual owner|owner/i,"") || lines[i+1]
     }
 
-    else if(line.includes("contact number") && result.techContact && !result.ownerContact){
-      result.ownerContact = lines[i].replace(/contact number/i,"").trim() || lines[i+1] || ""
+    else if(line.includes("contact number") && r.techContact && !r.ownerContact){
+      r.ownerContact = lines[i].replace(/contact number/i,"") || lines[i+1]
     }
 
     else if(line.includes("postal address")){
-      result.ownerAddress = lines[i].replace(/postal address/i,"").trim() || lines[i+1] || ""
+      r.ownerAddress = lines[i].replace(/postal address/i,"") || lines[i+1]
     }
 
     else if(line.includes("structural engineer name")){
-      let val = lines[i].replace(/structural engineer name/i,"").trim() || lines[i+1] || ""
-      if(!val.toLowerCase().includes("only in case")){
-        result.structural = val
-      }
+      let val = lines[i].replace(/structural engineer name/i,"") || lines[i+1]
+      r.structural = val.includes("only") ? "-" : val
     }
   }
 
-  return result
+  return r
 }
 
-// ADD ENTRY
 function addEntry(){
 
   let text=document.getElementById("report").value
 
-  if(!text.trim()){
-    alert("Enter data first!")
-    return
-  }
-
   let p=parseData(text)
-
-  if(!p.techName && !p.owner){
-    alert("Extraction failed!")
-    return
-  }
 
   data.push({
     sr,
-    techName:p.techName,
-    techContact:p.techContact,
-    site:p.site,
-    type:p.type,
-    owner:p.owner,
-    ownerContact:p.ownerContact,
-    ownerAddress:p.ownerAddress,
-    structural:p.structural
+    techName:p.techName?.trim(),
+    techContact:p.techContact?.trim(),
+    site:formatSite(p.site || ""),
+    type:p.type?.trim(),
+    owner:p.owner?.trim(),
+    ownerContact:p.ownerContact?.trim(),
+    ownerAddress:formatOwnerAddress(p.ownerAddress || ""),
+    structural:p.structural?.trim() || "-"
   })
 
-  document.getElementById("status").innerText="✅ Extracted (Sr "+sr+")"
   sr++
+  document.getElementById("status").innerText="Added Successfully"
   document.getElementById("report").value=""
 
-  generateTable() // auto refresh
+  generateTable()
 }
 
-// TABLE
 function generateTable(){
 
   let tbody=document.querySelector("#table tbody")
   tbody.innerHTML=""
 
   data.forEach((d,i)=>{
-
     tbody.innerHTML+=`
     <tr>
       <td>${d.sr}</td>
       <td>${d.techName}</td>
       <td>${d.techContact}</td>
-      <td>${formatSite(d.site)}</td>
+      <td>${d.site}</td>
       <td>${d.type}</td>
       <td>${d.owner}</td>
       <td>${d.ownerContact}</td>
-      <td>${formatOwnerAddress(d.ownerAddress)}</td>
-      <td>${d.structural ? d.structural : "-"}</td>
+      <td>${d.ownerAddress}</td>
+      <td>${d.structural}</td>
       <td class="actions">
         <button class="edit" onclick="editRow(${i})">Edit</button>
         <button onclick="deleteRow(${i})">Delete</button>
@@ -264,15 +236,11 @@ function generateTable(){
   })
 }
 
-// DELETE
 function deleteRow(i){
-  if(confirm("Delete entry?")){
-    data.splice(i,1)
-    generateTable()
-  }
+  data.splice(i,1)
+  generateTable()
 }
 
-// EDIT
 function editRow(i){
   let d=data[i]
 
@@ -283,14 +251,12 @@ Site Address ${d.site}
 Technical Person Type ${d.type}
 Individual Owner ${d.owner}
 Contact Number ${d.ownerContact}
-Postal Address ${d.ownerAddress}
-Structural Engineer Name ${d.structural}`
+Postal Address ${d.ownerAddress}`
 
   data.splice(i,1)
   generateTable()
 }
 
-// SEARCH
 function searchTable(){
   let val=document.getElementById("search").value.toLowerCase()
   document.querySelectorAll("#table tbody tr").forEach(r=>{
@@ -298,52 +264,31 @@ function searchTable(){
   })
 }
 
-// 🔥 FINAL XLSX
+// 🔥 Excel TABLE EXPORT
 function exportExcel(){
 
-  if(data.length===0){
-    alert("No data!")
-    return
-  }
-
-  let rows=[]
-
-  data.forEach((d,i)=>{
-
-    rows.push(
-      ["Applicant/Technical Person and Site Details(Table 3)"],
-      [""],
-      ["Technical Person Name"],[d.techName],[""],
-      ["Technical Person Contact No."],[d.techContact],[""],
-      ["Site Address"],[formatSite(d.site)],[""],
-      ["Technical Person Type"],[d.type],[""],
-      ["Owner Name"],[d.owner],[""],
-      ["Owner Contact No."],[d.ownerContact],[""],
-      ["Owner Address"],[formatOwnerAddress(d.ownerAddress)],[""],
-      ["Structural Engineer Name"],[d.structural?d.structural:"-"]
-    )
-
-    if(i!==data.length-1){
-      rows.push([""],["-----------------------------"],[""])
-    }
-  })
-
-  let ws=XLSX.utils.aoa_to_sheet(rows)
-  ws['!cols']=[{wch:90}]
+  let ws=XLSX.utils.json_to_sheet(data.map(d=>({
+    "Sr":d.sr,
+    "Technical Person Name":d.techName,
+    "Technical Person Contact No.":d.techContact,
+    "Site Address":d.site,
+    "Technical Person Type":d.type,
+    "Owner Name":d.owner,
+    "Owner Contact No.":d.ownerContact,
+    "Owner Address":d.ownerAddress,
+    "Structural Engineer":d.structural
+  })))
 
   let wb=XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb,ws,"Scrutiny Data")
+  XLSX.utils.book_append_sheet(wb,ws,"Data")
 
-  XLSX.writeFile(wb,"scrutiny_final.xlsx")
+  XLSX.writeFile(wb,"scrutiny_table.xlsx")
 }
 
-// RESET
 function resetData(){
-  if(confirm("Reset all?")){
-    data=[]
-    sr=1
-    generateTable()
-  }
+  data=[]
+  sr=1
+  generateTable()
 }
 
 // PDF
@@ -373,7 +318,6 @@ document.getElementById('pdfUpload').addEventListener('change',function(e){
 
       Promise.all(pages).then(()=>{
         document.getElementById("report").value=text
-        document.getElementById("status").innerText="📄 PDF Loaded"
       })
 
     })
