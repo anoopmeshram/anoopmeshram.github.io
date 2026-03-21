@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Scrutiny Extractor PRO</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
@@ -27,7 +26,7 @@ h2{text-align:center;}
 
 textarea{
   width:100%;
-  height:130px;
+  height:140px;
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
@@ -71,7 +70,6 @@ th{
 
 tr:nth-child(even){background:#f9fafb;}
 
-/* STATUS ANIMATION */
 .status{
   margin-top:10px;
   font-weight:bold;
@@ -85,12 +83,10 @@ tr:nth-child(even){background:#f9fafb;}
   transform:translateY(0);
 }
 
-/* COLORS */
 .success{color:#16a34a;}
 .error{color:#dc2626;}
 .info{color:#2563eb;}
 
-/* ROW ANIMATION */
 @keyframes highlight{
   0%{background:#d1fae5;}
   100%{background:white;}
@@ -108,9 +104,7 @@ tr:nth-child(even){background:#f9fafb;}
 
 <h2>🏗️ Scrutiny Extractor</h2>
 
-<input type="file" id="pdfUpload"><br><br>
-
-<textarea id="report" placeholder="Paste data or upload PDF..."></textarea>
+<textarea id="report" placeholder="Paste full data here..."></textarea>
 
 <br>
 
@@ -144,16 +138,12 @@ tr:nth-child(even){background:#f9fafb;}
 
 let data=[]
 
-// 🔥 STATUS WITH ANIMATION
+// STATUS ANIMATION
 function setStatus(msg,type="success"){
   let el=document.getElementById("status")
-
   el.className="status show "+type
   el.innerText=msg
-
-  setTimeout(()=>{
-    el.classList.remove("show")
-  },3000)
+  setTimeout(()=>{el.classList.remove("show")},3000)
 }
 
 // TABLE 3
@@ -230,7 +220,7 @@ function addEntry(){
     structural:p.structural||"-"
   })
 
-  setStatus(`✅ Entry Added (Sr. No. ${data.length})`,"success")
+  setStatus(`✅ Entry Added (Sr. No. ${data.length})`)
 
   document.getElementById("report").value=""
 
@@ -239,7 +229,6 @@ function addEntry(){
 
 // TABLE
 function generateTable(newEntry=false){
-
   let tbody=document.querySelector("#table tbody")
   tbody.innerHTML=""
 
@@ -288,7 +277,7 @@ function resetData(){
   data=[]
   document.querySelector("#table tbody").innerHTML=""
   document.getElementById("report").value=""
-  setStatus("Reset Successful ✅","success")
+  setStatus("Reset Successful ✅")
 }
 
 // EXPORT
@@ -316,47 +305,6 @@ function exportExcel(){
 
   setStatus("⬇️ Excel Downloaded","success")
 }
-
-// PDF
-document.getElementById('pdfUpload').addEventListener('change',function(e){
-
-  let file=e.target.files[0]
-  if(!file){
-    setStatus("⚠️ No file selected","error")
-    return
-  }
-
-  let reader=new FileReader()
-
-  reader.onload=function(){
-    let typedarray=new Uint8Array(this.result)
-
-    pdfjsLib.getDocument(typedarray).promise.then(function(pdf){
-
-      let text=""
-      let pages=[]
-
-      for(let i=1;i<=pdf.numPages;i++){
-        pages.push(
-          pdf.getPage(i).then(page=>{
-            return page.getTextContent().then(content=>{
-              let strings=content.items.map(item=>item.str)
-              text+=strings.join("\n")+"\n"
-            })
-          })
-        )
-      }
-
-      Promise.all(pages).then(()=>{
-        document.getElementById("report").value=text
-        setStatus("📄 PDF Loaded Successfully","success")
-      })
-
-    })
-  }
-
-  reader.readAsArrayBuffer(file)
-})
 
 </script>
 
