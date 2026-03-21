@@ -49,7 +49,6 @@ button:hover{
 }
 
 .danger{background:#dc2626;}
-.edit{background:#16a34a;}
 
 table{
   width:100%;
@@ -139,13 +138,11 @@ tr:nth-child(even){background:#f9fafb;}
 
 let data=[]
 
-// STATUS (ANIMATION WITHOUT HIDING)
+// STATUS
 function setStatus(msg,type="success"){
   let el=document.getElementById("status")
-
   el.classList.remove("show")
   void el.offsetWidth
-
   el.className="status show "+type
   el.innerText=msg
 }
@@ -248,7 +245,6 @@ function generateTable(newEntry=false){
       <td>${d.ownerAddress}</td>
       <td>${d.structural}</td>
       <td>
-        <button class="edit" onclick="editRow(${i})">Edit</button>
         <button class="danger" onclick="deleteRow(${i})">Delete</button>
       </td>
     </tr>`
@@ -260,14 +256,6 @@ function deleteRow(i){
   data.splice(i,1)
   generateTable()
   setStatus("🗑️ Row Deleted","info")
-}
-
-// EDIT
-function editRow(i){
-  document.getElementById("report").value=data[i].techName
-  data.splice(i,1)
-  generateTable()
-  setStatus("✏️ Editing Mode Enabled","info")
 }
 
 // CLEAR
