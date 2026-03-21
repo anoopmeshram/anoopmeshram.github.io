@@ -166,7 +166,7 @@ tr:nth-child(even){background:#f9fafb;}
 let data=[]
 let lastClipboard=""
 
-// 🔥 STATUS CONTROL
+// STATUS
 function setStatus(leftMsg="", type="success", rightMsg=""){
   let el=document.getElementById("statusBar")
 
@@ -185,12 +185,12 @@ function setStatus(leftMsg="", type="success", rightMsg=""){
   }
 }
 
-// 🔥 DUPLICATE CHECK
+// DUPLICATE CHECK
 function isDuplicate(newEntry){
   return data.some(d => JSON.stringify(d) === JSON.stringify(newEntry))
 }
 
-// 🔥 AUTO SYSTEM
+// AUTO SYSTEM
 async function autoPasteAndProcess(){
   try{
     const text = await navigator.clipboard.readText()
@@ -216,14 +216,13 @@ async function autoPasteAndProcess(){
   }
 }
 
-// TAB SWITCH
+// EVENTS
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible"){
     autoPasteAndProcess()
   }
 })
 
-// BACKGROUND CHECK
 setInterval(autoPasteAndProcess,2000)
 
 // TABLE 3
@@ -300,7 +299,7 @@ function addEntry(){
     structural:p.structural||"-"
   }
 
-  // 🔥 DUPLICATE BLOCK
+  // 🔥 DUPLICATE ERROR (FINAL)
   if(isDuplicate(newEntry)){
     setStatus("⚠️ Duplicate Entry Detected","error")
     document.getElementById("report").value=""
@@ -309,7 +308,6 @@ function addEntry(){
 
   data.push(newEntry)
 
-  // ✅ MANUAL → CENTER
   setStatus(`✅ Entry Added (Sr. No. ${data.length})`)
 
   document.getElementById("report").value=""
