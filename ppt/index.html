@@ -3,244 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progress Seminar - Anoop Meshram</title>
+    <title>Anoop Meshram - Progress Seminar</title>
     <style>
         :root {
-            --ycc-blue: #1a4d8a;
-            --ycc-gold: #f1c40f;
-            --bg: #f0f2f5;
-            --text: #333;
+            --ycc-blue: #1e3a8a;
+            --ycc-gold: #fbbf24;
+            --slide-bg: #ffffff;
+            --text-main: #1f2937;
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        .btn-container { text-align: center; margin-bottom: 30px; position: sticky; top: 10px; z-index: 100; }
+        body { font-family: 'Arial', sans-serif; background: #e5e7eb; color: var(--text-main); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
+        .nav-bar { position: sticky; top: 0; background: var(--ycc-blue); padding: 15px; border-radius: 8px; display: flex; justify-content: center; gap: 20px; z-index: 1000; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .nav-bar button { background: var(--ycc-gold); border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .nav-bar button:hover { background: #f59e0b; transform: scale(1.05); }
+
+        .slide { background: var(--slide-bg); border-radius: 5px; padding: 50px; margin-bottom: 50px; min-height: 600px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; border-top: 15px solid var(--ycc-blue); position: relative; }
+        .slide-header { border-bottom: 3px solid var(--ycc-gold); margin-bottom: 30px; padding-bottom: 10px; }
+        .slide-footer { margin-top: auto; font-size: 0.8em; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 15px; display: flex; justify-content: space-between; }
         
-        button { 
-            padding: 12px 25px; font-size: 16px; cursor: pointer; 
-            background: var(--ycc-blue); color: white; border: none; 
-            border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: 0.3s;
-        }
-        button:hover { background: #133a69; transform: translateY(-2px); }
+        h1 { font-size: 2.2em; color: var(--ycc-blue); }
+        h2 { font-size: 1.8em; color: var(--ycc-blue); margin: 0; }
+        ul { line-height: 1.8; font-size: 1.1em; }
+        li { margin-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.85em; }
+        th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
+        th { background: #f3f4f6; color: var(--ycc-blue); }
 
-        /* Slide Styling */
-        .slide-card {
-            background: white; border-radius: 12px; padding: 40px;
-            margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border-left: 8px solid var(--ycc-blue); min-height: 450px;
-            display: flex; flex-direction: column; position: relative;
-        }
-        .slide-num { position: absolute; top: 20px; right: 20px; color: #ccc; font-weight: bold; }
-        h1, h2, h3 { color: var(--ycc-blue); margin-top: 0; }
-        h2 { border-bottom: 2px solid var(--ycc-gold); padding-bottom: 10px; }
-        ul { line-height: 1.8; }
-        li { margin-bottom: 12px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background: #f8f9fa; }
-
-        /* Slideshow Overlay */
-        #slideshow {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 1000; overflow-y: auto;
-        }
-        .ss-content { 
-            max-width: 900px; margin: 60px auto; padding: 40px; 
-            border: 2px solid #eee; border-radius: 15px; 
-        }
-        .controls {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 15px; background: rgba(0,0,0,0.8); padding: 15px 30px;
-            border-radius: 50px;
-        }
-        .controls button { background: white; color: var(--ycc-blue); box-shadow: none; }
-        .close-ss { position: fixed; top: 20px; right: 20px; background: #e74c3c; }
+        /* Fullscreen Slide Show Mode */
+        #slideshow-mode { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; padding: 40px; overflow-y: auto; }
+        .ss-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="btn-container">
-        <button onclick="openSlideshow()">▶ Start Slide Show</button>
-    </div>
-
-    <div id="slide-list">
-        <div class="slide-card">
-            <span class="slide-num">1</span>
-            <center>
-                <h3>Nagar Yuwak Shikshan Sanstha’s</h3>
-                <h1>Yeshwantrao Chavan College of Engineering</h1>
-                <p>(An Autonomous Institution affiliated to RTMNU)</p>
-                <hr style="width:50%; border: 1px solid var(--ycc-gold);">
-                <h2>A Study on the Impact of Digital Customer Behavior on B2B Sales Lead Conversion</h2>
-                <p><strong>Presented by:</strong> Mr. Anoop Meshram</p>
-                <p><strong>Guides:</strong> Dr. Swati Rahate & Mr. Somnath Jagtap</p>
-                <p>Academic Year: 2025-26</p>
-            </center>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">3</span>
-            <h2>Internship Details</h2>
-            <ul>
-                <li><strong>Organization:</strong> Shree Laxmi Cement Products</li>
-                <li><strong>Designation:</strong> Business Development Intern</li>
-                <li><strong>Duration:</strong> 4 Months (Feb 2026 – June 2026)</li>
-                <li><strong>Location:</strong> Wanadongri, Hingna Road, Nagpur</li>
-                <li><strong>Key Tasks:</strong> Construction Research, Technical Documentation, Vendor Coordination</li>
-            </ul>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">4</span>
-            <h2>About the Company</h2>
-            <ul>
-                <li>Specializes in precast cement and concrete products for civil infrastructure.</li>
-                <li>Major products include RCC pipes, paver blocks, and precast components.</li>
-                <li>Supplies materials for construction, drainage, and building projects.</li>
-                <li>Focuses on product quality, durability, and reliable supply.</li>
-            </ul>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">6-7</span>
-            <h2>Literature Review Highlights</h2>
-            <table>
-                <tr>
-                    <th>Author & Year</th>
-                    <th>Key Findings</th>
-                </tr>
-                <tr>
-                    <td>González-Flores et al. (2025)</td>
-                    <td>Lead prioritization improves sales conversion efficiency.</td>
-                </tr>
-                <tr>
-                    <td>Hawaldar et al. (2022)</td>
-                    <td>Digital marketing significantly increases B2B sales growth.</td>
-                </tr>
-                <tr>
-                    <td>Isabella et al. (2025)</td>
-                    <td>Chatbots improve lead response time.</td>
-                </tr>
-                <tr>
-                    <td>Kanmani et al. (2025)</td>
-                    <td>Automation influences purchasing decisions.</td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">8</span>
-            <h2>Motivation / Problem Statement</h2>
-            <ul>
-                <li>Many leads are generated online, but conversion rates remain low.</li>
-                <li>Companies lack structured approaches to analyze digital intent signals.</li>
-                <li>Sales teams waste time on low-quality leads.</li>
-                <li>Need to identify high-potential customers earlier via micro-actions.</li>
-            </ul>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">9</span>
-            <h2>Objectives</h2>
-            <ul>
-                <li>Examine the impact of digital behavior on lead conversion.</li>
-                <li>Identify key intent-based digital micro-actions.</li>
-                <li>Evaluate the role of automation in enhancing sales performance.</li>
-            </ul>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">11</span>
-            <h2>Research Methodology</h2>
-            <ul>
-                <li><strong>Type:</strong> Descriptive research.</li>
-                <li><strong>Primary Data:</strong> Interaction with contractors and builders.</li>
-                <li><strong>Secondary Data:</strong> IndiaMART, Justdial, company websites.</li>
-                <li><strong>Lead Tools:</strong> Apollo, Map Scraper, Leads Finder.</li>
-            </ul>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">13</span>
-            <h2>Data Analysis & Results</h2>
-            <ul>
-                <li>Digital platforms like IndiaMART and Justdial are vital for B2B lead generation.</li>
-                <li>Actions like RFQs and inquiry submissions indicate high purchase intent.</li>
-                <li>Leads with high digital engagement convert more effectively.</li>
-                <li>Classifying leads by intent improves sales efficiency.</li>
-            </ul>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">14</span>
-            <h2>Conclusion</h2>
-            <ul>
-                <li>Digital platforms are the critical first touchpoint for buyers.</li>
-                <li>Intent-based micro-actions serve as early buying indicators.</li>
-                <li>Leveraging digital signals allows for better lead qualification.</li>
-                <li>Digital insights improve overall conversion effectiveness.</li>
-            </ul>
-        </div>
-
-        <div class="slide-card">
-            <span class="slide-num">15</span>
-            <h2>Recommendations</h2>
-            <ul>
-                <li>Optimize website and active B2B platform profiles.</li>
-                <li>Track customer behaviors like product searches and RFQs.</li>
-                <li>Implement a structured lead management and classification system.</li>
-                <li>Use automation (chatbots/automated replies) for quick responses.</li>
-            </ul>
-        </div>
-    </div>
+<div class="nav-bar">
+    <button onclick="startSlideshow()">▶ START SLIDE SHOW</button>
 </div>
 
-<div id="slideshow">
-    <button class="close-ss" onclick="closeSlideshow()">Close ✖</button>
-    <div id="ss-content-area" class="ss-content"></div>
-    <div class="controls">
-        <button onclick="changeSlide(-1)">❮ Previous</button>
-        <button onclick="changeSlide(1)">Next ❯</button>
+<div class="container" id="all-slides">
+    <section class="slide">
+        <center>
+            <p>Nagar Yuwak Shikshan Sanstha’s [cite: 1]</p>
+            <h1>Yeshwantrao Chavan College of Engineering [cite: 2]</h1>
+            <p>(An Autonomous Institution affiliated to Rashtrasant Tukadoji Maharaj Nagpur University) [cite: 3]</p>
+            <p>Hingna Road, Wanadongri, Nagpur- 441110 [cite: 4]</p>
+            <hr style="width: 60%; border: 2px solid var(--ycc-gold); margin: 30px 0;">
+            <h2 style="font-size: 1.5em; text-transform: uppercase;">A Study on the Impact of Digital Customer Behavior on B2B Sales Lead Conversion [cite: 5]</h2>
+            <p style="margin-top: 40px;"><strong>Presented by –</strong> Mr. Anoop Meshram [cite: 7, 8]</p>
+            <p><strong>Project Guide –</strong> Dr. Swati Rahate [cite: 9, 10]</p>
+            <p><strong>Company Guide –</strong> Mr. Somnath Jagtap [cite: 11, 12]</p>
+            <p>2025-26 [cite: 13]</p>
+        </center>
+        <div class="slide-footer"><span>Dept. of Management Studies and Entrepreneurship [cite: 6]</span><span>Slide 1</span></div>
+    </section>
+
+    <section class="slide">
+        <div class="slide-header"><h2>Table of Contents [cite: 15]</h2></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <ul style="list-style: none;">
+                <li>• Internship Details [cite: 16]</li>
+                <li>• About the Company [cite: 17]</li>
+                <li>• Introduction to the Topic [cite: 18]</li>
+                <li>• Literature Review [cite: 19]</li>
+                <li>• Motivation / Problem Statement [cite: 20]</li>
+                <li>• Objectives [cite: 21]</li>
+            </ul>
+            <ul style="list-style: none;">
+                <li>• Hypothesis [cite: 22]</li>
+                <li>• Research Methodology [cite: 23]</li>
+                <li>• Work Done [cite: 24]</li>
+                <li>• Data Analysis [cite: 25]</li>
+                <li>• Conclusion & Recommendations [cite: 27, 28]</li>
+                <li>• References [cite: 29]</li>
+            </ul>
+        </div>
+        <div class="slide-footer"><span>MSE Department [cite: 14]</span><span>Slide 2</span></div>
+    </section>
+
+    <section class="slide">
+        <div class="slide-header"><h2>Internship Details [cite: 31]</h2></div>
+        <ul>
+            <li><strong>Organization:</strong> Shree Laxmi Cement Products [cite: 32]</li>
+            <li><strong>Designation:</strong> Business Development Intern [cite: 32]</li>
+            <li><strong>Duration:</strong> 4 Months (Feb 2026 – June 2026) [cite: 32]</li>
+            <li><strong>Location:</strong> Wanadongri, Hingna Road, Nagpur [cite: 32]</li>
+            <li><strong>Stipend:</strong> ₹10,000 per month [cite: 32]</li>
+            <li><strong>Key Responsibilities:</strong> Construction Research, Technical Documentation, Market Research, and Vendor Coordination [cite: 34, 35, 36, 37, 38]</li>
+        </ul>
+        <div class="slide-footer"><span>MSE Department [cite: 30]</span><span>Slide 3</span></div>
+    </section>
+
+    <section class="slide">
+        <div class="slide-header"><h2>Literature Review [cite: 56, 82]</h2></div>
+        <table>
+            <tr><th>Author & Year</th><th>Objective [cite: 58]</th><th>Methodology [cite: 59]</th><th>Key Findings [cite: 60]</th></tr>
+            <tr><td>González-Flores (2025) [cite: 61]</td><td>B2B Lead scoring model [cite: 62]</td><td>Machine Learning [cite: 63]</td><td>Prioritization improves conversion [cite: 64]</td></tr>
+            <tr><td>Hawaldar et al. (2022) [cite: 65]</td><td>Digital marketing impact [cite: 66]</td><td>Survey/Data Analysis [cite: 67]</td><td>Increases sales growth [cite: 68]</td></tr>
+            <tr><td>Järvinen & Taiminen (2016) [cite: 69]</td><td>Marketing automation [cite: 70]</td><td>Case Study [cite: 71]</td><td>Improves lead nurturing [cite: 72]</td></tr>
+            <tr><td>Isabella et al. (2025) [cite: 95]</td><td>Role of chatbots [cite: 96]</td><td>Empirical Research [cite: 97]</td><td>Improves response time [cite: 98]</td></tr>
+        </table>
+        <div class="slide-footer"><span>MSE Department [cite: 81]</span><span>Slide 4</span></div>
+    </section>
+
+    <section class="slide">
+        <div class="slide-header"><h2>Research Methodology [cite: 124]</h2></div>
+        <ul>
+            <li><strong>Research Type:</strong> Descriptive research to study digital customer behavior impact [cite: 125]</li>
+            <li><strong>Primary Data:</strong> Interactions with contractors, builders, and customers [cite: 126]</li>
+            <li><strong>Secondary Data:</strong> IndiaMART, Justdial, and company websites [cite: 127]</li>
+            <li><strong>Lead Tools:</strong> Apollo, Map Scraper, and Leads Finder [cite: 128]</li>
+            <li><strong>Analysis:</strong> Excel-based databases for organization [cite: 129]</li>
+        </ul>
+        <div class="slide-footer"><span>MSE Department [cite: 123]</span><span>Slide 5</span></div>
+    </section>
+
+    <section class="slide">
+        <div class="slide-header"><h2>Conclusion [cite: 153]</h2></div>
+        <ul>
+            <li>Digital behavior significantly influences B2B sales lead generation[cite: 154].</li>
+            <li>Platforms like IndiaMART are essential initial touchpoints for construction buyers[cite: 155].</li>
+            <li>Micro-actions (RFQ, inquiry submissions) act as early buying indicators[cite: 156].</li>
+            <li>Leveraging digital signals improves lead qualification efficiency[cite: 157].</li>
+        </ul>
+        <div class="slide-footer"><span>MSE Department [cite: 152]</span><span>Slide 6</span></div>
+    </section>
+</div>
+
+<div id="slideshow-mode">
+    <div id="ss-content"></div>
+    <div class="ss-controls">
+        <button onclick="changeSlide(-1)">❮ PREV</button>
+        <button onclick="changeSlide(1)">NEXT ❯</button>
+        <button onclick="stopSlideshow()" style="background: #ef4444; color: white;">EXIT</button>
     </div>
 </div>
 
 <script>
-    let currentSlide = 0;
-    const allSlides = document.querySelectorAll('.slide-card');
-    const slideshow = document.getElementById('slideshow');
-    const contentArea = document.getElementById('ss-content-area');
+    let currentIdx = 0;
+    const slides = document.querySelectorAll('.slide');
+    const ssMode = document.getElementById('slideshow-mode');
+    const ssContent = document.getElementById('ss-content');
 
-    function openSlideshow() {
-        slideshow.style.display = 'block';
-        currentSlide = 0;
-        updateSlideshow();
-        document.body.style.overflow = 'hidden';
+    function startSlideshow() {
+        currentIdx = 0;
+        ssMode.style.display = 'block';
+        updateSS();
     }
 
-    function closeSlideshow() {
-        slideshow.style.display = 'none';
-        document.body.style.overflow = 'auto';
+    function stopSlideshow() {
+        ssMode.style.display = 'none';
     }
 
-    function updateSlideshow() {
-        contentArea.innerHTML = allSlides[currentSlide].innerHTML;
+    function updateSS() {
+        ssContent.innerHTML = slides[currentIdx].innerHTML;
         window.scrollTo(0,0);
     }
 
-    function changeSlide(dir) {
-        currentSlide += dir;
-        if (currentSlide < 0) currentSlide = 0;
-        if (currentSlide >= allSlides.length) currentSlide = allSlides.length - 1;
-        updateSlideshow();
+    function changeSlide(n) {
+        currentIdx += n;
+        if (currentIdx < 0) currentIdx = 0;
+        if (currentIdx >= slides.length) currentIdx = slides.length - 1;
+        updateSS();
     }
 
-    // Keyboard support
+    // Keyboard Navigation
     document.addEventListener('keydown', (e) => {
-        if (slideshow.style.display === 'block') {
+        if (ssMode.style.display === 'block') {
             if (e.key === 'ArrowRight') changeSlide(1);
             if (e.key === 'ArrowLeft') changeSlide(-1);
-            if (e.key === 'Escape') closeSlideshow();
+            if (e.key === 'Escape') stopSlideshow();
         }
     });
 </script>
