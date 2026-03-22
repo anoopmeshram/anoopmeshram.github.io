@@ -1,196 +1,189 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Slide Generator Tool</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Lora:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+    <title>B2B Sales Lead Conversion Study - Anoop Meshram</title>
     <style>
         :root {
-            --primary: #0f172a;
-            --accent: #3b82f6;
-            --bg: #f1f5f9;
+            --primary-blue: #0056b3;
+            --secondary-gold: #ffcc00;
+            --bg-color: #f4f4f9;
+            --slide-bg: #ffffff;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            margin: 0;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-color); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        
+        /* Slide Styling */
+        .slide { 
+            background: var(--slide-bg); 
+            padding: 40px; 
+            margin-bottom: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            min-height: 500px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 20px;
+            border-top: 10px solid var(--primary-blue);
         }
+        h1, h2 { color: var(--primary-blue); border-bottom: 2px solid var(--secondary-gold); padding-bottom: 10px; }
+        ul { line-height: 1.6; }
+        li { margin-bottom: 10px; }
+        .footer { margin-top: auto; font-size: 0.8em; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
 
-        /* Tool Interface Styles */
-        .input-section {
+        /* Slide Show Mode Overlay */
+        #slideshow-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 800px;
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        h1 { color: var(--primary); margin-bottom: 20px; }
-
-        input {
-            width: 70%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-        }
-
-        button {
-            padding: 12px 25px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        button:hover { background: #2563eb; }
-
-        /* Slide Preview Area */
-        #presentation-area {
-            width: 100%;
-            max-width: 1000px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        /* Dynamic Slide Styling (Same as previous design) */
-        .slide {
-            background: white;
-            aspect-ratio: 16/9;
-            width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            padding: 50px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-        }
-
-        .slide-title-layout {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            text-align: center;
-            background: var(--primary);
-            color: white;
-            margin: -50px; /* Offset parent padding */
         }
-
-        .slide-title-layout h2 { font-family: 'Lora', serif; font-size: 4rem; margin: 0; }
-
-        .slide-header {
-            border-bottom: 3px solid var(--accent);
-            padding-bottom: 15px;
-            margin-bottom: 30px;
-        }
-
-        .slide-header h3 { font-family: 'Lora', serif; font-size: 2rem; margin: 0; color: var(--primary); }
-
-        .slide-body { flex: 1; font-size: 1.2rem; line-height: 1.6; color: #334155; }
-
-        .slide-footer {
-            position: absolute;
+        #slideshow-content { width: 80%; height: 80%; }
+        .controls {
+            position: fixed;
             bottom: 20px;
-            right: 30px;
-            font-size: 0.8rem;
-            color: #94a3b8;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
         }
-
-        .list-item { margin-bottom: 15px; display: flex; align-items: start; gap: 10px; }
-        .list-item i { color: var(--accent); margin-top: 5px; }
-
-        /* Print Mode */
-        @media print {
-            .input-section { display: none; }
-            body { padding: 0; background: white; }
-            .slide { box-shadow: none; border: none; page-break-after: always; }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
         }
+        button:hover { background: #003d80; }
+        .close-btn { background: #cc0000; }
     </style>
 </head>
 <body>
 
-    <div class="input-section">
-        <h1>PPT Generator Tool</h1>
-        <p>Apna topic enter karein aur magically slides generate karein!</p>
-        <input type="text" id="topicInput" placeholder="Ex: IS 456, Digital Marketing, Global Warming...">
-        <button onclick="generatePPT()">Slides Banayein</button>
+<div class="container" id="main-content">
+    <div style="text-align: right; margin-bottom: 20px;">
+        <button onclick="startSlideshow()">▶ Start Slide Show</button>
     </div>
 
-    <div id="presentation-area">
-        </div>
+    <section class="slide">
+        <center>
+            <h3>Nagar Yuwak Shikshan Sanstha’s</h3>
+            <h1>Yeshwantrao Chavan College of Engineering</h1>
+            <p>Department of Management Studies and Entrepreneurship</p>
+            <hr>
+            <h2>A Study on the Impact of Digital Customer Behavior on B2B Sales Lead Conversion</h2>
+            <p><strong>Presented by:</strong> Mr. Anoop Meshram</p>
+            <p><strong>Project Guide:</strong> Dr. Swati Rahate | <strong>Company Guide:</strong> Mr. Somnath Jagtap</p>
+            <p>2025-26</p>
+        </center>
+    </section>
 
-    <script>
-        function generatePPT() {
-            const topic = document.getElementById('topicInput').value;
-            if (!topic) { alert("Please enter a topic!"); return; }
+    <section class="slide">
+        <h2>Internship Details</h2>
+        <ul>
+            <li><strong>Organization:</strong> Shree Laxmi Cement Products</li>
+            <li><strong>Designation:</strong> Business Development Intern</li>
+            <li><strong>Duration:</strong> 4 Months (Feb 2026 – June 2026)</li>
+            <li><strong>Stipend:</strong> ₹10,000 per month</li>
+            <li><strong>Location:</strong> Wanadongri, Nagpur</li>
+        </ul>
+        <div class="footer">Source: Slide 31-32</div>
+    </section>
 
-            const container = document.getElementById('presentation-area');
-            container.innerHTML = ''; // Clear previous
+    <section class="slide">
+        <h2>Problem Statement & Motivation</h2>
+        <ul>
+            <li>B2B companies generate many leads, but conversion remains low.</li>
+            <li>Lack of structured approaches to analyze digital "intent signals."</li>
+            <li>Sales teams waste time on low-quality/unqualified leads.</li>
+            <li><strong>Goal:</strong> Use digital engagement micro-actions to identify high-potential customers early.</li>
+        </ul>
+        <div class="footer">Source: Slide 108-114</div>
+    </section>
 
-            // Dummy Data Structure (Asli tool mein aap AI API use kar sakte hain)
-            const slidesData = [
-                { type: 'title', title: topic, subtitle: 'Comprehensive Overview and Analysis' },
-                { type: 'content', header: 'Introduction', points: [`What is ${topic}?`, `Historical background and evolution.`, `Importance in the current industry standards.`] },
-                { type: 'content', header: 'Key Objectives', points: ['Ensuring structural safety and durability.', 'Providing standardized guidelines for professionals.', 'Improving quality control and efficiency.'] },
-                { type: 'content', header: 'Core Provisions', points: ['Material specifications and testing.', 'Design methodologies and safety factors.', 'Serviceability and maintenance requirements.'] },
-                { type: 'title', title: 'Questions?', subtitle: 'Thank you for your attention!' }
-            ];
+    <section class="slide">
+        <h2>Research Methodology</h2>
+        <ul>
+            <li><strong>Type:</strong> Descriptive Research</li>
+            <li><strong>Lead Generation Tools:</strong> Apollo, Map Scraper, Leads Finder</li>
+            <li><strong>Primary Data:</strong> Interactions with contractors and builders.</li>
+            <li><strong>Secondary Data:</strong> IndiaMART, Justdial, and company websites.</li>
+            <li><strong>Analysis:</strong> Excel-based databases for tracking engagement.</li>
+        </ul>
+        <div class="footer">Source: Slide 124-129</div>
+    </section>
 
-            slidesData.forEach((data, index) => {
-                const slideDiv = document.createElement('div');
-                slideDiv.className = 'slide';
+    <section class="slide">
+        <h2>Results & Conclusion</h2>
+        <ul>
+            <li>Digital platforms are the primary initial touchpoint in the construction industry.</li>
+            <li><strong>Intent Actions:</strong> RFQs and specific product searches indicate a high probability of conversion.</li>
+            <li>Automation (chatbots/automated replies) is recommended to capture leads instantly.</li>
+            <li> timely follow-ups with builders are critical for B2B success.</li>
+        </ul>
+        <div class="footer">Source: Slide 146-158</div>
+    </section>
+</div>
 
-                if (data.type === 'title') {
-                    slideDiv.innerHTML = `
-                        <div class="slide-title-layout">
-                            <h2>${data.title}</h2>
-                            <p style="font-size:1.5rem; opacity:0.8; margin-top:20px;">${data.subtitle}</p>
-                        </div>
-                    `;
-                } else {
-                    let pointsHTML = data.points.map(p => `
-                        <div class="list-item">
-                            <i class="fa-solid fa-circle-check"></i>
-                            <span>${p}</span>
-                        </div>
-                    `).join('');
+<div id="slideshow-overlay">
+    <div id="slideshow-content"></div>
+    <div class="controls">
+        <button onclick="prevSlide()">❮ Previous</button>
+        <button onclick="nextSlide()">Next ❯</button>
+        <button class="close-btn" onclick="stopSlideshow()">Exit</button>
+    </div>
+</div>
 
-                    slideDiv.innerHTML = `
-                        <div class="slide-header">
-                            <h3>${data.header}</h3>
-                        </div>
-                        <div class="slide-body">
-                            ${pointsHTML}
-                        </div>
-                        <div class="slide-footer">Page ${index + 1} | Generated by AI Tool</div>
-                    `;
-                }
-                container.appendChild(slideDiv);
-            });
+<script>
+    let currentSlideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    const overlay = document.getElementById('slideshow-overlay');
+    const content = document.getElementById('slideshow-content');
 
-            // Scroll to slides
-            window.scrollTo({ top: document.querySelector('.input-section').scrollHeight + 40, behavior: 'smooth' });
+    function startSlideshow() {
+        currentSlideIndex = 0;
+        overlay.style.display = 'flex';
+        showSlide(currentSlideIndex);
+    }
+
+    function stopSlideshow() {
+        overlay.style.display = 'none';
+    }
+
+    function showSlide(index) {
+        content.innerHTML = slides[index].innerHTML;
+        // Adjust text color for white background in modal
+        content.style.color = "black";
+    }
+
+    function nextSlide() {
+        if (currentSlideIndex < slides.length - 1) {
+            currentSlideIndex++;
+            showSlide(currentSlideIndex);
         }
-    </script>
+    }
+
+    function prevSlide() {
+        if (currentSlideIndex > 0) {
+            currentSlideIndex--;
+            showSlide(currentSlideIndex);
+        }
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+        if (overlay.style.display === 'flex') {
+            if (e.key === "ArrowRight") nextSlide();
+            if (e.key === "ArrowLeft") prevSlide();
+            if (e.key === "Escape") stopSlideshow();
+        }
+    });
+</script>
+
 </body>
 </html>
