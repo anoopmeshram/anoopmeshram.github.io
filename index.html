@@ -15,24 +15,31 @@ body{
   overflow-x:hidden;
 }
 
-/* MATRIX BACKGROUND */
-body::before{
-  content:"ANOOP MESHRAM";
+/* MATRIX CANVAS */
+#matrix{
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  color:#00ff9c22;
-  font-size:25px;
-  white-space:wrap;
-  z-index:-1;
-  animation:matrix 20s linear infinite;
+  z-index:-2;
 }
 
-@keyframes matrix{
-  0%{transform:translateY(-100%);}
-  100%{transform:translateY(100%);}
+/* SCANLINES */
+body::after{
+  content:"";
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:repeating-linear-gradient(
+    0deg,
+    rgba(0,255,156,0.03) 0px,
+    rgba(0,255,156,0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events:none;
+  z-index:999;
 }
 
 /* CONTAINER */
@@ -42,21 +49,22 @@ body::before{
   background:rgba(0,0,0,0.85);
   padding:20px;
   border-radius:12px;
-  box-shadow:0 0 30px #00ff9c55, inset 0 0 20px #00ff9c22;
+  box-shadow:0 0 30px #00ff9c55;
   border:1px solid #00ff9c33;
-  backdrop-filter:blur(5px);
   animation:flicker 3s infinite;
 }
 
-/* TITLE */
+@keyframes flicker{
+  0%,100%{opacity:1;}
+  50%{opacity:0.95;}
+}
+
 h2{
   text-align:center;
   color:#00ff9c;
-  text-shadow:0 0 5px #00ff9c,0 0 20px #00ff9c;
-  letter-spacing:2px;
+  text-shadow:0 0 10px #00ff9c;
 }
 
-/* TEXTAREA */
 textarea{
   width:100%;
   height:140px;
@@ -65,15 +73,8 @@ textarea{
   border:1px solid #00ff9c;
   background:black;
   color:#00ff9c;
-  box-shadow:inset 0 0 10px #00ff9c33;
 }
 
-textarea:focus{
-  outline:none;
-  box-shadow:0 0 15px #00ff9c;
-}
-
-/* BUTTONS */
 button{
   padding:10px;
   margin:5px;
@@ -83,14 +84,12 @@ button{
   color:#00ff9c;
   cursor:pointer;
   border:1px solid #00ff9c;
-  transition:0.2s;
-  text-shadow:0 0 5px #00ff9c;
 }
 
 button:hover{
   background:#00ff9c;
   color:black;
-  box-shadow:0 0 15px #00ff9c,0 0 30px #00ff9c;
+  box-shadow:0 0 10px #00ff9c;
 }
 
 .danger{
@@ -101,15 +100,12 @@ button:hover{
 .danger:hover{
   background:#ff0033;
   color:white;
-  box-shadow:0 0 15px #ff0033;
 }
 
-/* TABLE */
 table{
   width:100%;
   margin-top:15px;
   border-collapse:collapse;
-  background:black;
 }
 
 th,td{
@@ -120,10 +116,8 @@ th,td{
 th{
   background:#001a12;
   color:#00ff9c;
-  text-shadow:0 0 5px #00ff9c;
 }
 
-/* STATUS BAR */
 .status-bar{
   margin-top:15px;
   padding:10px;
@@ -131,43 +125,70 @@ th{
   font-weight:bold;
   display:flex;
   justify-content:center;
-  border:1px solid #00ff9c33;
-  text-shadow:0 0 5px currentColor;
 }
 
 .success{background:#001a12;color:#00ff9c;}
 .error{background:#1a0000;color:#ff0033;}
 .info{background:#00111a;color:#00c3ff;}
 
-/* ROW ANIMATION */
 .new-row{
   animation:glitch 1s ease;
 }
 
 @keyframes glitch{
   0%{background:#00ff9c55;}
-  25%{background:#ff003355;}
-  50%{background:#00ff9c22;}
+  50%{background:#ff003355;}
   100%{background:transparent;}
 }
 
-/* FLICKER */
-@keyframes flicker{
-  0%,18%,22%,25%,53%,57%,100%{opacity:1;}
-  20%,24%,55%{opacity:0.85;}
+/* HACK SCREEN */
+#hackedScreen{
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:black;
+  color:#00ff9c;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+  flex-direction:column;
+  font-family:monospace;
+  animation:fadeOut 2s ease 4s forwards;
 }
 
-/* SCROLLBAR */
-::-webkit-scrollbar{
-  width:6px;
+#hackedScreen h1{
+  color:red;
+  text-shadow:0 0 20px red;
+  animation:glitchText 0.3s infinite;
 }
-::-webkit-scrollbar-thumb{
-  background:#00ff9c;
+
+@keyframes fadeOut{
+  to{opacity:0;visibility:hidden;}
+}
+
+@keyframes glitchText{
+  0%{transform:translate(0)}
+  25%{transform:translate(-2px,2px)}
+  50%{transform:translate(2px,-2px)}
+  75%{transform:translate(-1px,1px)}
+  100%{transform:translate(0)}
 }
 </style>
 </head>
 
 <body>
+
+<!-- HACK SCREEN -->
+<div id="hackedScreen">
+  <p>> Initializing system...</p>
+  <p>> Bypassing security...</p>
+  <p>> Injecting payload...</p>
+  <p>> Access Granted ✅</p>
+  <h1>⚠️ SYSTEM HACKED ⚠️</h1>
+</div>
+
+<canvas id="matrix"></canvas>
 
 <div class="container">
 
@@ -412,6 +433,42 @@ function exportExcel(){
 
   setStatus("⬇️ Excel Downloaded","success")
 }
+
+/* MATRIX SCRIPT */
+let canvas=document.getElementById("matrix")
+let ctx=canvas.getContext("2d")
+
+canvas.height=window.innerHeight
+canvas.width=window.innerWidth
+
+let letters="01ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+letters=letters.split("")
+
+let fontSize=14
+let columns=canvas.width/fontSize
+
+let drops=[]
+for(let x=0;x<columns;x++) drops[x]=1
+
+function draw(){
+  ctx.fillStyle="rgba(0,0,0,0.05)"
+  ctx.fillRect(0,0,canvas.width,canvas.height)
+
+  ctx.fillStyle="#00ff9c"
+  ctx.font=fontSize+"px monospace"
+
+  for(let i=0;i<drops.length;i++){
+    let text=letters[Math.floor(Math.random()*letters.length)]
+    ctx.fillText(text,i*fontSize,drops[i]*fontSize)
+
+    if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
+      drops[i]=0
+
+    drops[i]++
+  }
+}
+
+setInterval(draw,33)
 
 </script>
 
