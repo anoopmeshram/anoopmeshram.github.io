@@ -1,313 +1,196 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IS 456:2000 - Concrete Technology Slides</title>
-    <!-- External Fonts and Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Lora:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <title>AI Slide Generator Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Lora:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* CSS Reset and Base Styles */
         :root {
-            --primary: #1e293b;
-            --secondary: #3b82f6;
-            --accent: #f59e0b;
-            --bg-light: #f8fafc;
-            --text-main: #334155;
-            --text-white: #ffffff;
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --bg: #f1f5f9;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            background-color: #cbd5e1;
             font-family: 'Inter', sans-serif;
-            color: var(--text-main);
-            overflow-x: hidden;
+            background-color: var(--bg);
+            margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 40px;
-            padding: 40px 20px;
+            padding: 20px;
         }
 
-        /* Slide Container Style */
-        .slide {
+        /* Tool Interface Styles */
+        .input-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 { color: var(--primary); margin-bottom: 20px; }
+
+        input {
+            width: 70%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        button:hover { background: #2563eb; }
+
+        /* Slide Preview Area */
+        #presentation-area {
             width: 100%;
             max-width: 1000px;
-            aspect-ratio: 16 / 9;
-            background: var(--text-white);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            position: relative;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Dynamic Slide Styling (Same as previous design) */
+        .slide {
+            background: white;
+            aspect-ratio: 16/9;
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             padding: 50px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
             border: 1px solid #e2e8f0;
         }
 
-        /* Title Slide Decorations */
-        .title-slide {
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: var(--text-white);
-        }
-
-        .title-slide h1 {
-            font-family: 'Lora', serif;
-            font-size: 4.5rem;
-            margin-bottom: 20px;
-            letter-spacing: -1px;
-        }
-
-        .title-slide p {
-            font-size: 1.5rem;
-            opacity: 0.8;
-            max-width: 700px;
-        }
-
-        /* Content Slide Styles */
-        .slide-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            border-bottom: 3px solid var(--secondary);
-            padding-bottom: 15px;
-            width: fit-content;
-        }
-
-        .slide-header h2 {
-            font-family: 'Lora', serif;
-            font-size: 2.2rem;
-            color: var(--primary);
-        }
-
-        .slide-content {
-            flex: 1;
+        .slide-title-layout {
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
-        }
-
-        /* Grid Layout for Content */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
             align-items: center;
-        }
-
-        /* Feature Boxes */
-        .feature-card {
-            background: var(--bg-light);
-            padding: 25px;
-            border-radius: 10px;
-            border-left: 5px solid var(--secondary);
-            margin-bottom: 15px;
-        }
-
-        .feature-card h3 {
-            margin-bottom: 10px;
-            color: var(--secondary);
-        }
-
-        /* Table Style */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 0.9rem;
-        }
-
-        th {
+            text-align: center;
             background: var(--primary);
             color: white;
-            text-align: left;
-            padding: 12px;
+            margin: -50px; /* Offset parent padding */
         }
 
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
+        .slide-title-layout h2 { font-family: 'Lora', serif; font-size: 4rem; margin: 0; }
+
+        .slide-header {
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
         }
 
-        tr:nth-child(even) { background: #f1f5f9; }
+        .slide-header h3 { font-family: 'Lora', serif; font-size: 2rem; margin: 0; color: var(--primary); }
 
-        /* Icons */
-        .icon-circle {
-            width: 50px;
-            height: 50px;
-            background: var(--secondary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
+        .slide-body { flex: 1; font-size: 1.2rem; line-height: 1.6; color: #334155; }
 
-        /* Footer Info */
         .slide-footer {
             position: absolute;
             bottom: 20px;
-            right: 40px;
+            right: 30px;
             font-size: 0.8rem;
             color: #94a3b8;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .slide { aspect-ratio: auto; height: auto; min-height: 500px; padding: 30px; }
-            .title-slide h1 { font-size: 2.5rem; }
-            .grid-2 { grid-template-columns: 1fr; }
+        .list-item { margin-bottom: 15px; display: flex; align-items: start; gap: 10px; }
+        .list-item i { color: var(--accent); margin-top: 5px; }
+
+        /* Print Mode */
+        @media print {
+            .input-section { display: none; }
+            body { padding: 0; background: white; }
+            .slide { box-shadow: none; border: none; page-break-after: always; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Slide 1: Introduction -->
-    <div class="slide title-slide">
-        <h1>IS 456 : 2000</h1>
-        <p>Plain and Reinforced Concrete - Code of Practice</p>
-        <div style="margin-top: 30px; font-weight: 300;">Structural Engineering & Design Standards</div>
-        <div class="slide-footer">Slide 1</div>
+    <div class="input-section">
+        <h1>PPT Generator Tool</h1>
+        <p>Apna topic enter karein aur magically slides generate karein!</p>
+        <input type="text" id="topicInput" placeholder="Ex: IS 456, Digital Marketing, Global Warming...">
+        <button onclick="generatePPT()">Slides Banayein</button>
     </div>
 
-    <!-- Slide 2: Scope & Materials -->
-    <div class="slide">
-        <div class="slide-header">
-            <div class="icon-circle"><i class="fa-solid fa-cube"></i></div>
-            <h2>Materials & Quality</h2>
+    <div id="presentation-area">
         </div>
-        <div class="slide-content">
-            <div class="grid-2">
-                <div>
-                    <div class="feature-card">
-                        <h3>Cement Standards</h3>
-                        <p>OPC (33, 43, 53 grade), PPC, and Slag cement specified for various uses.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Water Quality</h3>
-                        <p>Permissible limits for solids in water (e.g., Organic < 200mg/l, Sulfates < 400mg/l).</p>
-                    </div>
-                </div>
-                <div style="text-align: center;">
-                    <i class="fa-solid fa-microscope" style="font-size: 120px; color: #cbd5e1;"></i>
-                    <p style="margin-top: 15px; font-style: italic;">Focus on Durability and Strength</p>
-                </div>
-            </div>
-        </div>
-        <div class="slide-footer">Slide 2</div>
-    </div>
 
-    <!-- Slide 3: Grades of Concrete -->
-    <div class="slide">
-        <div class="slide-header">
-            <div class="icon-circle"><i class="fa-solid fa-chart-simple"></i></div>
-            <h2>Concrete Grades</h2>
-        </div>
-        <div class="slide-content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Group</th>
-                        <th>Grades</th>
-                        <th>Characteristic Strength ($f_{ck}$)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Ordinary Concrete</td>
-                        <td>M10, M15, M20</td>
-                        <td>10 - 20 $N/mm^2$</td>
-                    </tr>
-                    <tr>
-                        <td>Standard Concrete</td>
-                        <td>M25 to M60</td>
-                        <td>25 - 60 $N/mm^2$</td>
-                    </tr>
-                    <tr>
-                        <td>High Strength Concrete</td>
-                        <td>M65 to M100</td>
-                        <td>65 - 100 $N/mm^2$</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p style="margin-top: 20px; font-size: 0.9rem; color: #64748b;">
-                *Grade suffix represents the characteristic compressive strength of 150mm cube at 28 days.
-            </p>
-        </div>
-        <div class="slide-footer">Slide 3</div>
-    </div>
+    <script>
+        function generatePPT() {
+            const topic = document.getElementById('topicInput').value;
+            if (!topic) { alert("Please enter a topic!"); return; }
 
-    <!-- Slide 4: Design Philosophy -->
-    <div class="slide">
-        <div class="slide-header">
-            <div class="icon-circle"><i class="fa-solid fa-gears"></i></div>
-            <h2>Design Philosophy</h2>
-        </div>
-        <div class="slide-content">
-            <div class="grid-2">
-                <div class="feature-card" style="border-left-color: var(--accent);">
-                    <h3>Limit State Method (LSM)</h3>
-                    <p>Primary method used. Considers safety (collapse) and serviceability (deflection/cracking).</p>
-                </div>
-                <div class="feature-card" style="border-left-color: #64748b;">
-                    <h3>Working Stress Method (WSM)</h3>
-                    <p>Alternative method for specific structures like liquid retaining tanks.</p>
-                </div>
-            </div>
-            <div style="margin-top: 20px; background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fde68a;">
-                <strong>Key Assumption:</strong> Tensile strength of concrete is ignored in RCC calculations.
-            </div>
-        </div>
-        <div class="slide-footer">Slide 4</div>
-    </div>
+            const container = document.getElementById('presentation-area');
+            container.innerHTML = ''; // Clear previous
 
-    <!-- Slide 5: Durability & Exposure -->
-    <div class="slide">
-        <div class="slide-header">
-            <div class="icon-circle"><i class="fa-solid fa-shield-halved"></i></div>
-            <h2>Durability Requirements</h2>
-        </div>
-        <div class="slide-content">
-            <p>Minimum cover and cement content based on environment:</p>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <div style="flex: 1; background: #e0f2fe; padding: 15px; border-radius: 8px; text-align: center;">
-                    <strong>Mild</strong><br>20mm Cover
-                </div>
-                <div style="flex: 1; background: #bae6fd; padding: 15px; border-radius: 8px; text-align: center;">
-                    <strong>Moderate</strong><br>30mm Cover
-                </div>
-                <div style="flex: 1; background: #7dd3fc; padding: 15px; border-radius: 8px; text-align: center;">
-                    <strong>Severe</strong><br>45mm Cover
-                </div>
-                <div style="flex: 1; background: #38bdf8; padding: 15px; border-radius: 8px; text-align: center;">
-                    <strong>Extreme</strong><br>75mm Cover
-                </div>
-            </div>
-            <p style="margin-top: 20px; font-size: 0.95rem;">Standard covers are critical to prevent corrosion of reinforcement in aggressive environments.</p>
-        </div>
-        <div class="slide-footer">Slide 5</div>
-    </div>
+            // Dummy Data Structure (Asli tool mein aap AI API use kar sakte hain)
+            const slidesData = [
+                { type: 'title', title: topic, subtitle: 'Comprehensive Overview and Analysis' },
+                { type: 'content', header: 'Introduction', points: [`What is ${topic}?`, `Historical background and evolution.`, `Importance in the current industry standards.`] },
+                { type: 'content', header: 'Key Objectives', points: ['Ensuring structural safety and durability.', 'Providing standardized guidelines for professionals.', 'Improving quality control and efficiency.'] },
+                { type: 'content', header: 'Core Provisions', points: ['Material specifications and testing.', 'Design methodologies and safety factors.', 'Serviceability and maintenance requirements.'] },
+                { type: 'title', title: 'Questions?', subtitle: 'Thank you for your attention!' }
+            ];
 
-    <!-- Slide 6: Thank You -->
-    <div class="slide title-slide" style="background: var(--secondary);">
-        <h1 style="font-size: 3.5rem;">Dhanyavad!</h1>
-        <p>Questions? Let's discuss IS 456 Provisions.</p>
-        <div style="margin-top: 40px;">
-            <i class="fa-solid fa-building-columns" style="font-size: 60px;"></i>
-        </div>
-        <div class="slide-footer">Final Slide</div>
-    </div>
+            slidesData.forEach((data, index) => {
+                const slideDiv = document.createElement('div');
+                slideDiv.className = 'slide';
 
+                if (data.type === 'title') {
+                    slideDiv.innerHTML = `
+                        <div class="slide-title-layout">
+                            <h2>${data.title}</h2>
+                            <p style="font-size:1.5rem; opacity:0.8; margin-top:20px;">${data.subtitle}</p>
+                        </div>
+                    `;
+                } else {
+                    let pointsHTML = data.points.map(p => `
+                        <div class="list-item">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>${p}</span>
+                        </div>
+                    `).join('');
+
+                    slideDiv.innerHTML = `
+                        <div class="slide-header">
+                            <h3>${data.header}</h3>
+                        </div>
+                        <div class="slide-body">
+                            ${pointsHTML}
+                        </div>
+                        <div class="slide-footer">Page ${index + 1} | Generated by AI Tool</div>
+                    `;
+                }
+                container.appendChild(slideDiv);
+            });
+
+            // Scroll to slides
+            window.scrollTo({ top: document.querySelector('.input-section').scrollHeight + 40, behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>
