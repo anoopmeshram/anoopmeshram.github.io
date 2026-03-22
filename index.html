@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BPMS Extractor GOD MODE ⚡</title>
+<title>BPMS Extractor STABLE ⚡</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -12,7 +12,6 @@ body{
   background:#f1f5f9;
   padding:20px;
 }
-
 .container{
   max-width:1100px;
   margin:auto;
@@ -21,9 +20,6 @@ body{
   border-radius:12px;
   box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
-
-h2{text-align:center;}
-
 textarea{
   width:100%;
   height:140px;
@@ -31,7 +27,6 @@ textarea{
   border-radius:8px;
   border:1px solid #ccc;
 }
-
 button{
   padding:10px;
   margin:5px;
@@ -41,26 +36,20 @@ button{
   color:white;
   cursor:pointer;
 }
-
-button:hover{background:#1d4ed8;}
 .danger{background:#dc2626;}
-
 table{
   width:100%;
   margin-top:15px;
   border-collapse:collapse;
 }
-
 th,td{
   border:1px solid #ddd;
   padding:10px;
 }
-
 th{
   background:#111827;
   color:white;
 }
-
 .status-bar{
   margin-top:15px;
   padding:10px;
@@ -68,19 +57,9 @@ th{
   text-align:center;
   font-weight:bold;
 }
-
 .success{background:#dcfce7;color:#166534;}
 .error{background:#fee2e2;color:#991b1b;}
 .info{background:#dbeafe;color:#1e3a8a;}
-
-.new-row{
-  animation:highlight 1.5s ease;
-}
-
-@keyframes highlight{
-  0%{background:#d1fae5;}
-  100%{background:white;}
-}
 </style>
 </head>
 
@@ -88,29 +67,27 @@ th{
 
 <div class="container">
 
-<h2>🏗️ BPMS Extractor GOD MODE ⚡</h2>
+<h2>🏗️ BPMS Extractor ⚡ (Stable Fast)</h2>
 
-<textarea id="report" placeholder="Auto Mode Active ⚡ Just COPY data..."></textarea><br>
+<textarea id="report" placeholder="Copy data → auto detect"></textarea><br>
 
-<button onclick="toggleAuto()">⚡ Auto Mode ON/OFF</button>
-<button onclick="exportExcel()">⬇ Download Excel</button>
-<button onclick="clearInput()">🧹 Clear</button>
-<button onclick="resetData()" class="danger">♻ Reset</button>
+<button onclick="toggleAuto()">⚡ Auto Mode</button>
+<button onclick="exportExcel()">⬇ Download</button>
+<button onclick="resetData()" class="danger">Reset</button>
 
 <div id="statusBar" class="status-bar"></div>
 
 <table id="table">
 <thead>
 <tr>
-<th>Sr. No.</th>
-<th>Technical Person Name</th>
-<th>Technical Person Contact No.</th>
-<th>Technical Person Type</th>
-<th>Owner Name</th>
-<th>Owner Contact No.</th>
-<th>Owner Address</th>
-<th>Structural Engineer</th>
-<th>Action</th>
+<th>Sr</th>
+<th>Tech Name</th>
+<th>Tech Contact</th>
+<th>Type</th>
+<th>Owner</th>
+<th>Owner Contact</th>
+<th>Address</th>
+<th>Structural</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -130,66 +107,40 @@ function setStatus(msg,type="success"){
   el.innerText=msg
 }
 
-// VALIDATION
-function isValidEntry(e){
-  if(!e.techName || !e.techContact || !e.owner) return false
+// SAFE AUTO LOOP (300ms = fast + no lag)
+setInterval(async ()=>{
+  if(!autoMode) return;
 
-  let phone=/^[0-9]{10}$/
-  if(!phone.test(e.techContact)) return false
-  if(e.ownerContact && !phone.test(e.ownerContact)) return false
+  try{
+    let text=await navigator.clipboard.readText()
 
-  if(e.techName.length<3 || e.owner.length<3) return false
+    if(text && text!==lastClipboard){
+      lastClipboard=text
+      document.getElementById("report").value=text
+      addEntry()
+    }
 
-  return true
-}
-
-// DUPLICATE
-function isDuplicate(e){
-  return data.some(d=>JSON.stringify(d)===JSON.stringify(e))
-}
-
-// ⚡ ULTRA FAST AUTO LOOP
-async function ultraFastAutoPaste(){
-
-  if(autoMode){
-    try{
-      navigator.clipboard.readText().then(text=>{
-        if(text && text!==lastClipboard){
-
-          lastClipboard=text
-          document.getElementById("report").value=text
-
-          addEntry()
-        }
-      })
-    }catch(e){}
-  }
-
-  queueMicrotask(ultraFastAutoPaste)
-}
-ultraFastAutoPaste()
+  }catch(e){}
+},300)
 
 // TOGGLE
 function toggleAuto(){
   autoMode=!autoMode
-  setStatus("Auto Mode: "+(autoMode?"ON ⚡":"OFF ❌"),"info")
+  setStatus("Auto: "+(autoMode?"ON ⚡":"OFF ❌"),"info")
 }
 
-// EXTRACT
-function extractTable3(text){
-  let i=text.toLowerCase().indexOf("table 3")
-  if(i===-1){
-    i=text.toLowerCase().indexOf("applicant/technical person")
-    if(i===-1) return ""
-  }
-  return text.substring(i)
+// VALIDATION
+function isValidEntry(e){
+  if(!e.techName||!e.techContact||!e.owner) return false
+  let p=/^[0-9]{10}$/
+  if(!p.test(e.techContact)) return false
+  return true
 }
 
 // PARSE
 function parseData(text){
   let l=text.split(/\n+/).map(x=>x.trim()).filter(x=>x)
   let r={}
-
   for(let i=0;i<l.length;i++){
     let line=l[i].toLowerCase()
 
@@ -202,129 +153,68 @@ function parseData(text){
     else if(line.includes("technical person type"))
       r.type=l[i].replace(/.*technical person type/i,"")||l[i+1]
 
-    else if((line.includes("owner")||line.includes("government")||line.includes("semi government"))&&!r.owner)
-      r.owner=l[i].replace(/individual owner|owner/i,"")||l[i+1]
-
-    else if(line.includes("contact number")&&r.techContact&&!r.ownerContact)
-      r.ownerContact=l[i].replace(/contact number/i,"")||l[i+1]
-
-    else if(line.includes("postal address"))
-      r.ownerAddress=l[i].replace(/postal address/i,"")||l[i+1]
-
-    else if(line.includes("structural engineer name")){
-      let v=l[i].replace(/structural engineer name/i,"")||l[i+1]
-      r.structural=v.toLowerCase().includes("only")?"-":v
-    }
+    else if(line.includes("owner")&&!r.owner)
+      r.owner=l[i].replace(/owner/i,"")||l[i+1]
   }
-
   return r
 }
 
 // ADD
 function addEntry(){
-
-  let text=document.getElementById("report").value
-  if(!text) return
-
-  let t3=extractTable3(text)
-  if(!t3){
-    setStatus("❌ Table 3 not found","error")
-    return
-  }
-
-  let p=parseData(t3)
+  let t=document.getElementById("report").value
+  let p=parseData(t)
 
   let e={
     techName:p.techName?.trim(),
     techContact:p.techContact?.trim(),
-    type:p.type?.trim(),
-    owner:p.owner?.trim(),
-    ownerContact:p.ownerContact?.trim(),
-    ownerAddress:p.ownerAddress?.trim(),
-    structural:p.structural||"-"
+    type:p.type,
+    owner:p.owner
   }
 
   if(!isValidEntry(e)){
-    setStatus("⚠️ Invalid Entry","error")
-    return
-  }
-
-  if(isDuplicate(e)){
-    setStatus("⚠️ Duplicate Entry","error")
+    setStatus("Invalid","error")
     return
   }
 
   data.push(e)
-  generateTable(true)
-
-  setStatus(`✅ Entry Added (${data.length})`)
+  render()
+  setStatus("Added "+data.length)
 }
 
 // TABLE
-function generateTable(n=false){
+function render(){
   let tb=document.querySelector("#table tbody")
   tb.innerHTML=""
-
   data.forEach((d,i)=>{
     tb.innerHTML+=`
-    <tr class="${n&&i===data.length-1?'new-row':''}">
+    <tr>
       <td>${i+1}</td>
       <td>${d.techName}</td>
       <td>${d.techContact}</td>
       <td>${d.type}</td>
       <td>${d.owner}</td>
-      <td>${d.ownerContact}</td>
-      <td>${d.ownerAddress}</td>
-      <td>${d.structural}</td>
-      <td><button class="danger" onclick="deleteRow(${i})">Delete</button></td>
+      <td></td>
+      <td></td>
+      <td></td>
     </tr>`
   })
-}
-
-// DELETE
-function deleteRow(i){
-  data.splice(i,1)
-  generateTable()
-  setStatus("🗑️ Deleted","info")
-}
-
-// CLEAR
-function clearInput(){
-  document.getElementById("report").value=""
-  setStatus("Cleared","info")
 }
 
 // RESET
 function resetData(){
   data=[]
-  lastClipboard=""
-  document.querySelector("#table tbody").innerHTML=""
-  setStatus("Reset Completed ✅")
+  render()
+  setStatus("Reset Done")
 }
 
 // EXPORT
 function exportExcel(){
-  if(!data.length){
-    setStatus("⚠️ No data","error")
-    return
-  }
+  if(!data.length) return
 
-  let ws=XLSX.utils.json_to_sheet(data.map((d,i)=>({
-    "Sr. No.":i+1,
-    "Technical Person Name":d.techName,
-    "Technical Person Contact No.":d.techContact,
-    "Technical Person Type":d.type,
-    "Owner Name":d.owner,
-    "Owner Contact No.":d.ownerContact,
-    "Owner Address":d.ownerAddress,
-    "Structural Engineer":d.structural
-  })))
-
+  let ws=XLSX.utils.json_to_sheet(data)
   let wb=XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb,ws,"Data")
-  XLSX.writeFile(wb,"BPMS_PRO.xlsx")
-
-  setStatus("⬇️ Excel Downloaded","success")
+  XLSX.writeFile(wb,"BPMS.xlsx")
 }
 
 </script>
