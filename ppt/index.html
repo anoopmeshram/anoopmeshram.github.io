@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pencil Sketch Generator ✏️</title>
+
+<style>
+body{
+  font-family: 'Segoe UI';
+  background:#111;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  background:#1c1c1c;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 0 20px rgba(255,255,255,0.1);
+}
+
+input{
+  margin:15px;
+}
+
+canvas{
+  margin-top:20px;
+  max-width:100%;
+  border-radius:10px;
+  box-shadow:0 0 15px rgba(255,255,255,0.2);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>✏️ Pencil Sketch Generator</h1>
+  <input type="file" id="upload" accept="image/*">
+  <br>
+  <canvas id="canvas"></canvas>
+</div>
+
+<script>
+const upload = document.getElementById("upload");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+upload.addEventListener("change", function(e){
+  const file = e.target.files[0];
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+
+  img.onload = function(){
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    ctx.drawImage(img,0,0);
+
+    let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+    let data = imgData.data;
+
+    // GRAYSCALE
+    for(let i=0;i<data.length;i+=4){
+      let avg = (data[i]+data[i+1]+data[i+2])/3;
+      data[i]=data[i+1]=data[i+2]=avg;
+    }
+
+    // INVERT
+    for(let i=0;i<data.length;i+=4){
+      data[i]=255-data[i];
+      data[i+1]=255-data[i+1];
+      data[i+2]=255-data[i+2];
+    }
+
+    ctx.putImageData(imgData,0,0);
+
+    // BLUR (simple fake gaussian)
+    ctx.globalAlpha = 0.5;
+    for(let i=0;i<5;i++){
+      ctx.drawImage(canvas,0,0);
+    }
+    ctx.globalAlpha = 1.0;
+
+    // COLOR DODGE EFFECT
+    let imgData2 = ctx.getImageData(0,0,canvas.width,canvas.height);
+    let data2 = imgData2.data;
+
+    for(let i=0;i<data.length;i+=4){
+      data[i] = dodge(data[i], data2[i]);
+      data[i+1] = dodge(data[i+1], data2[i+1]);
+      data[i+2] = dodge(data[i+2], data2[i+2]);
+    }
+
+    ctx.putImageData(imgData,0,0);
+  }
+});
+
+function dodge(a,b){
+  return (b === 255) ? b : Math.min(255, (a << 8) / (255 - b));
+}
+</script>
+
+</body>
+</html>
