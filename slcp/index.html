@@ -69,24 +69,6 @@ th{
   font-weight:bold;
   display:flex;
   justify-content:center;
-  text-align:center;
-}
-
-.status-bar.dual{
-  justify-content:space-between;
-}
-
-.status-left{width:100%;}
-.status-right{display:none;}
-
-.status-bar.dual .status-left{
-  width:auto;
-  text-align:left;
-}
-
-.status-bar.dual .status-right{
-  display:block;
-  color:#2563eb;
 }
 
 .success{background:#dcfce7;color:#166534;}
@@ -110,17 +92,14 @@ th{
 
 <h2>🏗️ BPMS Extractor PRO 🚀</h2>
 
-<textarea id="report" placeholder="Welcome to Anoop Meshram's BPMS Extractor PRO tool. Paste full data here..."></textarea><br>
+<textarea id="report" placeholder="Paste full data here..."></textarea><br>
 
 <button onclick="addEntry()">➕ Extract Table 3</button>
 <button onclick="exportExcel()">⬇ Download Excel</button>
 <button onclick="clearInput()">🧹 Clear Input</button>
 <button onclick="resetData()" class="danger">♻ Reset</button>
 
-<div id="statusBar" class="status-bar">
-  <span class="status-left"></span>
-  <span class="status-right"></span>
-</div>
+<div id="statusBar" class="status-bar"></div>
 
 <table id="table">
 <thead>
@@ -147,18 +126,10 @@ let data=[]
 let lastClipboard=""
 
 // STATUS
-function setStatus(left="",type="success",right=""){
+function setStatus(msg,type="success"){
   let el=document.getElementById("statusBar")
   el.className="status-bar "+type
-
-  el.querySelector(".status-left").innerText=left
-  el.querySelector(".status-right").innerText=right
-
-  if(right){
-    el.classList.add("dual")
-  }else{
-    el.classList.remove("dual")
-  }
+  el.innerText=msg
 }
 
 // DUPLICATE
@@ -166,38 +137,38 @@ function isDuplicate(e){
   return data.some(d=>JSON.stringify(d)===JSON.stringify(e))
 }
 
-// VALIDATION
+// ✅ FIXED VALIDATION
 function isValidEntry(e){
-  if(!e.techName||!e.techContact||!e.owner) return false
 
-  let bad=["else if","lines[","replace(","||","let ","r.","\":d."]
-  let text=Object.values(e).join(" ").toLowerCase()
+  if(!e.techName || !e.techContact || !e.owner){
+    return false
+  }
 
-  return !bad.some(b=>text.includes(b))
+  let phone=/^[0-9]{10}$/
+
+  if(!phone.test(e.techContact)) return false
+  if(e.ownerContact && !phone.test(e.ownerContact)) return false
+
+  if(e.techName.length<3 || e.owner.length<3){
+    return false
+  }
+
+  return true
 }
 
-// AUTO
+// AUTO PASTE
 async function autoPasteAndProcess(){
   try{
     let t=await navigator.clipboard.readText()
-    if(!t||t===lastClipboard) return
+    if(!t || t===lastClipboard) return
 
     lastClipboard=t
     document.getElementById("report").value=t
 
-    let res=addEntry()
-
-    if(res==="success"){
-      setStatus(`✅ Entry Added (Sr. No. ${data.length})`,"success","⚡ New Data Auto Processed")
-    }
+    addEntry()
 
   }catch(e){}
 }
-
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible") autoPasteAndProcess()
-})
-
 setInterval(autoPasteAndProcess,2000)
 
 // EXTRACT
@@ -227,7 +198,6 @@ function parseData(text){
     else if(line.includes("technical person type"))
       r.type=l[i].replace(/.*technical person type/i,"")||l[i+1]
 
-    // ✅ UPDATED OWNER RULE
     else if(
       (line.includes("owner") || line.includes("government") || line.includes("semi government")) 
       && !r.owner
@@ -257,13 +227,13 @@ function addEntry(){
 
   if(!text){
     setStatus("⚠️ Please enter data","error")
-    return "error"
+    return
   }
 
   let t3=extractTable3(text)
   if(!t3){
     setStatus("❌ Table 3 not found","error")
-    return "error"
+    return
   }
 
   let p=parseData(t3)
@@ -279,34 +249,30 @@ function addEntry(){
   }
 
   if(!isValidEntry(e)){
-    setStatus("⚠️ Invalid Entry Detected","error")
-    document.getElementById("report").value=""
-    return "error"
+    setStatus("⚠️ Invalid Entry","error")
+    return
   }
 
   if(isDuplicate(e)){
-    setStatus("⚠️ Duplicate Entry Detected","error")
-    document.getElementById("report").value=""
-    return "duplicate"
+    setStatus("⚠️ Duplicate Entry","error")
+    return
   }
 
   data.push(e)
+  generateTable(true)
 
   setStatus(`✅ Entry Added (Sr. No. ${data.length})`)
   document.getElementById("report").value=""
-  generateTable(true)
-
-  return "success"
 }
 
 // TABLE
-function generateTable(n=false){
+function generateTable(newRow=false){
   let tb=document.querySelector("#table tbody")
   tb.innerHTML=""
 
   data.forEach((d,i)=>{
     tb.innerHTML+=`
-    <tr class="${n&&i===data.length-1?'new-row':''}">
+    <tr class="${newRow && i===data.length-1?'new-row':''}">
       <td>${i+1}</td>
       <td>${d.techName}</td>
       <td>${d.techContact}</td>
@@ -338,8 +304,7 @@ function resetData(){
   data=[]
   lastClipboard=""
   document.querySelector("#table tbody").innerHTML=""
-  document.getElementById("report").value=""
-  setStatus("Reset Successful ✅")
+  setStatus("Reset Completed ✅")
 }
 
 // EXPORT
@@ -368,19 +333,6 @@ function exportExcel(){
 }
 
 </script>
-<script>
-window.addEventListener("load", () => {
-  let data = localStorage.getItem("bpmsData");
 
-  if (data) {
-    data = JSON.parse(data);
-
-    // ⚠️ IMPORTANT: Ye tera existing function hona chahiye
-    addRowToTable(data);
-
-    localStorage.removeItem("bpmsData");
-  }
-});
-</script>
 </body>
 </html>
