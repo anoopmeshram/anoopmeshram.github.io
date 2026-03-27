@@ -352,7 +352,7 @@ class RetroFutureLoginForm {
         setTimeout(() => {
             console.log('Portal activated! Welcome to the future...');
             window.location.href = 'https://anoopmeshram.github.io/lite';
-        }, 0); // fast redirect
+        }, 1000); // fast redirect
     }
     
     triggerPortalEffects() {
