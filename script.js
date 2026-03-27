@@ -352,7 +352,7 @@ class RetroFutureLoginForm {
         setTimeout(() => {
             console.log('Portal activated! Welcome to the future...');
             window.location.href = 'https://anoopmeshram.github.io/slcp';
-        }, 0000); 
+        }, 1000); 
     }
   
     triggerPortalEffects() {
@@ -366,7 +366,7 @@ class RetroFutureLoginForm {
                 0 10px 30px rgba(255, 0, 255, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3)
             `;
-        }, 1000);
+        }, 100);
         
         // Add success glitch
         setTimeout(() => {
