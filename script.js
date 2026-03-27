@@ -352,9 +352,9 @@ class RetroFutureLoginForm {
         setTimeout(() => {
             console.log('Portal activated! Welcome to the future...');
             window.location.href = 'https://anoopmeshram.github.io/slcp';
-        }, 5000); 
+        }, 3000); 
     }
-   // fast redirect 
+  
     triggerPortalEffects() {
         // Portal activation effects
         const card = document.querySelector('.future-card');
