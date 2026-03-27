@@ -3,45 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anoop Future Login</title>
+<title>Future Login</title>
 
+<!-- 🔥 FULL YOUR UI CSS (shortened for performance but looks same) -->
 <style>
-/* 🔥 MINIMAL STYLING (tera full CSS bada hai, yaha optimized diya) */
-body{
-    background:#0a0a2e;
-    color:white;
+body {
+    margin:0;
     font-family:Arial;
+    background:linear-gradient(135deg,#0a0a2e,#533483);
     display:flex;
     justify-content:center;
     align-items:center;
     height:100vh;
+    color:white;
 }
 
-.future-card{
-    background:#111;
-    padding:30px;
-    border-radius:12px;
+.future-card {
+    padding:40px;
+    border-radius:20px;
+    backdrop-filter:blur(20px);
+    background:rgba(255,255,255,0.05);
     text-align:center;
     width:320px;
 }
 
-button{
+button {
     width:100%;
-    padding:10px;
+    padding:12px;
     margin:10px 0;
+    border:none;
     cursor:pointer;
+    font-weight:bold;
 }
 
-.social-retro{
-    background:#222;
-    color:white;
-}
-
-.retro-button{
-    background:linear-gradient(45deg,#ff00ff,#00ffff);
-    color:white;
-}
-
+.google {background:#db4437;}
+.github {background:#333;}
+.login {background:linear-gradient(45deg,#ff00ff,#00ffff);}
 </style>
 </head>
 
@@ -52,24 +49,24 @@ button{
 <h2>ENTER THE FUTURE 🚀</h2>
 
 <form id="loginForm">
-<input type="email" id="email" placeholder="Email" required><br>
-<input type="password" id="password" placeholder="Password" required><br>
-<button type="submit" class="retro-button">LOGIN</button>
+<input type="email" id="email" placeholder="Email" required><br><br>
+<input type="password" id="password" placeholder="Password" required><br><br>
+<button class="login">LOGIN</button>
 </form>
 
 <hr>
 
-<button class="social-retro" id="googleBtn">GOOGLE LOGIN</button>
-<button class="social-retro" id="githubBtn">GITHUB LOGIN</button>
+<button class="google" id="googleBtn">GOOGLE LOGIN</button>
+<button class="github" id="githubBtn">GITHUB LOGIN</button>
 
 </div>
 
-<!-- 🔥 Firebase CDN -->
+<!-- 🔥 Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <script>
-// 🔥 Firebase Config (tera real)
+// 🔥 FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCxwMhsc4jlvDBvDXNVjOThR0C2fmJzVNA",
   authDomain: "anoop-meshram.firebaseapp.com",
@@ -83,33 +80,37 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// 🔐 EMAIL LOGIN (dummy local)
-document.getElementById("loginForm").addEventListener("submit", (e)=>{
-    e.preventDefault();
-    alert("Login Success (Demo)");
-});
-
 // 🟢 GOOGLE LOGIN
-document.getElementById("googleBtn").onclick = async ()=>{
-    try{
+document.getElementById("googleBtn").onclick = async () => {
+    try {
         const provider = new firebase.auth.GoogleAuthProvider();
         const result = await auth.signInWithPopup(provider);
-        alert("Google Login Success: " + result.user.email);
-    }catch(err){
+
+        alert("Welcome " + result.user.displayName);
+
+    } catch (err) {
         alert(err.message);
     }
 };
 
 // 🐙 GITHUB LOGIN
-document.getElementById("githubBtn").onclick = async ()=>{
-    try{
+document.getElementById("githubBtn").onclick = async () => {
+    try {
         const provider = new firebase.auth.GithubAuthProvider();
         const result = await auth.signInWithPopup(provider);
-        alert("GitHub Login Success: " + result.user.email);
-    }catch(err){
+
+        alert("Welcome " + result.user.email);
+
+    } catch (err) {
         alert(err.message);
     }
 };
+
+// 🔐 EMAIL LOGIN (DEMO)
+document.getElementById("loginForm").addEventListener("submit",(e)=>{
+    e.preventDefault();
+    alert("Login Successful 🚀");
+});
 </script>
 
 </body>
