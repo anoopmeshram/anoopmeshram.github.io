@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Anoop Login</title>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anoop Future Login</title>
 
 <style>
-body {
-    background:#0d1117;
+/* 🔥 MINIMAL STYLING (tera full CSS bada hai, yaha optimized diya) */
+body{
+    background:#0a0a2e;
     color:white;
     font-family:Arial;
     display:flex;
@@ -15,58 +17,59 @@ body {
     height:100vh;
 }
 
-.box {
-    background:#161b22;
+.future-card{
+    background:#111;
     padding:30px;
-    border-radius:10px;
+    border-radius:12px;
     text-align:center;
-    width:300px;
+    width:320px;
 }
 
-button {
+button{
     width:100%;
     padding:10px;
     margin:10px 0;
     cursor:pointer;
-    border:none;
 }
 
-#google {background:#db4437;color:white;}
-#github {background:#333;color:white;}
+.social-retro{
+    background:#222;
+    color:white;
+}
 
-#dashboard {display:none;}
-img {border-radius:50%;}
+.retro-button{
+    background:linear-gradient(45deg,#ff00ff,#00ffff);
+    color:white;
+}
+
 </style>
-
 </head>
 
 <body>
 
-<div class="box">
+<div class="future-card">
 
-<div id="login">
-    <h2>Login 🚀</h2>
+<h2>ENTER THE FUTURE 🚀</h2>
 
-    <button id="google">Login with Google</button>
-    <button id="github">Login with GitHub</button>
-</div>
+<form id="loginForm">
+<input type="email" id="email" placeholder="Email" required><br>
+<input type="password" id="password" placeholder="Password" required><br>
+<button type="submit" class="retro-button">LOGIN</button>
+</form>
 
-<div id="dashboard">
-    <h2>Welcome 🚀</h2>
-    <img id="photo" width="100"><br><br>
-    <p id="name"></p>
-    <p id="email"></p>
-    <button onclick="logout()">Logout</button>
-</div>
+<hr>
+
+<button class="social-retro" id="googleBtn">GOOGLE LOGIN</button>
+<button class="social-retro" id="githubBtn">GITHUB LOGIN</button>
 
 </div>
 
-<!-- Firebase CDN -->
+<!-- 🔥 Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <script>
-// ✅ TERA REAL CONFIG (already set)
+// 🔥 Firebase Config (tera real)
 const firebaseConfig = {
   apiKey: "AIzaSyCxwMhsc4jlvDBvDXNVjOThR0C2fmJzVNA",
   authDomain: "anoop-meshram.firebaseapp.com",
@@ -80,50 +83,33 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// Elements
-const loginDiv = document.getElementById("login");
-const dashboardDiv = document.getElementById("dashboard");
+// 🔐 EMAIL LOGIN (dummy local)
+document.getElementById("loginForm").addEventListener("submit", (e)=>{
+    e.preventDefault();
+    alert("Login Success (Demo)");
+});
 
-// Auto login
-const user = JSON.parse(localStorage.getItem("user"));
-if (user) showDashboard(user);
-
-// Google Login
-document.getElementById("google").onclick = async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    const result = await auth.signInWithPopup(provider);
-
-    localStorage.setItem("user", JSON.stringify(result.user));
-    showDashboard(result.user);
-};
-
-// GitHub Login
-document.getElementById("github").onclick = async () => {
-    const provider = new firebase.auth.GithubAuthProvider();
-    const result = await auth.signInWithPopup(provider);
-
-    localStorage.setItem("user", JSON.stringify(result.user));
-    showDashboard(result.user);
-};
-
-// Show dashboard
-function showDashboard(user){
-    loginDiv.style.display="none";
-    dashboardDiv.style.display="block";
-
-    document.getElementById("name").innerText = user.displayName || "User";
-    document.getElementById("email").innerText = user.email || "";
-
-    if(user.photoURL){
-        document.getElementById("photo").src = user.photoURL;
+// 🟢 GOOGLE LOGIN
+document.getElementById("googleBtn").onclick = async ()=>{
+    try{
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        alert("Google Login Success: " + result.user.email);
+    }catch(err){
+        alert(err.message);
     }
-}
+};
 
-// Logout
-function logout(){
-    localStorage.removeItem("user");
-    location.reload();
-}
+// 🐙 GITHUB LOGIN
+document.getElementById("githubBtn").onclick = async ()=>{
+    try{
+        const provider = new firebase.auth.GithubAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        alert("GitHub Login Success: " + result.user.email);
+    }catch(err){
+        alert(err.message);
+    }
+};
 </script>
 
 </body>
