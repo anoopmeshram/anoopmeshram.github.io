@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body style="background:black;color:white;text-align:center;padding-top:100px;">
+
+<h1>Welcome 🚀</h1>
+<p id="userData"></p>
+
+<button onclick="logout()">Logout</button>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+
+if (!user) {
+    window.location.href = "index.html";
+}
+
+document.getElementById("userData").innerText =
+    user.email || user.displayName;
+
+function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
