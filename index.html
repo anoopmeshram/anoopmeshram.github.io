@@ -1,93 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anoop Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
-    background: #0d1117;
-    color: white;
-    font-family: Arial;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background:#0d1117;
+    color:white;
+    font-family:Arial;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
 
-.container {
-    background: #161b22;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    width: 300px;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
+.box {
+    background:#161b22;
+    padding:30px;
+    border-radius:10px;
+    text-align:center;
+    width:300px;
 }
 
 button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    cursor: pointer;
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    cursor:pointer;
+    border:none;
 }
 
-#googleBtn { background: #db4437; color: white; }
-#githubBtn { background: #333; color: white; }
+#google {background:#db4437;color:white;}
+#github {background:#333;color:white;}
 
-#dashboard {
-    display: none;
-}
+#dashboard {display:none;}
+img {border-radius:50%;}
 </style>
 
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
 
-    <!-- LOGIN -->
-    <div id="login">
-        <h1>Login 🚀</h1>
+<div id="login">
+    <h2>Login 🚀</h2>
 
-        <form id="loginForm">
-            <input type="email" id="email" placeholder="Enter Email" required>
-            <input type="password" id="password" placeholder="Enter Password" required>
-            <button type="submit">Login</button>
-        </form>
+    <button id="google">Login with Google</button>
+    <button id="github">Login with GitHub</button>
+</div>
 
-        <hr>
-
-        <button id="googleBtn">Login with Google</button>
-        <button id="githubBtn">Login with GitHub</button>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div id="dashboard">
-        <h1>Welcome 🚀</h1>
-        <img id="photo" width="100" style="border-radius:50%">
-        <p id="name"></p>
-        <p id="userEmail"></p>
-        <button onclick="logout()">Logout</button>
-    </div>
+<div id="dashboard">
+    <h2>Welcome 🚀</h2>
+    <img id="photo" width="100"><br><br>
+    <p id="name"></p>
+    <p id="email"></p>
+    <button onclick="logout()">Logout</button>
+</div>
 
 </div>
 
-<!-- Firebase -->
+<!-- Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <script>
-// 🔥 Firebase Config (APNA DAL)
+// ✅ TERA REAL CONFIG (already set)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyCxwMhsc4jlvDBvDXNVjOThR0C2fmJzVNA",
   authDomain: "anoop-meshram.firebaseapp.com",
   projectId: "anoop-meshram",
+  storageBucket: "anoop-meshram.firebasestorage.app",
+  messagingSenderId: "405659754599",
+  appId: "1:405659754599:web:7bb26bb3a4ed9357d774c2",
+  measurementId: "G-SDTBQBVPSS"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -97,64 +84,43 @@ const auth = firebase.auth();
 const loginDiv = document.getElementById("login");
 const dashboardDiv = document.getElementById("dashboard");
 
-// Check user on load
+// Auto login
 const user = JSON.parse(localStorage.getItem("user"));
 if (user) showDashboard(user);
 
-// Email Login
-document.getElementById("loginForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value;
-
-    const user = { email };
-
-    localStorage.setItem("user", JSON.stringify(user));
-
-    showDashboard(user);
-});
-
 // Google Login
-document.getElementById("googleBtn").addEventListener("click", async () => {
+document.getElementById("google").onclick = async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await auth.signInWithPopup(provider);
 
-    try {
-        const result = await auth.signInWithPopup(provider);
-        localStorage.setItem("user", JSON.stringify(result.user));
-        showDashboard(result.user);
-    } catch (err) {
-        alert(err.message);
-    }
-});
+    localStorage.setItem("user", JSON.stringify(result.user));
+    showDashboard(result.user);
+};
 
 // GitHub Login
-document.getElementById("githubBtn").addEventListener("click", async () => {
+document.getElementById("github").onclick = async () => {
     const provider = new firebase.auth.GithubAuthProvider();
+    const result = await auth.signInWithPopup(provider);
 
-    try {
-        const result = await auth.signInWithPopup(provider);
-        localStorage.setItem("user", JSON.stringify(result.user));
-        showDashboard(result.user);
-    } catch (err) {
-        alert(err.message);
-    }
-});
+    localStorage.setItem("user", JSON.stringify(result.user));
+    showDashboard(result.user);
+};
 
-// Show Dashboard
-function showDashboard(user) {
-    loginDiv.style.display = "none";
-    dashboardDiv.style.display = "block";
+// Show dashboard
+function showDashboard(user){
+    loginDiv.style.display="none";
+    dashboardDiv.style.display="block";
 
     document.getElementById("name").innerText = user.displayName || "User";
-    document.getElementById("userEmail").innerText = user.email || "";
+    document.getElementById("email").innerText = user.email || "";
 
-    if (user.photoURL) {
+    if(user.photoURL){
         document.getElementById("photo").src = user.photoURL;
     }
 }
 
 // Logout
-function logout() {
+function logout(){
     localStorage.removeItem("user");
     location.reload();
 }
