@@ -1,69 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Smart Lead Extractor</title>
+  <title>Smart Lead Data Extractor</title>
   <style>
     body { font-family: Arial; padding: 20px; }
-    textarea { width: 100%; height: 200px; }
-    button { padding: 10px 20px; margin-top: 10px; }
+    textarea { width: 100%; height: 220px; }
+    button { padding: 10px 20px; margin-top: 10px; cursor: pointer; }
     table { border-collapse: collapse; margin-top: 20px; width: 100%; }
-    th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+    th, td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 12px; }
     th { background-color: #f2f2f2; }
   </style>
 </head>
 <body>
 
-<h2>Lead Data Extractor (Fixed)</h2>
+<h2>Lead Data Extractor</h2>
 
-<textarea id="rawData" placeholder="Paste raw data here..."></textarea><br>
-<button onclick="extractData()">Extract</button>
+<textarea id="rawData" placeholder="Paste raw lead data here..."></textarea><br>
+<button onclick="extractData()">Extract Data</button>
 
 <div id="output"></div>
 
 <script>
+
 const fields = [
 "Lead Details","First Name","Middle Name","Last Name","Address","PASA Details","Sales Narrative","Profile Summary","City","State","Zip","Persona Type","Lead Event","Last Comment","Alternate Contact Numbers","Primary Contact No 1.","Primary Contact No 2.","Primary Contact No 3.","Child education tool","Email","Hot Lead","Pan Card/Aadhar No","Appointment Date","Appointment Time","Application No","Marital Status","Customer Segment","Lead Potential","Product Interested","Policy No","MVC","PFV","Upsell propensity","PHV","Priority","SPG eligible","PERSONA","Product Recommendation","Source","Account Aggregator","Ticket size recommendation","Comments","DOB","Alternate Number"
 ];
 
-// ❌ unwanted / fake values
-const invalidValues = [
-"Select","Primary Contact No.","Application number","Appointment Time",
-"Persona Type","Lead Event","Last Comment","City","State",
-"PASA Details","Sales Narrative","Profile Summary","Hot Lead",
-"Child education tool","Account Aggregator","Source","MVC","PFV",
-"Upsell propensity","PHV","Priority","SPG eligible","PERSONA"
-];
-
+// strict validation
 function isValid(value, field) {
   if (!value) return false;
+
   let v = value.trim();
 
-  if (v === "" || v === field) return false;
+  // reject same as field
+  if (v.toLowerCase() === field.toLowerCase()) return false;
 
-  // ignore invalid keywords
-  if (invalidValues.includes(v)) return false;
+  // reject unwanted UI labels
+  const rejectWords = [
+    "Select","Click Here","Know More","Primary Contact No",
+    "Application number","Appointment Time","PASA Details",
+    "Profile Summary","Sales Narrative","City","State",
+    "Lead Event","Persona Type","Last Comment"
+  ];
 
-  // ignore long garbage lines
-  if (v.length > 80) return false;
+  for (let word of rejectWords) {
+    if (v.toLowerCase().includes(word.toLowerCase())) return false;
+  }
+
+  // reject long garbage
+  if (v.length > 60) return false;
 
   return true;
 }
 
 function extractData() {
   let raw = document.getElementById("rawData").value;
-  let lines = raw.split("\n").map(l => l.trim()).filter(l => l !== "");
+
+  let lines = raw
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l !== "");
 
   let values = [];
 
   fields.forEach(field => {
-    let index = lines.findIndex(l => l.toLowerCase().includes(field.toLowerCase()));
+
+    let index = lines.findIndex(l =>
+      l.toLowerCase() === field.toLowerCase()
+    );
+
     let value = "—";
 
     if (index !== -1) {
-      // check next 3 lines for valid value
-      for (let i = 1; i <= 3; i++) {
+      // check next 4 lines
+      for (let i = 1; i <= 4; i++) {
         let candidate = lines[index + i];
-        if (isValid(candidate, field)) {
+
+        if (candidate && isValid(candidate, field)) {
           value = candidate;
           break;
         }
@@ -73,14 +86,24 @@ function extractData() {
     values.push(value);
   });
 
+  // create table
   let table = "<table><tr>";
-  fields.forEach(f => table += `<th>${f}</th>`);
+
+  fields.forEach(f => {
+    table += `<th>${f}</th>`;
+  });
+
   table += "</tr><tr>";
-  values.forEach(v => table += `<td>${v}</td>`);
+
+  values.forEach(v => {
+    table += `<td>${v}</td>`;
+  });
+
   table += "</tr></table>";
 
   document.getElementById("output").innerHTML = table;
 }
+
 </script>
 
 </body>
