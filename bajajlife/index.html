@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Universal Lead Extractor PRO 🚀</title>
+<title>Smart CRM Extractor PRO 🔥</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -20,8 +20,6 @@ body{
   padding:20px;
   border-radius:12px;
 }
-h2{text-align:center;}
-
 textarea{
   width:100%;
   height:160px;
@@ -29,9 +27,7 @@ textarea{
   color:#00ff9c;
   padding:10px;
   border-radius:8px;
-  border:1px solid #00ff9c;
 }
-
 button{
   padding:10px;
   margin:5px;
@@ -40,25 +36,14 @@ button{
   background:#22c55e;
   cursor:pointer;
 }
-
-button:hover{background:#16a34a;}
-
-.danger{background:#dc2626;}
-
 table{
   width:100%;
   margin-top:20px;
   border-collapse:collapse;
 }
-
 th,td{
   border:1px solid #334155;
   padding:8px;
-  text-align:left;
-}
-
-th{
-  background:#020617;
 }
 </style>
 </head>
@@ -67,14 +52,12 @@ th{
 
 <div class="container">
 
-<h2>📊 Universal Lead Extractor PRO</h2>
+<h2>📊 Smart CRM Extractor PRO</h2>
 
-<textarea id="input" placeholder="Paste full raw lead data here..."></textarea><br>
+<textarea id="input" placeholder="Paste raw CRM data..."></textarea><br>
 
-<button onclick="extract()">➕ Extract</button>
-<button onclick="download()">⬇ Download Excel</button>
-<button onclick="clearInput()">🧹 Clear</button>
-<button onclick="resetAll()" class="danger">♻ Reset</button>
+<button onclick="extract()">Extract</button>
+<button onclick="download()">Download Excel</button>
 
 <table>
 <thead id="thead"></thead>
@@ -88,14 +71,87 @@ th{
 let data=[]
 let allKeys=new Set()
 
+// 🔥 LABEL RENAME MAP
+function cleanLabel(label){
+
+  label = label.replace(/[*]/g,"").trim()
+
+  if(label.includes("Lead Details"))
+    return "Lead ID"
+
+  if(label.includes("Address /"))
+    return "Address"
+
+  if(label.includes("PASA Details"))
+    return "PASA Details"
+
+  if(label.includes("Zip"))
+    return "Pin/Zip Code"
+
+  if(label.includes("Primary Contact No 1"))
+    return "Contact No. 1"
+
+  if(label.includes("Primary Contact No 2"))
+    return "Contact No. 2"
+
+  if(label.includes("Primary Contact No 3"))
+    return "Contact No. 3"
+
+  if(label.includes("Pan Card/Aadhar"))
+    return "Pan Card/Aadhar No."
+
+  if(label.includes("Application No"))
+    return "Application No."
+
+  if(label.includes("Appointment Date"))
+    return "Appointment Date"
+
+  if(label.includes("Appointment Time"))
+    return "Appointment Time"
+
+  if(label.includes("Alternate Number"))
+    return "Alternate No."
+
+  return label
+}
+
+// ❌ SKIP RULES
+function shouldSkip(label){
+  let l=label.toLowerCase()
+
+  return (
+    l.includes("favourite") ||
+    l.includes("click here for additional contact") ||
+    l.includes("alternate contact numbers")
+  )
+}
+
+// 🔍 VALUE CLEANER
+function cleanValue(label,value){
+
+  let l=label.toLowerCase()
+  let v=value.toLowerCase().trim()
+
+  if(!value || l===v) return "-"
+
+  if(v==="select") return "-"
+  if(v==="application number") return "-"
+  if(v==="primary contact no.") return "-"
+  if(v==="dd-mm-yyyy") return "-"
+  if(v==="appointment time") return "-"
+
+  // DOB special
+  if(label==="DOB" && (l===v)){
+    return "dd-mm-yyyy"
+  }
+
+  return value
+}
+
+// 🚀 EXTRACT
 function extract(){
 
   let text=document.getElementById("input").value
-
-  if(!text){
-    alert("Please paste data first")
-    return
-  }
 
   let lines=text.split(/\n+/).map(x=>x.trim()).filter(x=>x)
 
@@ -106,38 +162,35 @@ function extract(){
     let label=lines[i]
     let value=lines[i+1] || ""
 
-    let l=label.toLowerCase().trim()
-    let v=value.toLowerCase().trim()
-
-    // ❌ skip useless labels
-    if(
-      l.includes("click here") ||
-      l.includes("know more")
-    ){
+    if(shouldSkip(label)){
       continue
     }
 
-    // ✅ MAIN LOGIC (IMPORTANT)
-    if(!value || l===v){
-      value="-"
+    let newLabel = cleanLabel(label)
+
+    // 🔥 Lead ID special extraction
+    if(label.includes("Lead Details")){
+      let match = label.match(/\d+/)
+      obj["Lead ID"] = match ? match[0] : "-"
+      allKeys.add("Lead ID")
+      continue
     }
 
-    // ✅ prevent overwrite of valid data
-    if(obj[label] && value==="-" ){
+    let finalValue = cleanValue(newLabel,value)
+
+    if(obj[newLabel] && finalValue==="-" ){
       i++
       continue
     }
 
-    obj[label]=value
-    allKeys.add(label)
+    obj[newLabel]=finalValue
+    allKeys.add(newLabel)
 
     i++
   }
 
   data.push(obj)
   render()
-
-  document.getElementById("input").value=""
 }
 
 // TABLE
@@ -172,29 +225,11 @@ function render(){
 // DOWNLOAD
 function download(){
 
-  if(!data.length){
-    alert("No data to export")
-    return
-  }
-
   let ws=XLSX.utils.json_to_sheet(data)
   let wb=XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb,ws,"Leads")
+  XLSX.utils.book_append_sheet(wb,ws,"CRM Data")
 
-  XLSX.writeFile(wb,"Extracted_Leads.xlsx")
-}
-
-// CLEAR INPUT
-function clearInput(){
-  document.getElementById("input").value=""
-}
-
-// RESET ALL
-function resetAll(){
-  data=[]
-  allKeys=new Set()
-  document.getElementById("thead").innerHTML=""
-  document.getElementById("tbody").innerHTML=""
+  XLSX.writeFile(wb,"CRM_Extracted_Data.xlsx")
 }
 
 </script>
