@@ -2,86 +2,24 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Ultimate CRM Extractor 🔥</title>
-
+<title>Fixed CRM Extractor</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
-<style>
-body{
-  font-family:'Segoe UI';
-  background:#0f172a;
-  color:white;
-  padding:20px;
-}
-.container{
-  max-width:1300px;
-  margin:auto;
-  background:#1e293b;
-  padding:20px;
-  border-radius:12px;
-}
-textarea{
-  width:100%;
-  height:180px;
-  background:black;
-  color:#00ff9c;
-  padding:10px;
-  border-radius:8px;
-}
-button{
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-  background:#22c55e;
-  cursor:pointer;
-}
-table{
-  width:100%;
-  margin-top:20px;
-  border-collapse:collapse;
-}
-th,td{
-  border:1px solid #334155;
-  padding:8px;
-}
-</style>
 </head>
 
 <body>
 
-<div class="container">
-
-<h2>🔥 Ultimate CRM Extractor (Rule-Based)</h2>
-
-<textarea id="input" placeholder="Paste raw data..."></textarea><br>
-
+<textarea id="input" style="width:100%;height:150px;"></textarea><br>
 <button onclick="extract()">Extract</button>
-<button onclick="download()">Download Excel</button>
+<button onclick="download()">Download</button>
 
-<table>
-<thead id="thead"></thead>
-<tbody id="tbody"></tbody>
-</table>
-
-</div>
+<table border="1" id="table"></table>
 
 <script>
 
 let data=[]
-let allKeys=new Set()
+let headers=new Set()
 
-// ❌ SKIP LABELS
-function skip(label){
-  let l=label.toLowerCase()
-  return l.includes("favourite") ||
-         l.includes("additional contact numbers")
-}
-
-// 🔁 LABEL CLEAN
 function cleanLabel(label){
-
-  label=label.replace(/[*]/g,"").trim()
 
   if(label.includes("Lead Details")) return "Lead ID"
   if(label.includes("Address /")) return "Address"
@@ -98,39 +36,32 @@ function cleanLabel(label){
   if(label.includes("Appointment Time")) return "Appointment Time"
   if(label.includes("Alternate Number")) return "Alternate No."
 
-  // special (as per your rule)
-  if(label==="Marital Status") return "City"
-
-  return label
+  return label.replace(/\*/g,"").trim()
 }
 
-// 🧠 VALUE CLEAN
+function skip(label){
+  let l=label.toLowerCase()
+  return l.includes("favourite") ||
+         l.includes("additional contact")
+}
+
 function cleanValue(label,value){
 
-  let l=label.toLowerCase()
-  let v=value.toLowerCase().trim()
+  let v=value.trim().toLowerCase()
+  let l=label.trim().toLowerCase()
 
-  if(!value || l===v) return "-"
-
+  if(!value || v===l) return "-"
   if(v==="select") return "-"
-  if(v==="application number") return "-"
   if(v==="primary contact no.") return "-"
+  if(v==="application number") return "-"
   if(v==="dd-mm-yyyy") return "-"
-  if(v==="appointment time") return "-"
-
-  // DOB rule
-  if(label==="DOB" && l===v){
-    return "dd-mm-yyyy"
-  }
 
   return value
 }
 
-// 🚀 EXTRACT
 function extract(){
 
   let text=document.getElementById("input").value
-
   let lines=text.split(/\n+/).map(x=>x.trim()).filter(x=>x)
 
   let obj={}
@@ -138,29 +69,24 @@ function extract(){
   for(let i=0;i<lines.length;i++){
 
     let label=lines[i]
-    let value=lines[i+1] || ""
 
     if(skip(label)) continue
 
-    // 🔥 Lead ID extraction
+    // Lead ID
     if(label.includes("Lead Details")){
-      let id = label.match(/\d+/)
-      obj["Lead ID"] = id ? id[0] : "-"
-      allKeys.add("Lead ID")
+      let id=label.match(/\d+/)
+      obj["Lead ID"]=id? id[0] : "-"
+      headers.add("Lead ID")
       continue
     }
 
-    let newLabel = cleanLabel(label)
-    let finalValue = cleanValue(newLabel,value)
+    let value=lines[i+1] || ""
 
-    // overwrite protection
-    if(obj[newLabel] && finalValue==="-"){
-      i++
-      continue
-    }
+    let newLabel=cleanLabel(label)
+    let finalValue=cleanValue(newLabel,value)
 
     obj[newLabel]=finalValue
-    allKeys.add(newLabel)
+    headers.add(newLabel)
 
     i++
   }
@@ -169,35 +95,27 @@ function extract(){
   render()
 }
 
-// TABLE
 function render(){
 
-  let keys=[...allKeys]
+  let table=document.getElementById("table")
+  table.innerHTML=""
 
-  let thead=document.getElementById("thead")
-  let tbody=document.getElementById("tbody")
+  let keys=[...headers]
 
-  thead.innerHTML="<tr>"+keys.map(k=>`<th>${k}</th>`).join("")+"</tr>"
-  tbody.innerHTML=""
+  let header="<tr>"+keys.map(k=>`<th>${k}</th>`).join("")+"</tr>"
+  table.innerHTML+=header
 
   data.forEach(d=>{
-    let row="<tr>"
-    keys.forEach(k=>{
-      row+=`<td>${d[k]||""}</td>`
-    })
-    row+="</tr>"
-    tbody.innerHTML+=row
+    let row="<tr>"+keys.map(k=>`<td>${d[k]||""}</td>`).join("")+"</tr>"
+    table.innerHTML+=row
   })
 }
 
-// DOWNLOAD
 function download(){
-
   let ws=XLSX.utils.json_to_sheet(data)
   let wb=XLSX.utils.book_new()
-
-  XLSX.utils.book_append_sheet(wb,ws,"CRM Data")
-  XLSX.writeFile(wb,"Final_CRM_Data.xlsx")
+  XLSX.utils.book_append_sheet(wb,ws,"Data")
+  XLSX.writeFile(wb,"fixed_data.xlsx")
 }
 
 </script>
