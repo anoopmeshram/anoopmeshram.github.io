@@ -2,161 +2,149 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Accurate CRM Extractor</title>
+<title>Deterministic CRM Extractor</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<style>
+  body{font-family:Segoe UI;background:#0f172a;color:#e2e8f0;padding:20px}
+  textarea{width:100%;height:180px;background:#000;color:#00ff9c;border:1px solid #00ff9c;border-radius:8px;padding:10px}
+  button{margin:6px 6px 6px 0;padding:10px 14px;border:0;border-radius:8px;background:#22c55e;color:#022;cursor:pointer}
+  table{width:100%;border-collapse:collapse;margin-top:16px}
+  th,td{border:1px solid #334155;padding:8px;text-align:left}
+  th{background:#020617}
+</style>
 </head>
-
 <body>
 
-<textarea id="input" style="width:100%;height:180px;"></textarea><br>
-<button onclick="extract()">Extract</button>
-<button onclick="download()">Download</button>
+<h3>Deterministic CRM Extractor</h3>
 
-<table border="1" id="table"></table>
+<textarea id="input" placeholder="Paste raw data..."></textarea><br>
+<button onclick="extract()">Extract</button>
+<button onclick="download()">Download Excel</button>
+
+<table id="table"></table>
 
 <script>
+const KNOWN = new Set([
+  "First Name","Middle Name","Last Name",
+  "Address","PASA Details","Sales Narrative","Profile Summary",
+  "City","State","Zip","Persona Type","Lead Event","Last Comment",
+  "Primary Contact No 1.","Primary Contact No 2.","Primary Contact No 3.",
+  "Child education tool","Email","Hot Lead","Pan Card/Aadhar No",
+  "Appointment Date**","Appointment Time *","Application No",
+  "Marital Status","Customer Segment","Lead Potential","Product Interested",
+  "Policy No","MVC","PFV","Upsell propensity","PHV","Priority","SPG eligible",
+  "PERSONA","Product Recommendation","Source","Account Aggregator",
+  "Ticket size recommendation","Comments","DOB","Alternate Number"
+]);
 
-let data=[]
-let headers=new Set()
+const SKIP = new Set([
+  "Favourite / Un-Favourite",
+  "Alternate Contact Numbers",
+  "Click Here for Additional Contact Numbers"
+]);
 
-// 🔍 identify label (important)
-function isLabel(text){
-  let t=text.toLowerCase()
+function normalizeLabel(raw){
+  let l = raw.replace(/[*]/g,"").trim();
 
-  return t.includes("name") ||
-         t.includes("address") ||
-         t.includes("details") ||
-         t.includes("city") ||
-         t.includes("state") ||
-         t.includes("zip") ||
-         t.includes("contact") ||
-         t.includes("email") ||
-         t.includes("lead") ||
-         t.includes("status") ||
-         t.includes("policy") ||
-         t.includes("persona") ||
-         t.includes("product") ||
-         t.includes("date") ||
-         t.includes("time") ||
-         t.includes("number") ||
-         t.includes("segment") ||
-         t.includes("potential") ||
-         t.includes("comments") ||
-         t.includes("dob")
+  if(l.includes("Address /")) l = "Address";
+  if(l.includes("PASA Details")) l = "PASA Details";
+  if(l === "Zip") l = "Pin/Zip Code";
+  if(l.includes("Primary Contact No 1")) l = "Contact No. 1";
+  if(l.includes("Primary Contact No 2")) l = "Contact No. 2";
+  if(l.includes("Primary Contact No 3")) l = "Contact No. 3";
+  if(l.includes("Pan Card/Aadhar")) l = "Pan Card/Aadhar No.";
+  if(l.includes("Application No")) l = "Application No.";
+  if(l.includes("Appointment Date")) l = "Appointment Date";
+  if(l.includes("Appointment Time")) l = "Appointment Time";
+  if(l.includes("Alternate Number")) l = "Alternate No.";
+  if(l === "Policy No") l = "Policy No.";
+
+  return l;
 }
 
-// 🧠 label clean
-function cleanLabel(label){
-
-  label = label.replace(/[*]/g,"").trim()
-
-  if(label.includes("Lead Details")) return "Lead ID"
-  if(label.includes("Address /")) return "Address"
-  if(label==="Zip") return "Pin/Zip Code"
-
-  if(label.includes("Primary Contact No 1")) return "Contact No. 1"
-  if(label.includes("Primary Contact No 2")) return "Contact No. 2"
-  if(label.includes("Primary Contact No 3")) return "Contact No. 3"
-
-  if(label.includes("Pan Card/Aadhar")) return "Pan Card/Aadhar No."
-  if(label.includes("Application No")) return "Application No."
-  if(label.includes("Appointment Date")) return "Appointment Date"
-  if(label.includes("Appointment Time")) return "Appointment Time"
-  if(label.includes("Alternate Number")) return "Alternate No."
-
-  return label
+function isKnownLabel(line){
+  if(line.startsWith("Lead Details")) return true;
+  if(SKIP.has(line)) return true;
+  return KNOWN.has(line) || KNOWN.has(line.replace(/[*]/g,"").trim());
 }
 
-// ❌ skip
-function skip(label){
-  let l=label.toLowerCase()
-  return l.includes("favourite") ||
-         l.includes("additional contact")
+function cleanValue(label, value){
+  if(!value) return "-";
+  const v = value.trim().toLowerCase();
+  const l = label.trim().toLowerCase();
+
+  if(v === l) return "-";
+  if(v === "select") return "-";
+  if(v === "primary contact no.") return "-";
+  if(v === "application number") return "-";
+  if(v === "dd-mm-yyyy") return "-";
+  if(v === "appointment time") return "-";
+
+  return value.trim();
 }
 
-// 🧹 value clean
-function cleanValue(label,value){
+let data = [];
+let headers = new Set();
 
-  if(!value) return "-"
-
-  let v=value.toLowerCase().trim()
-  let l=label.toLowerCase().trim()
-
-  if(v===l) return "-"
-  if(v==="select") return "-"
-  if(v==="primary contact no.") return "-"
-  if(v==="application number") return "-"
-  if(v==="dd-mm-yyyy") return "-"
-
-  return value
-}
-
-// 🚀 EXTRACT
 function extract(){
+  const text = document.getElementById("input").value;
+  const lines = text.split(/\n+/).map(s=>s.trim()).filter(Boolean);
 
-  let text=document.getElementById("input").value
-  let lines=text.split(/\n+/).map(x=>x.trim()).filter(x=>x)
-
-  let obj={}
+  const obj = {};
 
   for(let i=0;i<lines.length;i++){
+    let line = lines[i];
 
-    let label=lines[i]
-
-    if(skip(label)) continue
+    if(SKIP.has(line)) continue;
 
     // Lead ID
-    if(label.includes("Lead Details")){
-      let id=label.match(/\d+/)
-      obj["Lead ID"]=id? id[0] : "-"
-      headers.add("Lead ID")
-      continue
+    if(line.startsWith("Lead Details")){
+      const id = (line.match(/\d+/) || [])[0] || "-";
+      obj["Lead ID"] = id;
+      headers.add("Lead ID");
+      continue;
     }
 
-    let next = lines[i+1] || ""
+    if(!isKnownLabel(line)) continue;
 
-    let value=""
+    const rawLabel = line;
+    const next = lines[i+1];
 
-    // 🔥 SMART LOGIC
-    if(next && !isLabel(next)){
-      value=next
-      i++ // consume value
-    }else{
-      value="-" // no value
+    let value = "-";
+
+    if(next && !isKnownLabel(next)){
+      value = next;
+      i++; // consume value
     }
 
-    let newLabel=cleanLabel(label)
-    let finalValue=cleanValue(newLabel,value)
+    const label = normalizeLabel(rawLabel);
+    const finalVal = cleanValue(label, value);
 
-    obj[newLabel]=finalValue
-    headers.add(newLabel)
+    obj[label] = finalVal;
+    headers.add(label);
   }
 
-  data.push(obj)
-  render()
+  data.push(obj);
+  render();
 }
 
 function render(){
+  const table = document.getElementById("table");
+  const keys = [...headers];
 
-  let table=document.getElementById("table")
-  table.innerHTML=""
-
-  let keys=[...headers]
-
-  table.innerHTML += "<tr>"+keys.map(k=>`<th>${k}</th>`).join("")+"</tr>"
+  table.innerHTML = "<tr>"+keys.map(k=>`<th>${k}</th>`).join("")+"</tr>";
 
   data.forEach(d=>{
-    table.innerHTML += "<tr>"+keys.map(k=>`<td>${d[k]||""}</td>`).join("")+"</tr>"
-  })
+    table.innerHTML += "<tr>"+keys.map(k=>`<td>${d[k]||""}</td>`).join("")+"</tr>";
+  });
 }
 
 function download(){
-  let ws=XLSX.utils.json_to_sheet(data)
-  let wb=XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb,ws,"Data")
-  XLSX.writeFile(wb,"correct_data.xlsx")
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Data");
+  XLSX.writeFile(wb, "crm_clean.xlsx");
 }
-
 </script>
 
 </body>
