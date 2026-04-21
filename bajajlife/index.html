@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Smart CRM Extractor PRO 🔥</title>
+<title>Ultimate CRM Extractor 🔥</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -14,7 +14,7 @@ body{
   padding:20px;
 }
 .container{
-  max-width:1200px;
+  max-width:1300px;
   margin:auto;
   background:#1e293b;
   padding:20px;
@@ -22,7 +22,7 @@ body{
 }
 textarea{
   width:100%;
-  height:160px;
+  height:180px;
   background:black;
   color:#00ff9c;
   padding:10px;
@@ -52,9 +52,9 @@ th,td{
 
 <div class="container">
 
-<h2>📊 Smart CRM Extractor PRO</h2>
+<h2>🔥 Ultimate CRM Extractor (Rule-Based)</h2>
 
-<textarea id="input" placeholder="Paste raw CRM data..."></textarea><br>
+<textarea id="input" placeholder="Paste raw data..."></textarea><br>
 
 <button onclick="extract()">Extract</button>
 <button onclick="download()">Download Excel</button>
@@ -71,62 +71,40 @@ th,td{
 let data=[]
 let allKeys=new Set()
 
-// 🔥 LABEL RENAME MAP
+// ❌ SKIP LABELS
+function skip(label){
+  let l=label.toLowerCase()
+  return l.includes("favourite") ||
+         l.includes("additional contact numbers")
+}
+
+// 🔁 LABEL CLEAN
 function cleanLabel(label){
 
-  label = label.replace(/[*]/g,"").trim()
+  label=label.replace(/[*]/g,"").trim()
 
-  if(label.includes("Lead Details"))
-    return "Lead ID"
+  if(label.includes("Lead Details")) return "Lead ID"
+  if(label.includes("Address /")) return "Address"
+  if(label.includes("PASA Details")) return "PASA Details"
+  if(label==="Zip") return "Pin/Zip Code"
 
-  if(label.includes("Address /"))
-    return "Address"
+  if(label.includes("Primary Contact No 1")) return "Contact No. 1"
+  if(label.includes("Primary Contact No 2")) return "Contact No. 2"
+  if(label.includes("Primary Contact No 3")) return "Contact No. 3"
 
-  if(label.includes("PASA Details"))
-    return "PASA Details"
+  if(label.includes("Pan Card/Aadhar")) return "Pan Card/Aadhar No."
+  if(label.includes("Application No")) return "Application No."
+  if(label.includes("Appointment Date")) return "Appointment Date"
+  if(label.includes("Appointment Time")) return "Appointment Time"
+  if(label.includes("Alternate Number")) return "Alternate No."
 
-  if(label.includes("Zip"))
-    return "Pin/Zip Code"
-
-  if(label.includes("Primary Contact No 1"))
-    return "Contact No. 1"
-
-  if(label.includes("Primary Contact No 2"))
-    return "Contact No. 2"
-
-  if(label.includes("Primary Contact No 3"))
-    return "Contact No. 3"
-
-  if(label.includes("Pan Card/Aadhar"))
-    return "Pan Card/Aadhar No."
-
-  if(label.includes("Application No"))
-    return "Application No."
-
-  if(label.includes("Appointment Date"))
-    return "Appointment Date"
-
-  if(label.includes("Appointment Time"))
-    return "Appointment Time"
-
-  if(label.includes("Alternate Number"))
-    return "Alternate No."
+  // special (as per your rule)
+  if(label==="Marital Status") return "City"
 
   return label
 }
 
-// ❌ SKIP RULES
-function shouldSkip(label){
-  let l=label.toLowerCase()
-
-  return (
-    l.includes("favourite") ||
-    l.includes("click here for additional contact") ||
-    l.includes("alternate contact numbers")
-  )
-}
-
-// 🔍 VALUE CLEANER
+// 🧠 VALUE CLEAN
 function cleanValue(label,value){
 
   let l=label.toLowerCase()
@@ -140,8 +118,8 @@ function cleanValue(label,value){
   if(v==="dd-mm-yyyy") return "-"
   if(v==="appointment time") return "-"
 
-  // DOB special
-  if(label==="DOB" && (l===v)){
+  // DOB rule
+  if(label==="DOB" && l===v){
     return "dd-mm-yyyy"
   }
 
@@ -162,23 +140,21 @@ function extract(){
     let label=lines[i]
     let value=lines[i+1] || ""
 
-    if(shouldSkip(label)){
-      continue
-    }
+    if(skip(label)) continue
 
-    let newLabel = cleanLabel(label)
-
-    // 🔥 Lead ID special extraction
+    // 🔥 Lead ID extraction
     if(label.includes("Lead Details")){
-      let match = label.match(/\d+/)
-      obj["Lead ID"] = match ? match[0] : "-"
+      let id = label.match(/\d+/)
+      obj["Lead ID"] = id ? id[0] : "-"
       allKeys.add("Lead ID")
       continue
     }
 
+    let newLabel = cleanLabel(label)
     let finalValue = cleanValue(newLabel,value)
 
-    if(obj[newLabel] && finalValue==="-" ){
+    // overwrite protection
+    if(obj[newLabel] && finalValue==="-"){
       i++
       continue
     }
@@ -196,26 +172,18 @@ function extract(){
 // TABLE
 function render(){
 
+  let keys=[...allKeys]
+
   let thead=document.getElementById("thead")
   let tbody=document.getElementById("tbody")
 
-  thead.innerHTML=""
+  thead.innerHTML="<tr>"+keys.map(k=>`<th>${k}</th>`).join("")+"</tr>"
   tbody.innerHTML=""
-
-  let keys=[...allKeys]
-
-  let header="<tr>"
-  keys.forEach(k=>{
-    header+=`<th>${k}</th>`
-  })
-  header+="</tr>"
-
-  thead.innerHTML=header
 
   data.forEach(d=>{
     let row="<tr>"
     keys.forEach(k=>{
-      row+=`<td>${d[k] || ""}</td>`
+      row+=`<td>${d[k]||""}</td>`
     })
     row+="</tr>"
     tbody.innerHTML+=row
@@ -227,9 +195,9 @@ function download(){
 
   let ws=XLSX.utils.json_to_sheet(data)
   let wb=XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb,ws,"CRM Data")
 
-  XLSX.writeFile(wb,"CRM_Extracted_Data.xlsx")
+  XLSX.utils.book_append_sheet(wb,ws,"CRM Data")
+  XLSX.writeFile(wb,"Final_CRM_Data.xlsx")
 }
 
 </script>
