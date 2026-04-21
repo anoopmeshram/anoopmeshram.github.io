@@ -2,148 +2,156 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Deterministic CRM Extractor</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<title>Advanced Lead Extractor</title>
+
 <style>
-  body{font-family:Segoe UI;background:#0f172a;color:#e2e8f0;padding:20px}
-  textarea{width:100%;height:180px;background:#000;color:#00ff9c;border:1px solid #00ff9c;border-radius:8px;padding:10px}
-  button{margin:6px 6px 6px 0;padding:10px 14px;border:0;border-radius:8px;background:#22c55e;color:#022;cursor:pointer}
-  table{width:100%;border-collapse:collapse;margin-top:16px}
-  th,td{border:1px solid #334155;padding:8px;text-align:left}
-  th{background:#020617}
+body { font-family: Arial; background:#f5f5f5; }
+.container { max-width:900px; margin:auto; }
+textarea { width:100%; height:200px; padding:10px; }
+button { padding:10px; margin-top:10px; cursor:pointer; }
+
+.output {
+  background:white;
+  padding:20px;
+  margin-top:20px;
+}
+
+.field { margin-bottom:10px; }
+.label { font-weight:bold; }
+
+/* PRINT */
+@media print {
+  .no-print { display:none; }
+  .output {
+    width:210mm;
+    min-height:297mm;
+  }
+}
 </style>
 </head>
+
 <body>
 
-<h3>Deterministic CRM Extractor</h3>
+<div class="container">
+<h2>Lead Extractor (Rule Based)</h2>
 
-<textarea id="input" placeholder="Paste raw data..."></textarea><br>
-<button onclick="extract()">Extract</button>
-<button onclick="download()">Download Excel</button>
+<textarea id="raw"></textarea>
 
-<table id="table"></table>
+<div class="no-print">
+<button onclick="process()">Extract</button>
+<button onclick="window.print()">Print</button>
+</div>
+
+<div class="output" id="out"></div>
+</div>
 
 <script>
-const KNOWN = new Set([
-  "First Name","Middle Name","Last Name",
-  "Address","PASA Details","Sales Narrative","Profile Summary",
-  "City","State","Zip","Persona Type","Lead Event","Last Comment",
-  "Primary Contact No 1.","Primary Contact No 2.","Primary Contact No 3.",
-  "Child education tool","Email","Hot Lead","Pan Card/Aadhar No",
-  "Appointment Date**","Appointment Time *","Application No",
-  "Marital Status","Customer Segment","Lead Potential","Product Interested",
-  "Policy No","MVC","PFV","Upsell propensity","PHV","Priority","SPG eligible",
-  "PERSONA","Product Recommendation","Source","Account Aggregator",
-  "Ticket size recommendation","Comments","DOB","Alternate Number"
-]);
 
-const SKIP = new Set([
-  "Favourite / Un-Favourite",
-  "Alternate Contact Numbers",
-  "Click Here for Additional Contact Numbers"
-]);
+// helper
+function getValue(data, field){
+    let regex = new RegExp(field + "\\s*:?\\s*(.*)", "i");
+    let match = data.match(regex);
+    if(!match) return "-";
 
-function normalizeLabel(raw){
-  let l = raw.replace(/[*]/g,"").trim();
+    let val = match[1].trim();
 
-  if(l.includes("Address /")) l = "Address";
-  if(l.includes("PASA Details")) l = "PASA Details";
-  if(l === "Zip") l = "Pin/Zip Code";
-  if(l.includes("Primary Contact No 1")) l = "Contact No. 1";
-  if(l.includes("Primary Contact No 2")) l = "Contact No. 2";
-  if(l.includes("Primary Contact No 3")) l = "Contact No. 3";
-  if(l.includes("Pan Card/Aadhar")) l = "Pan Card/Aadhar No.";
-  if(l.includes("Application No")) l = "Application No.";
-  if(l.includes("Appointment Date")) l = "Appointment Date";
-  if(l.includes("Appointment Time")) l = "Appointment Time";
-  if(l.includes("Alternate Number")) l = "Alternate No.";
-  if(l === "Policy No") l = "Policy No.";
-
-  return l;
+    if(!val || val.toLowerCase() === field.toLowerCase()) return "-";
+    return val;
 }
 
-function isKnownLabel(line){
-  if(line.startsWith("Lead Details")) return true;
-  if(SKIP.has(line)) return true;
-  return KNOWN.has(line) || KNOWN.has(line.replace(/[*]/g,"").trim());
+// special rules
+function getLeadID(data){
+    let match = data.match(/Lead Details\s*-\s*(\d+)/i);
+    return match ? match[1] : "-";
 }
 
-function cleanValue(label, value){
-  if(!value) return "-";
-  const v = value.trim().toLowerCase();
-  const l = label.trim().toLowerCase();
-
-  if(v === l) return "-";
-  if(v === "select") return "-";
-  if(v === "primary contact no.") return "-";
-  if(v === "application number") return "-";
-  if(v === "dd-mm-yyyy") return "-";
-  if(v === "appointment time") return "-";
-
-  return value.trim();
+function getZip(data){
+    let val = getValue(data,"Zip");
+    return isNaN(val) ? "-" : val;
 }
 
-let data = [];
-let headers = new Set();
-
-function extract(){
-  const text = document.getElementById("input").value;
-  const lines = text.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-
-  const obj = {};
-
-  for(let i=0;i<lines.length;i++){
-    let line = lines[i];
-
-    if(SKIP.has(line)) continue;
-
-    // Lead ID
-    if(line.startsWith("Lead Details")){
-      const id = (line.match(/\d+/) || [])[0] || "-";
-      obj["Lead ID"] = id;
-      headers.add("Lead ID");
-      continue;
-    }
-
-    if(!isKnownLabel(line)) continue;
-
-    const rawLabel = line;
-    const next = lines[i+1];
-
-    let value = "-";
-
-    if(next && !isKnownLabel(next)){
-      value = next;
-      i++; // consume value
-    }
-
-    const label = normalizeLabel(rawLabel);
-    const finalVal = cleanValue(label, value);
-
-    obj[label] = finalVal;
-    headers.add(label);
-  }
-
-  data.push(obj);
-  render();
+function getDOB(data){
+    let val = getValue(data,"DOB");
+    if(val.toLowerCase() === "dob") return "dd-mm-yyyy";
+    return val;
 }
 
-function render(){
-  const table = document.getElementById("table");
-  const keys = [...headers];
-
-  table.innerHTML = "<tr>"+keys.map(k=>`<th>${k}</th>`).join("")+"</tr>";
-
-  data.forEach(d=>{
-    table.innerHTML += "<tr>"+keys.map(k=>`<td>${d[k]||""}</td>`).join("")+"</tr>";
-  });
+function getDate(data){
+    let val = getValue(data,"Appointment Date");
+    if(val.includes("dd-mm-yyyy")) return "-";
+    return val;
 }
 
-function download(){
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Data");
-  XLSX.writeFile(wb, "crm_clean.xlsx");
+function getProduct(data){
+    let val = getValue(data,"Product Interested");
+    if(val.toLowerCase() === "select") return "-";
+    return val;
+}
+
+function process(){
+
+let data = document.getElementById("raw").value;
+
+let html = `
+<h2 style="text-align:center;">Lead Report</h2>
+<hr>
+
+<div class="field"><div class="label">Lead ID</div>${getLeadID(data)}</div>
+
+<div class="field"><div class="label">First Name</div>${getValue(data,"First Name")}</div>
+<div class="field"><div class="label">Middle Name</div>${getValue(data,"Middle Name")}</div>
+<div class="field"><div class="label">Last Name</div>${getValue(data,"Last Name")}</div>
+
+<div class="field"><div class="label">Address</div>${getValue(data,"Address")}</div>
+<div class="field"><div class="label">City</div>${getValue(data,"City")}</div>
+<div class="field"><div class="label">State</div>${getValue(data,"State")}</div>
+<div class="field"><div class="label">Pin/Zip Code</div>${getZip(data)}</div>
+
+<div class="field"><div class="label">Persona Type</div>${getValue(data,"Persona Type")}</div>
+<div class="field"><div class="label">Lead Event</div>${getValue(data,"Lead Event")}</div>
+<div class="field"><div class="label">Last Comment</div>${getValue(data,"Last Comment")}</div>
+
+<div class="field"><div class="label">Contact No. 1</div>${getValue(data,"Primary Contact No 1")}</div>
+<div class="field"><div class="label">Contact No. 2</div>${getValue(data,"Primary Contact No 2")}</div>
+<div class="field"><div class="label">Contact No. 3</div>${getValue(data,"Primary Contact No 3")}</div>
+
+<div class="field"><div class="label">Email</div>${getValue(data,"Email")}</div>
+
+<div class="field"><div class="label">Hot Lead</div>${getValue(data,"Hot Lead")}</div>
+<div class="field"><div class="label">Pan Card/Aadhar No.</div>${getValue(data,"Pan Card/Aadhar No")}</div>
+
+<div class="field"><div class="label">Appointment Date</div>${getDate(data)}</div>
+<div class="field"><div class="label">Appointment Time</div>${getValue(data,"Appointment Time")}</div>
+
+<div class="field"><div class="label">Application No.</div>${getValue(data,"Application No")}</div>
+
+<div class="field"><div class="label">Customer Segment</div>${getValue(data,"Customer Segment")}</div>
+<div class="field"><div class="label">Lead Potential</div>${getValue(data,"Lead Potential")}</div>
+
+<div class="field"><div class="label">Product Interested</div>${getProduct(data)}</div>
+
+<div class="field"><div class="label">Policy No.</div>${getValue(data,"Policy No")}</div>
+
+<div class="field"><div class="label">MVC</div>${getValue(data,"MVC")}</div>
+<div class="field"><div class="label">PFV</div>${getValue(data,"PFV")}</div>
+<div class="field"><div class="label">PHV</div>${getValue(data,"PHV")}</div>
+
+<div class="field"><div class="label">Priority</div>${getValue(data,"Priority")}</div>
+
+<div class="field"><div class="label">Product Recommendation</div>${getValue(data,"Product Recommendation")}</div>
+
+<div class="field"><div class="label">Source</div>${getValue(data,"Source")}</div>
+
+<div class="field"><div class="label">Comments</div>${getValue(data,"Comments")}</div>
+
+<div class="field"><div class="label">DOB</div>${getDOB(data)}</div>
+
+<div class="field"><div class="label">Alternate No.</div>${getValue(data,"Alternate Number")}</div>
+
+<hr>
+`;
+
+document.getElementById("out").innerHTML = html;
 }
 </script>
 
