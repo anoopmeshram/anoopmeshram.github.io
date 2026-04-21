@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Perfect CRM Extractor</title>
+<title>Accurate CRM Extractor</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
 
-<textarea id="input" style="width:100%;height:150px;"></textarea><br>
+<textarea id="input" style="width:100%;height:180px;"></textarea><br>
 <button onclick="extract()">Extract</button>
 <button onclick="download()">Download</button>
 
@@ -19,13 +19,39 @@
 let data=[]
 let headers=new Set()
 
+// 🔍 identify label (important)
+function isLabel(text){
+  let t=text.toLowerCase()
+
+  return t.includes("name") ||
+         t.includes("address") ||
+         t.includes("details") ||
+         t.includes("city") ||
+         t.includes("state") ||
+         t.includes("zip") ||
+         t.includes("contact") ||
+         t.includes("email") ||
+         t.includes("lead") ||
+         t.includes("status") ||
+         t.includes("policy") ||
+         t.includes("persona") ||
+         t.includes("product") ||
+         t.includes("date") ||
+         t.includes("time") ||
+         t.includes("number") ||
+         t.includes("segment") ||
+         t.includes("potential") ||
+         t.includes("comments") ||
+         t.includes("dob")
+}
+
+// 🧠 label clean
 function cleanLabel(label){
 
   label = label.replace(/[*]/g,"").trim()
 
   if(label.includes("Lead Details")) return "Lead ID"
   if(label.includes("Address /")) return "Address"
-  if(label.includes("PASA Details")) return "PASA Details"
   if(label==="Zip") return "Pin/Zip Code"
 
   if(label.includes("Primary Contact No 1")) return "Contact No. 1"
@@ -41,18 +67,22 @@ function cleanLabel(label){
   return label
 }
 
+// ❌ skip
 function skip(label){
   let l=label.toLowerCase()
   return l.includes("favourite") ||
          l.includes("additional contact")
 }
 
+// 🧹 value clean
 function cleanValue(label,value){
 
-  let v=value.trim().toLowerCase()
-  let l=label.trim().toLowerCase()
+  if(!value) return "-"
 
-  if(!value || v===l) return "-"
+  let v=value.toLowerCase().trim()
+  let l=label.toLowerCase().trim()
+
+  if(v===l) return "-"
   if(v==="select") return "-"
   if(v==="primary contact no.") return "-"
   if(v==="application number") return "-"
@@ -61,6 +91,7 @@ function cleanValue(label,value){
   return value
 }
 
+// 🚀 EXTRACT
 function extract(){
 
   let text=document.getElementById("input").value
@@ -82,15 +113,23 @@ function extract(){
       continue
     }
 
-    let value=lines[i+1] || ""
+    let next = lines[i+1] || ""
+
+    let value=""
+
+    // 🔥 SMART LOGIC
+    if(next && !isLabel(next)){
+      value=next
+      i++ // consume value
+    }else{
+      value="-" // no value
+    }
 
     let newLabel=cleanLabel(label)
     let finalValue=cleanValue(newLabel,value)
 
     obj[newLabel]=finalValue
     headers.add(newLabel)
-
-    i++
   }
 
   data.push(obj)
@@ -104,12 +143,10 @@ function render(){
 
   let keys=[...headers]
 
-  let header="<tr>"+keys.map(k=>`<th>${k}</th>`).join("")+"</tr>"
-  table.innerHTML+=header
+  table.innerHTML += "<tr>"+keys.map(k=>`<th>${k}</th>`).join("")+"</tr>"
 
   data.forEach(d=>{
-    let row="<tr>"+keys.map(k=>`<td>${d[k]||""}</td>`).join("")+"</tr>"
-    table.innerHTML+=row
+    table.innerHTML += "<tr>"+keys.map(k=>`<td>${d[k]||""}</td>`).join("")+"</tr>"
   })
 }
 
@@ -117,7 +154,7 @@ function download(){
   let ws=XLSX.utils.json_to_sheet(data)
   let wb=XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb,ws,"Data")
-  XLSX.writeFile(wb,"final_data.xlsx")
+  XLSX.writeFile(wb,"correct_data.xlsx")
 }
 
 </script>
