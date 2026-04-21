@@ -2,16 +2,26 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Client Advisory Report</title>
+<title>One Page Client Report</title>
 
 <style>
-body { font-family: 'Segoe UI', Arial; background:#eef1f5; }
-.container { max-width: 900px; margin:auto; }
+body {
+  font-family: Arial;
+  background:#f0f2f5;
+}
 
-textarea { width:100%; height:180px; padding:10px; }
+.container {
+  max-width:900px;
+  margin:auto;
+}
+
+textarea {
+  width:100%;
+  height:150px;
+}
 
 button {
-  padding:10px 15px;
+  padding:8px 12px;
   margin-top:10px;
   cursor:pointer;
 }
@@ -19,65 +29,77 @@ button {
 /* DOCUMENT */
 .doc {
   background:white;
-  padding:35px;
+  padding:20px;
   margin-top:20px;
+  font-size:13px;
+  line-height:1.4;
 }
 
 /* HEADER */
 .header {
   display:flex;
   justify-content:space-between;
-  border-bottom:3px solid #000;
-  padding-bottom:10px;
-}
-
-.company { font-size:20px; font-weight:bold; }
-.rm { text-align:right; font-size:13px; }
-
-/* SECTION */
-.section {
-  margin-top:20px;
-}
-
-.section-title {
-  font-weight:bold;
-  font-size:16px;
   border-bottom:2px solid #000;
-  margin-bottom:10px;
+  padding-bottom:5px;
 }
 
-/* TABLE */
+.company { font-weight:bold; font-size:16px; }
+.rm { text-align:right; font-size:11px; }
+
+/* GRID */
+.grid {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+
+.box {
+  border:1px solid #ccc;
+  padding:6px;
+}
+
+.title {
+  font-weight:bold;
+  background:#f5f5f5;
+  padding:3px;
+  margin-bottom:5px;
+}
+
+/* SMALL TABLE */
 table {
   width:100%;
   border-collapse:collapse;
 }
 
 td {
-  border:1px solid #ccc;
-  padding:8px;
+  border:1px solid #ddd;
+  padding:4px;
 }
 
 .label {
-  background:#f7f7f7;
   font-weight:bold;
-  width:35%;
+  width:45%;
 }
 
 /* FOOTER */
 .footer {
-  margin-top:30px;
-  font-size:12px;
+  margin-top:10px;
+  font-size:10px;
   text-align:center;
 }
 
-/* PRINT */
+/* PRINT STRICT A4 */
 @media print {
-  body { background:white; }
-  .no-print { display:none; }
+  body { margin:0; }
+  .no-print { display:none !important; }
 
   .doc {
     width:210mm;
-    min-height:297mm;
+    height:297mm;
+    padding:10mm;
+    font-size:11px;
+    overflow:hidden;
   }
 }
 </style>
@@ -87,13 +109,13 @@ td {
 
 <div class="container">
 
-<h2>Advanced Client Report Generator</h2>
+<h3>One Page Lead Generator</h3>
 
 <textarea id="raw"></textarea>
 
 <div class="no-print">
-<button onclick="generate()">Generate Report</button>
-<button onclick="window.print()">Print / Save PDF</button>
+<button onclick="generate()">Generate</button>
+<button onclick="window.print()">Print</button>
 </div>
 
 <div id="output"></div>
@@ -102,33 +124,28 @@ td {
 
 <script>
 
-// ===== HELPERS =====
-
-function getValue(data, field){
-  let regex = new RegExp(field + "\\s*:?\\s*(.*)", "i");
-  let match = data.match(regex);
-  if(!match) return "-";
-
-  let val = match[1].trim();
-  if(!val || val.toLowerCase() === field.toLowerCase()) return "-";
-  return val;
+// helpers
+function getValue(d,f){
+ let m = d.match(new RegExp(f+"\\s*:?\\s*(.*)","i"));
+ if(!m) return "-";
+ let v = m[1].trim();
+ if(!v || v.toLowerCase()===f.toLowerCase()) return "-";
+ return v;
 }
 
-function getLeadID(data){
-  let match = data.match(/Lead Details\\s*-\\s*(\\d+)/i);
-  return match ? match[1] : "-";
+function leadID(d){
+ let m = d.match(/Lead Details\\s*-\\s*(\\d+)/i);
+ return m?m[1]:"-";
 }
 
-function getZip(data){
-  let val = getValue(data,"Zip");
-  return isNaN(val) ? "-" : val;
+function name(d){
+ return `${getValue(d,"First Name")} ${getValue(d,"Middle Name")} ${getValue(d,"Last Name")}`;
 }
 
-function fullName(data){
-  return `${getValue(data,"First Name")} ${getValue(data,"Middle Name")} ${getValue(data,"Last Name")}`;
+function zip(d){
+ let v = getValue(d,"Zip");
+ return isNaN(v)?"-":v;
 }
-
-// ===== GENERATE =====
 
 function generate(){
 
@@ -137,92 +154,78 @@ let d = document.getElementById("raw").value;
 let html = `
 <div class="doc">
 
-<!-- HEADER -->
 <div class="header">
-  <div class="company">
-    INSURANCE CONSULTANCY REPORT
-  </div>
-  <div class="rm">
-    <b>Anoop Meshram</b><br>
-    Relationship Manager<br>
-    📞 8999053974<br>
-    ✉ anoopmeshram1@gmail.com
-  </div>
+<div class="company">INSURANCE REPORT</div>
+<div class="rm">
+Anoop Meshram<br>
+RM | 8999053974
+</div>
 </div>
 
-<!-- CLIENT SUMMARY -->
-<div class="section">
-<div class="section-title">Client Summary</div>
+<div class="grid">
 
+<div class="box">
+<div class="title">Client</div>
 <table>
-<tr><td class="label">Lead ID</td><td>${getLeadID(d)}</td></tr>
-<tr><td class="label">Full Name</td><td>${fullName(d)}</td></tr>
-<tr><td class="label">Contact Number</td><td>${getValue(d,"Primary Contact No 1")}</td></tr>
+<tr><td class="label">Lead ID</td><td>${leadID(d)}</td></tr>
+<tr><td class="label">Name</td><td>${name(d)}</td></tr>
+<tr><td class="label">Phone</td><td>${getValue(d,"Primary Contact No 1")}</td></tr>
 <tr><td class="label">Email</td><td>${getValue(d,"Email")}</td></tr>
 <tr><td class="label">DOB</td><td>${getValue(d,"DOB")}</td></tr>
 </table>
 </div>
 
-<!-- ADDRESS -->
-<div class="section">
-<div class="section-title">Address Details</div>
-
+<div class="box">
+<div class="title">Address</div>
 <table>
 <tr><td class="label">Address</td><td>${getValue(d,"Address")}</td></tr>
 <tr><td class="label">City</td><td>${getValue(d,"City")}</td></tr>
 <tr><td class="label">State</td><td>${getValue(d,"State")}</td></tr>
-<tr><td class="label">Pin Code</td><td>${getZip(d)}</td></tr>
+<tr><td class="label">Pin</td><td>${zip(d)}</td></tr>
 </table>
 </div>
 
-<!-- LEAD INFO -->
-<div class="section">
-<div class="section-title">Lead Information</div>
-
+<div class="box">
+<div class="title">Lead</div>
 <table>
-<tr><td class="label">Persona Type</td><td>${getValue(d,"Persona Type")}</td></tr>
-<tr><td class="label">Lead Event</td><td>${getValue(d,"Lead Event")}</td></tr>
-<tr><td class="label">Lead Potential</td><td>${getValue(d,"Lead Potential")}</td></tr>
-<tr><td class="label">Customer Segment</td><td>${getValue(d,"Customer Segment")}</td></tr>
+<tr><td class="label">Persona</td><td>${getValue(d,"Persona Type")}</td></tr>
+<tr><td class="label">Potential</td><td>${getValue(d,"Lead Potential")}</td></tr>
+<tr><td class="label">Segment</td><td>${getValue(d,"Customer Segment")}</td></tr>
+<tr><td class="label">Event</td><td>${getValue(d,"Lead Event")}</td></tr>
 </table>
 </div>
 
-<!-- PRODUCT -->
-<div class="section">
-<div class="section-title">Product Insights</div>
-
+<div class="box">
+<div class="title">Product</div>
 <table>
-<tr><td class="label">Product Interested</td><td>${getValue(d,"Product Interested")}</td></tr>
-<tr><td class="label">Recommendation</td><td>${getValue(d,"Product Recommendation")}</td></tr>
+<tr><td class="label">Interested</td><td>${getValue(d,"Product Interested")}</td></tr>
+<tr><td class="label">Recommended</td><td>${getValue(d,"Product Recommendation")}</td></tr>
 <tr><td class="label">Policy No</td><td>${getValue(d,"Policy No")}</td></tr>
 </table>
 </div>
 
-<!-- INTERACTION -->
-<div class="section">
-<div class="section-title">Interaction Details</div>
-
+<div class="box">
+<div class="title">Interaction</div>
 <table>
 <tr><td class="label">Last Comment</td><td>${getValue(d,"Last Comment")}</td></tr>
-<tr><td class="label">Appointment Date</td><td>${getValue(d,"Appointment Date")}</td></tr>
-<tr><td class="label">Appointment Time</td><td>${getValue(d,"Appointment Time")}</td></tr>
+<tr><td class="label">Date</td><td>${getValue(d,"Appointment Date")}</td></tr>
+<tr><td class="label">Time</td><td>${getValue(d,"Appointment Time")}</td></tr>
 </table>
 </div>
 
-<!-- ANALYSIS -->
-<div class="section">
-<div class="section-title">Advisor Notes & Analysis</div>
-
-<p>
-Based on available data, the client shows <b>${getValue(d,"Lead Potential")}</b> potential.
-Recommended product aligns with customer profile and financial planning needs.
-Further discussion required to finalize policy structure and premium commitment.
-</p>
+<div class="box">
+<div class="title">Other</div>
+<table>
+<tr><td class="label">Customer Segment</td><td>${getValue(d,"Customer Segment")}</td></tr>
+<tr><td class="label">Priority</td><td>${getValue(d,"Priority")}</td></tr>
+<tr><td class="label">Source</td><td>${getValue(d,"Source")}</td></tr>
+</table>
 </div>
 
-<!-- FOOTER -->
+</div>
+
 <div class="footer">
-This is a confidential advisory report prepared for internal and client discussion purposes.
+Confidential | Internal Use | Generated Report
 </div>
 
 </div>
@@ -230,7 +233,6 @@ This is a confidential advisory report prepared for internal and client discussi
 
 document.getElementById("output").innerHTML = html;
 }
-
 </script>
 
 </body>
