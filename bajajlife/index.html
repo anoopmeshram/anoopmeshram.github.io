@@ -2,93 +2,83 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Client Lead Report</title>
+<title>Client Advisory Report</title>
 
 <style>
-body {
-    font-family: 'Segoe UI', Arial;
-    background: #f0f2f5;
-}
+body { font-family: 'Segoe UI', Arial; background:#eef1f5; }
+.container { max-width: 900px; margin:auto; }
 
-.container {
-    max-width: 900px;
-    margin: auto;
-}
-
-textarea {
-    width: 100%;
-    height: 180px;
-    padding: 10px;
-}
+textarea { width:100%; height:180px; padding:10px; }
 
 button {
-    padding: 10px 15px;
-    margin-top: 10px;
-    cursor: pointer;
+  padding:10px 15px;
+  margin-top:10px;
+  cursor:pointer;
 }
 
 /* DOCUMENT */
-.document {
-    background: white;
-    padding: 30px;
-    margin-top: 20px;
-    border-radius: 8px;
+.doc {
+  background:white;
+  padding:35px;
+  margin-top:20px;
 }
 
 /* HEADER */
 .header {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 2px solid #000;
-    padding-bottom: 10px;
+  display:flex;
+  justify-content:space-between;
+  border-bottom:3px solid #000;
+  padding-bottom:10px;
 }
 
-.company {
-    font-size: 20px;
-    font-weight: bold;
+.company { font-size:20px; font-weight:bold; }
+.rm { text-align:right; font-size:13px; }
+
+/* SECTION */
+.section {
+  margin-top:20px;
 }
 
-.rm {
-    text-align: right;
-    font-size: 14px;
-}
-
-/* TITLE */
-.title {
-    text-align: center;
-    margin: 20px 0;
-    font-size: 22px;
-    font-weight: bold;
+.section-title {
+  font-weight:bold;
+  font-size:16px;
+  border-bottom:2px solid #000;
+  margin-bottom:10px;
 }
 
 /* TABLE */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+  width:100%;
+  border-collapse:collapse;
 }
 
 td {
-    border: 1px solid #ccc;
-    padding: 8px;
+  border:1px solid #ccc;
+  padding:8px;
 }
 
 .label {
-    font-weight: bold;
-    width: 35%;
-    background: #f7f7f7;
+  background:#f7f7f7;
+  font-weight:bold;
+  width:35%;
+}
+
+/* FOOTER */
+.footer {
+  margin-top:30px;
+  font-size:12px;
+  text-align:center;
 }
 
 /* PRINT */
 @media print {
-    body { background: white; }
-    .no-print { display: none; }
+  body { background:white; }
+  .no-print { display:none; }
 
-    .document {
-        width: 210mm;
-        min-height: 297mm;
-        border-radius: 0;
-    }
+  .doc {
+    width:210mm;
+    min-height:297mm;
+  }
 }
 </style>
 </head>
@@ -97,7 +87,7 @@ td {
 
 <div class="container">
 
-<h2>Premium Lead Generator</h2>
+<h2>Advanced Client Report Generator</h2>
 
 <textarea id="raw"></textarea>
 
@@ -112,78 +102,127 @@ td {
 
 <script>
 
-// helpers
-function getValue(data, field){
-    let regex = new RegExp(field + "\\s*:?\\s*(.*)", "i");
-    let match = data.match(regex);
-    if(!match) return "-";
+// ===== HELPERS =====
 
-    let val = match[1].trim();
-    if(!val || val.toLowerCase() === field.toLowerCase()) return "-";
-    return val;
+function getValue(data, field){
+  let regex = new RegExp(field + "\\s*:?\\s*(.*)", "i");
+  let match = data.match(regex);
+  if(!match) return "-";
+
+  let val = match[1].trim();
+  if(!val || val.toLowerCase() === field.toLowerCase()) return "-";
+  return val;
 }
 
 function getLeadID(data){
-    let match = data.match(/Lead Details\\s*-\\s*(\\d+)/i);
-    return match ? match[1] : "-";
+  let match = data.match(/Lead Details\\s*-\\s*(\\d+)/i);
+  return match ? match[1] : "-";
 }
 
 function getZip(data){
-    let val = getValue(data,"Zip");
-    return isNaN(val) ? "-" : val;
+  let val = getValue(data,"Zip");
+  return isNaN(val) ? "-" : val;
 }
+
+function fullName(data){
+  return `${getValue(data,"First Name")} ${getValue(data,"Middle Name")} ${getValue(data,"Last Name")}`;
+}
+
+// ===== GENERATE =====
 
 function generate(){
 
-let data = document.getElementById("raw").value;
+let d = document.getElementById("raw").value;
 
 let html = `
-<div class="document">
+<div class="doc">
 
+<!-- HEADER -->
 <div class="header">
-    <div class="company">INSURANCE CONSULTANCY REPORT</div>
-    <div class="rm">
-        <b>Anoop Meshram</b><br>
-        Relationship Manager<br>
-        📞 8999053974
-    </div>
+  <div class="company">
+    INSURANCE CONSULTANCY REPORT
+  </div>
+  <div class="rm">
+    <b>Anoop Meshram</b><br>
+    Relationship Manager<br>
+    📞 8999053974<br>
+    ✉ anoopmeshram1@gmail.com
+  </div>
 </div>
 
-<div class="title">Client Lead Summary</div>
+<!-- CLIENT SUMMARY -->
+<div class="section">
+<div class="section-title">Client Summary</div>
 
 <table>
-<tr><td class="label">Lead ID</td><td>${getLeadID(data)}</td></tr>
-
-<tr><td class="label">Full Name</td>
-<td>${getValue(data,"First Name")} ${getValue(data,"Middle Name")} ${getValue(data,"Last Name")}</td></tr>
-
-<tr><td class="label">Contact No.</td><td>${getValue(data,"Primary Contact No 1")}</td></tr>
-<tr><td class="label">Email</td><td>${getValue(data,"Email")}</td></tr>
-
-<tr><td class="label">Address</td><td>${getValue(data,"Address")}</td></tr>
-<tr><td class="label">City / State</td>
-<td>${getValue(data,"City")} / ${getValue(data,"State")}</td></tr>
-
-<tr><td class="label">Pin Code</td><td>${getZip(data)}</td></tr>
-
-<tr><td class="label">Customer Segment</td><td>${getValue(data,"Customer Segment")}</td></tr>
-<tr><td class="label">Lead Potential</td><td>${getValue(data,"Lead Potential")}</td></tr>
-
-<tr><td class="label">Product Interested</td><td>${getValue(data,"Product Interested")}</td></tr>
-<tr><td class="label">Product Recommendation</td><td>${getValue(data,"Product Recommendation")}</td></tr>
-
-<tr><td class="label">Lead Event</td><td>${getValue(data,"Lead Event")}</td></tr>
-<tr><td class="label">Last Comment</td><td>${getValue(data,"Last Comment")}</td></tr>
-
-<tr><td class="label">DOB</td><td>${getValue(data,"DOB")}</td></tr>
-<tr><td class="label">Appointment Date</td><td>${getValue(data,"Appointment Date")}</td></tr>
-
+<tr><td class="label">Lead ID</td><td>${getLeadID(d)}</td></tr>
+<tr><td class="label">Full Name</td><td>${fullName(d)}</td></tr>
+<tr><td class="label">Contact Number</td><td>${getValue(d,"Primary Contact No 1")}</td></tr>
+<tr><td class="label">Email</td><td>${getValue(d,"Email")}</td></tr>
+<tr><td class="label">DOB</td><td>${getValue(d,"DOB")}</td></tr>
 </table>
+</div>
 
-<br><br>
+<!-- ADDRESS -->
+<div class="section">
+<div class="section-title">Address Details</div>
 
-<div style="text-align:center; font-size:12px;">
-This is a system generated report for internal use.
+<table>
+<tr><td class="label">Address</td><td>${getValue(d,"Address")}</td></tr>
+<tr><td class="label">City</td><td>${getValue(d,"City")}</td></tr>
+<tr><td class="label">State</td><td>${getValue(d,"State")}</td></tr>
+<tr><td class="label">Pin Code</td><td>${getZip(d)}</td></tr>
+</table>
+</div>
+
+<!-- LEAD INFO -->
+<div class="section">
+<div class="section-title">Lead Information</div>
+
+<table>
+<tr><td class="label">Persona Type</td><td>${getValue(d,"Persona Type")}</td></tr>
+<tr><td class="label">Lead Event</td><td>${getValue(d,"Lead Event")}</td></tr>
+<tr><td class="label">Lead Potential</td><td>${getValue(d,"Lead Potential")}</td></tr>
+<tr><td class="label">Customer Segment</td><td>${getValue(d,"Customer Segment")}</td></tr>
+</table>
+</div>
+
+<!-- PRODUCT -->
+<div class="section">
+<div class="section-title">Product Insights</div>
+
+<table>
+<tr><td class="label">Product Interested</td><td>${getValue(d,"Product Interested")}</td></tr>
+<tr><td class="label">Recommendation</td><td>${getValue(d,"Product Recommendation")}</td></tr>
+<tr><td class="label">Policy No</td><td>${getValue(d,"Policy No")}</td></tr>
+</table>
+</div>
+
+<!-- INTERACTION -->
+<div class="section">
+<div class="section-title">Interaction Details</div>
+
+<table>
+<tr><td class="label">Last Comment</td><td>${getValue(d,"Last Comment")}</td></tr>
+<tr><td class="label">Appointment Date</td><td>${getValue(d,"Appointment Date")}</td></tr>
+<tr><td class="label">Appointment Time</td><td>${getValue(d,"Appointment Time")}</td></tr>
+</table>
+</div>
+
+<!-- ANALYSIS -->
+<div class="section">
+<div class="section-title">Advisor Notes & Analysis</div>
+
+<p>
+Based on available data, the client shows <b>${getValue(d,"Lead Potential")}</b> potential.
+Recommended product aligns with customer profile and financial planning needs.
+Further discussion required to finalize policy structure and premium commitment.
+</p>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+This is a confidential advisory report prepared for internal and client discussion purposes.
 </div>
 
 </div>
@@ -191,6 +230,7 @@ This is a system generated report for internal use.
 
 document.getElementById("output").innerHTML = html;
 }
+
 </script>
 
 </body>
