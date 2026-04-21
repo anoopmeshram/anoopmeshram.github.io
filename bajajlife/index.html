@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Fixed CRM Extractor</title>
+<title>Perfect CRM Extractor</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
@@ -21,6 +21,8 @@ let headers=new Set()
 
 function cleanLabel(label){
 
+  label = label.replace(/[*]/g,"").trim()
+
   if(label.includes("Lead Details")) return "Lead ID"
   if(label.includes("Address /")) return "Address"
   if(label.includes("PASA Details")) return "PASA Details"
@@ -36,7 +38,7 @@ function cleanLabel(label){
   if(label.includes("Appointment Time")) return "Appointment Time"
   if(label.includes("Alternate Number")) return "Alternate No."
 
-  return label.replace(/\*/g,"").trim()
+  return label
 }
 
 function skip(label){
@@ -115,7 +117,7 @@ function download(){
   let ws=XLSX.utils.json_to_sheet(data)
   let wb=XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb,ws,"Data")
-  XLSX.writeFile(wb,"fixed_data.xlsx")
+  XLSX.writeFile(wb,"final_data.xlsx")
 }
 
 </script>
