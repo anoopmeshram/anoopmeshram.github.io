@@ -3,11 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <title>Leads Extractor Tool</title>
+
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
 <style>
   body { font-family: Arial; padding: 20px; }
-  table { border-collapse: collapse; margin-top: 20px; }
-  th, td { border: 1px solid #000; padding: 8px; }
+
+  #dropArea {
+    border: 2px dashed #999;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin-top: 20px;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: left;
+  }
+
+  th {
+    background: #f2f2f2;
+  }
 </style>
 </head>
 
@@ -15,63 +38,146 @@
 
 <h2>📸 Screenshot to Leads Table Extractor</h2>
 
+<div id="dropArea">
+  📋 Paste (Ctrl+V) OR 📁 Upload OR 🖱 Drag & Drop Screenshot Here
+</div>
+
 <input type="file" id="imageInput">
 <button onclick="extractText()">Extract Table</button>
+
+<br><br>
+<img id="preview" style="max-width:300px;"/>
 
 <p id="status"></p>
 
 <table id="resultTable">
-  <thead>
-    <tr>
-      <th>Lead No</th>
-      <th>Policy No</th>
-      <th>Customer Name</th>
-      <th>Mobile No</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
+<thead>
+<tr>
+  <th>Lead No.</th>
+  <th>Policy No.</th>
+  <th>Customer Name</th>
+  <th>Mobile No.</th>
+  <th>Lead Mode</th>
+  <th>Lead Code</th>
+  <th>Status</th>
+  <th>Register Date</th>
+  <th>Owner</th>
+</tr>
+</thead>
+<tbody></tbody>
 </table>
 
 <script>
+let selectedImage = null;
+
+// FILE UPLOAD
+document.getElementById("imageInput").addEventListener("change", function(e) {
+  selectedImage = e.target.files[0];
+  previewImage(selectedImage);
+});
+
+// PASTE SUPPORT
+document.addEventListener("paste", function(e) {
+  const items = e.clipboardData.items;
+
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf("image") !== -1) {
+      selectedImage = items[i].getAsFile();
+      previewImage(selectedImage);
+      extractText(); // auto extract
+    }
+  }
+});
+
+// DRAG DROP
+const dropArea = document.getElementById("dropArea");
+
+dropArea.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropArea.style.background = "#eee";
+});
+
+dropArea.addEventListener("dragleave", () => {
+  dropArea.style.background = "";
+});
+
+dropArea.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropArea.style.background = "";
+
+  const file = e.dataTransfer.files[0];
+  if (file.type.startsWith("image/")) {
+    selectedImage = file;
+    previewImage(file);
+    extractText();
+  }
+});
+
+// PREVIEW
+function previewImage(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById("preview").src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// MAIN OCR + PARSING
 function extractText() {
-  const file = document.getElementById("imageInput").files[0];
-  if (!file) {
-    alert("Please upload image");
+  if (!selectedImage) {
+    alert("Paste or upload image first");
     return;
   }
 
   document.getElementById("status").innerText = "Processing...";
 
-  Tesseract.recognize(
-    file,
-    'eng',
-    { logger: m => console.log(m) }
-  ).then(({ data: { text } }) => {
+  Tesseract.recognize(selectedImage, 'eng')
+    .then(({ data: { text } }) => {
 
-    document.getElementById("status").innerText = "Extraction Done";
+      document.getElementById("status").innerText = "Extraction Done";
 
-    const lines = text.split("\n");
-    const tbody = document.querySelector("#resultTable tbody");
-    tbody.innerHTML = "";
+      const lines = text.split("\n");
+      const tbody = document.querySelector("#resultTable tbody");
+      tbody.innerHTML = "";
 
-    lines.forEach(line => {
-      // Simple pattern (customize as needed)
-      if (line.match(/\d{8}/)) {
-        const parts = line.split(" ");
+      lines.forEach(line => {
 
-        const row = `
+        // Patterns
+        const lead = line.match(/\b\d{8}\b/);
+        const mobile = line.match(/\b\d{10}\b/);
+        const policy = line.match(/\b0\d{9}\b/);
+        const date = line.match(/\d{2}-[A-Z]{3}-\d{2}/);
+
+        if (lead && mobile) {
+
+          let name = line
+            .replace(/\d+/g, "")
+            .replace(/D2SM_AVER|UPS_PROP|ASSIGNED/g, "")
+            .replace(/\d{2}-[A-Z]{3}-\d{2}/g, "")
+            .replace(/Anoop bandu Meshram/gi, "")
+            .replace(/[^\w\s]/g, "")
+            .trim();
+
+          const row = `
           <tr>
-            <td>${parts[0] || ""}</td>
-            <td>${parts[1] || ""}</td>
-            <td>${parts.slice(2, -1).join(" ")}</td>
-            <td>${parts[parts.length - 1] || ""}</td>
+            <td>${lead ? lead[0] : ""}</td>
+            <td>${policy ? policy[0] : ""}</td>
+            <td>${name}</td>
+            <td>${mobile ? mobile[0] : ""}</td>
+            <td>D2SM_AVER</td>
+            <td>UPS_PROP</td>
+            <td>ASSIGNED</td>
+            <td>${date ? date[0] : ""}</td>
+            <td>Anoop bandu Meshram</td>
           </tr>
-        `;
-        tbody.innerHTML += row;
-      }
-    });
+          `;
 
-  });
+          tbody.innerHTML += row;
+        }
+
+      });
+
+    });
 }
 </script>
 
