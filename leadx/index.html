@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Leads Extractor Tool</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  table { border-collapse: collapse; margin-top: 20px; }
+  th, td { border: 1px solid #000; padding: 8px; }
+</style>
+</head>
+
+<body>
+
+<h2>📸 Screenshot to Leads Table Extractor</h2>
+
+<input type="file" id="imageInput">
+<button onclick="extractText()">Extract Table</button>
+
+<p id="status"></p>
+
+<table id="resultTable">
+  <thead>
+    <tr>
+      <th>Lead No</th>
+      <th>Policy No</th>
+      <th>Customer Name</th>
+      <th>Mobile No</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+function extractText() {
+  const file = document.getElementById("imageInput").files[0];
+  if (!file) {
+    alert("Please upload image");
+    return;
+  }
+
+  document.getElementById("status").innerText = "Processing...";
+
+  Tesseract.recognize(
+    file,
+    'eng',
+    { logger: m => console.log(m) }
+  ).then(({ data: { text } }) => {
+
+    document.getElementById("status").innerText = "Extraction Done";
+
+    const lines = text.split("\n");
+    const tbody = document.querySelector("#resultTable tbody");
+    tbody.innerHTML = "";
+
+    lines.forEach(line => {
+      // Simple pattern (customize as needed)
+      if (line.match(/\d{8}/)) {
+        const parts = line.split(" ");
+
+        const row = `
+          <tr>
+            <td>${parts[0] || ""}</td>
+            <td>${parts[1] || ""}</td>
+            <td>${parts.slice(2, -1).join(" ")}</td>
+            <td>${parts[parts.length - 1] || ""}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      }
+    });
+
+  });
+}
+</script>
+
+</body>
+</html>
