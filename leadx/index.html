@@ -3,14 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <title>Leads Extractor</title>
+
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
 <style>
 body { font-family: Arial; padding: 20px; }
-#dropArea { border:2px dashed #999; padding:20px; text-align:center; margin-bottom:10px;}
-table { border-collapse: collapse; margin-top:20px; width:100%;}
-th,td { border:1px solid #000; padding:6px;}
-th { background:#eee;}
+
+#dropArea {
+  border: 2px dashed #999;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+table {
+  border-collapse: collapse;
+  margin-top: 20px;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #000;
+  padding: 6px;
+}
+
+th { background: #eee; }
 </style>
 </head>
 
@@ -19,6 +36,7 @@ th { background:#eee;}
 <h2>📸 Leads Extractor</h2>
 
 <div id="dropArea">Paste (Ctrl+V) / Upload / Drag Image</div>
+
 <input type="file" id="imageInput">
 <button onclick="extractText()">Extract</button>
 
@@ -47,11 +65,13 @@ th { background:#eee;}
 <script>
 let selectedImage = null;
 
+// Upload
 imageInput.onchange = e => {
   selectedImage = e.target.files[0];
   preview(selectedImage);
 };
 
+// Paste
 document.addEventListener("paste", e => {
   for (let item of e.clipboardData.items) {
     if (item.type.includes("image")) {
@@ -62,6 +82,9 @@ document.addEventListener("paste", e => {
   }
 });
 
+// Drag & Drop
+dropArea.ondragover = e => e.preventDefault();
+
 dropArea.ondrop = e => {
   e.preventDefault();
   selectedImage = e.dataTransfer.files[0];
@@ -69,14 +92,14 @@ dropArea.ondrop = e => {
   extractText();
 };
 
-dropArea.ondragover = e => e.preventDefault();
-
+// Preview
 function preview(file){
   const r = new FileReader();
-  r.onload = e => previewImg.src = e.target.result;
+  r.onload = e => preview.src = e.target.result;
   r.readAsDataURL(file);
 }
 
+// MAIN FUNCTION
 function extractText(){
 
   if(!selectedImage) return alert("Upload image");
@@ -98,47 +121,41 @@ function extractText(){
       const lead = line.match(/\b\d{8}\b/);
       if(!lead) return;
 
-      const nums = line.match(/\d+/g) || [];
+      const numbers = line.match(/\d{10}/g) || [];
+      const dateMatch = line.match(/\d{2}-[A-Z]{3}-\d{2}/);
 
       let policy = "";
       let mobile = "";
 
-      nums.forEach(n=>{
-        if(n.length===10 && n.startsWith("0") && !policy){
-          policy = n;
-        }
-        else if(n.length===10 && !mobile){
-          mobile = n;
+      numbers.forEach(n=>{
+        if(n.startsWith("0") && !policy) policy = n;
+        else if(!mobile) mobile = n;
+      });
+
+      // 🔥 FINAL NAME CLEANING LOGIC
+      let clean = line
+        .replace(/\d+/g," ")
+        .replace(/ASSIGNED|D2SM_AVER|UPS_PROP|APR|DSM|AVER/gi," ")
+        .replace(/Anoop bandu Meshram/gi," ")
+        .replace(/\d{2}-[A-Z]{3}-\d{2}/g," ")
+        .replace(/[^A-Za-z\s]/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+
+      let words = clean.split(" ").filter(w => w.length >= 3);
+
+      let fixed = [];
+
+      words.forEach(w=>{
+        if(w.length > 8){
+          let mid = Math.floor(w.length/2);
+          fixed.push(w.slice(0,mid), w.slice(mid));
+        } else {
+          fixed.push(w);
         }
       });
 
-      // DATE
-      const dateMatch = line.match(/\d{2}-[A-Z]{3}-\d{2}/);
-      const date = dateMatch ? dateMatch[0] : "";
-
-      // 🔥 NAME EXTRACTION (STRICT)
-      let name = line;
-
-      // remove numbers
-      name = name.replace(/\d+/g,"");
-
-      // remove keywords
-      name = name.replace(/ASSIGNED|D2SM_AVER|UPS_PROP|APR|DSM|AVER/gi,"");
-
-      // remove owner
-      name = name.replace(/Anoop bandu Meshram/gi,"");
-
-      // keep only letters + space
-      name = name.replace(/[^A-Za-z\s]/g,"");
-
-      // normalize
-      name = name.replace(/\s+/g," ").trim();
-
-      // fix joined names like RAHULTRIVEDI → RAHUL TRIVEDI
-      name = name.replace(/([A-Z]{3,})([A-Z]{3,})/g,"$1 $2");
-
-      // limit to max 4 words
-      name = name.split(" ").slice(0,4).join(" ");
+      let name = fixed.slice(0,3).join(" ");
 
       const row = `
       <tr>
@@ -149,7 +166,7 @@ function extractText(){
         <td>D2SM_AVER</td>
         <td>UPS_PROP</td>
         <td>ASSIGNED</td>
-        <td>${date}</td>
+        <td>${dateMatch ? dateMatch[0] : ""}</td>
         <td>Anoop bandu Meshram</td>
       </tr>`;
 
