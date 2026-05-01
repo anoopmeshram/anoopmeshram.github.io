@@ -7,30 +7,27 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
 <style>
-  body { font-family: Arial; padding: 20px; }
+body { font-family: Arial; padding: 20px; }
 
-  #dropArea {
-    border: 2px dashed #999;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 10px;
-  }
+#dropArea {
+  border: 2px dashed #999;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 10px;
+}
 
-  table {
-    border-collapse: collapse;
-    margin-top: 20px;
-    width: 100%;
-  }
+table {
+  border-collapse: collapse;
+  margin-top: 20px;
+  width: 100%;
+}
 
-  th, td {
-    border: 1px solid #000;
-    padding: 6px;
-    text-align: left;
-  }
+th, td {
+  border: 1px solid #000;
+  padding: 6px;
+}
 
-  th {
-    background: #f2f2f2;
-  }
+th { background: #f2f2f2; }
 </style>
 </head>
 
@@ -39,7 +36,7 @@
 <h2>📸 Screenshot to Leads Table Extractor</h2>
 
 <div id="dropArea">
-  📋 Paste (Ctrl+V) OR 📁 Upload OR 🖱 Drag & Drop Screenshot Here
+📋 Paste (Ctrl+V) OR 📁 Upload OR 🖱 Drag & Drop Screenshot Here
 </div>
 
 <input type="file" id="imageInput">
@@ -70,29 +67,25 @@
 <script>
 let selectedImage = null;
 
-// FILE UPLOAD
-document.getElementById("imageInput").addEventListener("change", function(e) {
+// Upload
+imageInput.addEventListener("change", e => {
   selectedImage = e.target.files[0];
-  previewImage(selectedImage);
+  preview(selectedImage);
 });
 
-// PASTE SUPPORT
-document.addEventListener("paste", function(e) {
-  const items = e.clipboardData.items;
-
-  for (let i = 0; i < items.length; i++) {
-    if (items[i].type.indexOf("image") !== -1) {
-      selectedImage = items[i].getAsFile();
-      previewImage(selectedImage);
-      extractText(); // auto extract
+// Paste
+document.addEventListener("paste", e => {
+  for (let item of e.clipboardData.items) {
+    if (item.type.includes("image")) {
+      selectedImage = item.getAsFile();
+      preview(selectedImage);
+      extractText();
     }
   }
 });
 
-// DRAG DROP
-const dropArea = document.getElementById("dropArea");
-
-dropArea.addEventListener("dragover", (e) => {
+// Drag drop
+dropArea.addEventListener("dragover", e => {
   e.preventDefault();
   dropArea.style.background = "#eee";
 });
@@ -101,79 +94,87 @@ dropArea.addEventListener("dragleave", () => {
   dropArea.style.background = "";
 });
 
-dropArea.addEventListener("drop", (e) => {
+dropArea.addEventListener("drop", e => {
   e.preventDefault();
   dropArea.style.background = "";
-
-  const file = e.dataTransfer.files[0];
-  if (file.type.startsWith("image/")) {
-    selectedImage = file;
-    previewImage(file);
-    extractText();
-  }
+  selectedImage = e.dataTransfer.files[0];
+  preview(selectedImage);
+  extractText();
 });
 
-// PREVIEW
-function previewImage(file) {
+// Preview
+function preview(file) {
   const reader = new FileReader();
-  reader.onload = function(e) {
-    document.getElementById("preview").src = e.target.result;
-  };
+  reader.onload = e => previewImg.src = e.target.result;
   reader.readAsDataURL(file);
 }
 
-// MAIN OCR + PARSING
+// MAIN LOGIC
 function extractText() {
-  if (!selectedImage) {
-    alert("Paste or upload image first");
-    return;
-  }
+  if (!selectedImage) return alert("Upload/Paste image first");
 
-  document.getElementById("status").innerText = "Processing...";
+  status.innerText = "Processing...";
 
   Tesseract.recognize(selectedImage, 'eng')
     .then(({ data: { text } }) => {
 
-      document.getElementById("status").innerText = "Extraction Done";
+      status.innerText = "Extraction Done";
 
-      const lines = text.split("\n");
       const tbody = document.querySelector("#resultTable tbody");
       tbody.innerHTML = "";
 
+      const lines = text.split("\n");
+
       lines.forEach(line => {
 
-        // Patterns
         const lead = line.match(/\b\d{8}\b/);
-        const mobile = line.match(/\b\d{10}\b/);
-        const policy = line.match(/\b0\d{9}\b/);
+        const numbers = line.match(/\d{10}/g) || [];
         const date = line.match(/\d{2}-[A-Z]{3}-\d{2}/);
 
-        if (lead && mobile) {
+        if (!lead) return;
 
-          let name = line
-            .replace(/\d+/g, "")
-            .replace(/D2SM_AVER|UPS_PROP|ASSIGNED/g, "")
-            .replace(/\d{2}-[A-Z]{3}-\d{2}/g, "")
-            .replace(/Anoop bandu Meshram/gi, "")
-            .replace(/[^\w\s]/g, "")
-            .trim();
+        // Identify policy & mobile correctly
+        let policy = "";
+        let mobile = "";
 
-          const row = `
-          <tr>
-            <td>${lead ? lead[0] : ""}</td>
-            <td>${policy ? policy[0] : ""}</td>
-            <td>${name}</td>
-            <td>${mobile ? mobile[0] : ""}</td>
-            <td>D2SM_AVER</td>
-            <td>UPS_PROP</td>
-            <td>ASSIGNED</td>
-            <td>${date ? date[0] : ""}</td>
-            <td>Anoop bandu Meshram</td>
-          </tr>
-          `;
+        numbers.forEach(num => {
+          if (num.startsWith("0") && !policy) policy = num;
+          else if (!mobile) mobile = num;
+        });
 
-          tbody.innerHTML += row;
+        // Clean name properly
+        let name = line;
+
+        name = name
+          .replace(/\d+/g, "") // remove numbers
+          .replace(/D2SM_AVER|UPS_PROP|ASSIGNED|APR|DSM|AVER/gi, "")
+          .replace(/Anoop bandu Meshram/gi, "")
+          .replace(/\d{2}-[A-Z]{3}-\d{2}/g, "")
+          .replace(/[^\w\s]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        // Remove extra words after 3–4 tokens (optional refinement)
+        let words = name.split(" ");
+        if (words.length > 4) {
+          name = words.slice(0, 4).join(" ");
         }
+
+        const row = `
+        <tr>
+          <td>${lead[0]}</td>
+          <td>${policy}</td>
+          <td>${name}</td>
+          <td>${mobile}</td>
+          <td>D2SM_AVER</td>
+          <td>UPS_PROP</td>
+          <td>ASSIGNED</td>
+          <td>${date ? date[0] : ""}</td>
+          <td>Anoop bandu Meshram</td>
+        </tr>
+        `;
+
+        tbody.innerHTML += row;
 
       });
 
