@@ -84,7 +84,7 @@ document.addEventListener("paste", e => {
   }
 });
 
-// Drag drop
+// Drag & Drop
 dropArea.addEventListener("dragover", e => {
   e.preventDefault();
   dropArea.style.background = "#eee";
@@ -109,7 +109,7 @@ function preview(file) {
   reader.readAsDataURL(file);
 }
 
-// MAIN LOGIC
+// MAIN EXTRACTION
 function extractText() {
   if (!selectedImage) return alert("Upload/Paste image first");
 
@@ -133,7 +133,6 @@ function extractText() {
 
         if (!lead) return;
 
-        // Identify policy & mobile correctly
         let policy = "";
         let mobile = "";
 
@@ -142,22 +141,18 @@ function extractText() {
           else if (!mobile) mobile = num;
         });
 
-        // Clean name properly
-        let name = line;
+        // 🔥 SMART NAME EXTRACTION
+        let words = line.split(" ");
 
-        name = name
-          .replace(/\d+/g, "") // remove numbers
-          .replace(/D2SM_AVER|UPS_PROP|ASSIGNED|APR|DSM|AVER/gi, "")
-          .replace(/Anoop bandu Meshram/gi, "")
-          .replace(/\d{2}-[A-Z]{3}-\d{2}/g, "")
-          .replace(/[^\w\s]/g, "")
-          .replace(/\s+/g, " ")
-          .trim();
+        let nameParts = words.filter(w => {
+          return /^[A-Z]{3,}$/.test(w); // only clean uppercase words
+        });
 
-        // Remove extra words after 3–4 tokens (optional refinement)
-        let words = name.split(" ");
-        if (words.length > 4) {
-          name = words.slice(0, 4).join(" ");
+        let name = nameParts.join(" ");
+
+        // limit to 2–4 words max
+        if (nameParts.length > 4) {
+          name = nameParts.slice(0, 4).join(" ");
         }
 
         const row = `
