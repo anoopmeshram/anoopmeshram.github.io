@@ -2,63 +2,43 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Leads Extractor Tool</title>
-
+<title>Leads Extractor</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
 <style>
 body { font-family: Arial; padding: 20px; }
-
-#dropArea {
-  border: 2px dashed #999;
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-table {
-  border-collapse: collapse;
-  margin-top: 20px;
-  width: 100%;
-}
-
-th, td {
-  border: 1px solid #000;
-  padding: 6px;
-}
-
-th { background: #f2f2f2; }
+#dropArea { border:2px dashed #999; padding:20px; text-align:center; margin-bottom:10px;}
+table { border-collapse: collapse; margin-top:20px; width:100%;}
+th,td { border:1px solid #000; padding:6px;}
+th { background:#eee;}
 </style>
 </head>
 
 <body>
 
-<h2>📸 Screenshot to Leads Table Extractor</h2>
+<h2>📸 Leads Extractor</h2>
 
-<div id="dropArea">
-📋 Paste (Ctrl+V) OR 📁 Upload OR 🖱 Drag & Drop Screenshot Here
-</div>
-
+<div id="dropArea">Paste (Ctrl+V) / Upload / Drag Image</div>
 <input type="file" id="imageInput">
-<button onclick="extractText()">Extract Table</button>
+<button onclick="extractText()">Extract</button>
 
 <br><br>
-<img id="preview" style="max-width:300px;"/>
+<img id="preview" style="max-width:300px;">
 
 <p id="status"></p>
 
 <table id="resultTable">
 <thead>
 <tr>
-  <th>Lead No.</th>
-  <th>Policy No.</th>
-  <th>Customer Name</th>
-  <th>Mobile No.</th>
-  <th>Lead Mode</th>
-  <th>Lead Code</th>
-  <th>Status</th>
-  <th>Register Date</th>
-  <th>Owner</th>
+<th>Lead No.</th>
+<th>Policy No.</th>
+<th>Customer Name</th>
+<th>Mobile No.</th>
+<th>Lead Mode</th>
+<th>Lead Code</th>
+<th>Status</th>
+<th>Register Date</th>
+<th>Owner</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -67,13 +47,11 @@ th { background: #f2f2f2; }
 <script>
 let selectedImage = null;
 
-// Upload
-imageInput.addEventListener("change", e => {
+imageInput.onchange = e => {
   selectedImage = e.target.files[0];
   preview(selectedImage);
-});
+};
 
-// Paste
 document.addEventListener("paste", e => {
   for (let item of e.clipboardData.items) {
     if (item.type.includes("image")) {
@@ -84,96 +62,102 @@ document.addEventListener("paste", e => {
   }
 });
 
-// Drag & Drop
-dropArea.addEventListener("dragover", e => {
+dropArea.ondrop = e => {
   e.preventDefault();
-  dropArea.style.background = "#eee";
-});
-
-dropArea.addEventListener("dragleave", () => {
-  dropArea.style.background = "";
-});
-
-dropArea.addEventListener("drop", e => {
-  e.preventDefault();
-  dropArea.style.background = "";
   selectedImage = e.dataTransfer.files[0];
   preview(selectedImage);
   extractText();
-});
+};
 
-// Preview
-function preview(file) {
-  const reader = new FileReader();
-  reader.onload = e => previewImg.src = e.target.result;
-  reader.readAsDataURL(file);
+dropArea.ondragover = e => e.preventDefault();
+
+function preview(file){
+  const r = new FileReader();
+  r.onload = e => previewImg.src = e.target.result;
+  r.readAsDataURL(file);
 }
 
-// MAIN EXTRACTION
-function extractText() {
-  if (!selectedImage) return alert("Upload/Paste image first");
+function extractText(){
+
+  if(!selectedImage) return alert("Upload image");
 
   status.innerText = "Processing...";
 
   Tesseract.recognize(selectedImage, 'eng')
-    .then(({ data: { text } }) => {
+  .then(({data:{text}})=>{
 
-      status.innerText = "Extraction Done";
+    status.innerText = "Done";
 
-      const tbody = document.querySelector("#resultTable tbody");
-      tbody.innerHTML = "";
+    const tbody = document.querySelector("#resultTable tbody");
+    tbody.innerHTML = "";
 
-      const lines = text.split("\n");
+    const lines = text.split("\n");
 
-      lines.forEach(line => {
+    lines.forEach(line=>{
 
-        const lead = line.match(/\b\d{8}\b/);
-        const numbers = line.match(/\d{10}/g) || [];
-        const date = line.match(/\d{2}-[A-Z]{3}-\d{2}/);
+      const lead = line.match(/\b\d{8}\b/);
+      if(!lead) return;
 
-        if (!lead) return;
+      const nums = line.match(/\d+/g) || [];
 
-        let policy = "";
-        let mobile = "";
+      let policy = "";
+      let mobile = "";
 
-        numbers.forEach(num => {
-          if (num.startsWith("0") && !policy) policy = num;
-          else if (!mobile) mobile = num;
-        });
-
-        // 🔥 SMART NAME EXTRACTION
-        let words = line.split(" ");
-
-        let nameParts = words.filter(w => {
-          return /^[A-Z]{3,}$/.test(w); // only clean uppercase words
-        });
-
-        let name = nameParts.join(" ");
-
-        // limit to 2–4 words max
-        if (nameParts.length > 4) {
-          name = nameParts.slice(0, 4).join(" ");
+      nums.forEach(n=>{
+        if(n.length===10 && n.startsWith("0") && !policy){
+          policy = n;
         }
-
-        const row = `
-        <tr>
-          <td>${lead[0]}</td>
-          <td>${policy}</td>
-          <td>${name}</td>
-          <td>${mobile}</td>
-          <td>D2SM_AVER</td>
-          <td>UPS_PROP</td>
-          <td>ASSIGNED</td>
-          <td>${date ? date[0] : ""}</td>
-          <td>Anoop bandu Meshram</td>
-        </tr>
-        `;
-
-        tbody.innerHTML += row;
-
+        else if(n.length===10 && !mobile){
+          mobile = n;
+        }
       });
 
+      // DATE
+      const dateMatch = line.match(/\d{2}-[A-Z]{3}-\d{2}/);
+      const date = dateMatch ? dateMatch[0] : "";
+
+      // 🔥 NAME EXTRACTION (STRICT)
+      let name = line;
+
+      // remove numbers
+      name = name.replace(/\d+/g,"");
+
+      // remove keywords
+      name = name.replace(/ASSIGNED|D2SM_AVER|UPS_PROP|APR|DSM|AVER/gi,"");
+
+      // remove owner
+      name = name.replace(/Anoop bandu Meshram/gi,"");
+
+      // keep only letters + space
+      name = name.replace(/[^A-Za-z\s]/g,"");
+
+      // normalize
+      name = name.replace(/\s+/g," ").trim();
+
+      // fix joined names like RAHULTRIVEDI → RAHUL TRIVEDI
+      name = name.replace(/([A-Z]{3,})([A-Z]{3,})/g,"$1 $2");
+
+      // limit to max 4 words
+      name = name.split(" ").slice(0,4).join(" ");
+
+      const row = `
+      <tr>
+        <td>${lead[0]}</td>
+        <td>${policy}</td>
+        <td>${name}</td>
+        <td>${mobile}</td>
+        <td>D2SM_AVER</td>
+        <td>UPS_PROP</td>
+        <td>ASSIGNED</td>
+        <td>${date}</td>
+        <td>Anoop bandu Meshram</td>
+      </tr>`;
+
+      tbody.innerHTML += row;
+
     });
+
+  });
 }
 </script>
 
