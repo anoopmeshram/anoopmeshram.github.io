@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Happy Birthday Shruti ❤️</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -16,77 +16,49 @@ box-sizing:border-box;
 font-family:'Poppins',sans-serif;
 }
 
-html,body{
-width:100%;
-height:100%;
-overflow:hidden;
-}
-
 body{
+height:100vh;
+overflow:hidden;
 background:#050816;
-position:relative;
 display:flex;
 justify-content:center;
 align-items:center;
-}
-
-#stars{
-position:absolute;
-width:100%;
-height:100%;
-overflow:hidden;
-}
-
-.star{
-position:absolute;
-background:white;
-border-radius:50%;
-animation:twinkle 3s infinite alternate;
-}
-
-@keyframes twinkle{
-from{
-opacity:.2;
-transform:scale(.8);
-}
-to{
-opacity:1;
-transform:scale(1.4);
-}
-}
-
-#main{
 position:relative;
-z-index:10;
+}
+
+canvas{
+position:absolute;
+inset:0;
+}
+
+.container{
+position:relative;
+z-index:5;
 text-align:center;
 }
 
-#birthdayText{
-font-size:70px;
+h1{
+font-size:80px;
 font-weight:800;
+opacity:0;
+transform:scale(.5);
+transition:1s;
 background:linear-gradient(
 90deg,
-#ff00ff,
-#ff66cc,
-#ffd700,
-#ffffff
+#FFD700,
+#FFFFFF,
+#FFD700
 );
 
 -webkit-background-clip:text;
 -webkit-text-fill-color:transparent;
 
 text-shadow:
-0 0 20px rgba(255,255,255,.8),
-0 0 40px rgba(255,0,255,.8),
-0 0 80px rgba(255,215,0,.8);
-
-opacity:0;
-transform:scale(.5);
-transition:1.2s;
-margin-bottom:20px;
+0 0 30px gold,
+0 0 60px gold;
 }
 
-#birthdayText.show{
+h1.show{
 opacity:1;
 transform:scale(1);
 }
@@ -96,21 +68,19 @@ color:white;
 font-size:22px;
 letter-spacing:3px;
 margin-bottom:30px;
-text-shadow:0 0 15px white;
 }
 
 .cake{
 position:relative;
-width:340px;
-height:280px;
+width:380px;
+height:300px;
 margin:auto;
-transform-style:preserve-3d;
-animation:floatCake 4s ease-in-out infinite;
+animation:float 4s ease-in-out infinite;
 }
 
-@keyframes floatCake{
+@keyframes float{
 0%,100%{
-transform:translateY(0px);
+transform:translateY(0);
 }
 50%{
 transform:translateY(-20px);
@@ -121,51 +91,45 @@ transform:translateY(-20px);
 position:absolute;
 left:50%;
 transform:translateX(-50%);
-border-radius:25px;
+border-radius:30px;
 box-shadow:
-0 15px 40px rgba(0,0,0,.4);
+0 20px 50px rgba(0,0,0,.5);
 }
 
 .layer1{
 bottom:0;
-width:340px;
+width:380px;
 height:120px;
-background:linear-gradient(
+background:
+linear-gradient(
 45deg,
-#ff1493,
-#ff69b4
+#b8860b,
+#ffd700
 );
 }
 
 .layer2{
-bottom:95px;
-width:270px;
+bottom:100px;
+width:300px;
 height:100px;
-background:linear-gradient(
+background:
+linear-gradient(
 45deg,
-#ff66cc,
-#ff99dd
+#d4af37,
+#fff1a8
 );
 }
 
 .layer3{
-bottom:175px;
-width:200px;
+bottom:180px;
+width:220px;
 height:80px;
-background:linear-gradient(
+background:
+linear-gradient(
 45deg,
-#ffaad4,
-#ffd1e8
+#f4d03f,
+#fff6c2
 );
-}
-
-.cream{
-position:absolute;
-top:-10px;
-width:100%;
-height:20px;
-background:white;
-border-radius:20px;
 }
 
 .candle{
@@ -173,56 +137,53 @@ position:absolute;
 left:50%;
 top:-20px;
 transform:translateX(-50%);
-width:20px;
+width:22px;
 height:90px;
 background:white;
 border-radius:5px;
 cursor:pointer;
 }
+
 .flame{
 position:absolute;
 left:50%;
 top:-42px;
 transform:translateX(-50%);
 width:34px;
-height:52px;
-background:radial-gradient(
+height:50px;
+
+background:
+radial-gradient(
 circle,
-#fff176 0%,
-#ffd700 30%,
-#ff9800 65%,
-#ff5722 100%
+#fff176,
+#ff9800,
+#ff5722
 );
 
-border-radius:
-50% 50% 50% 50% /
-70% 70% 30% 30%;
-
+border-radius:50%;
 box-shadow:
-0 0 20px #ffd700,
-0 0 40px #ff9800,
-0 0 80px #ff5722,
-0 0 120px #ff0000;
+0 0 20px gold,
+0 0 50px orange,
+0 0 100px red;
 
-animation:
-flicker .12s infinite alternate;
+animation:flicker .15s infinite alternate;
 }
 
 @keyframes flicker{
 
-0%{
+from{
 transform:
 translateX(-50%)
-rotate(-8deg)
-scale(1);
+rotate(-8deg);
 }
 
-100%{
+to{
 transform:
 translateX(-50%)
 rotate(8deg)
-scale(1.18);
+scale(1.2);
 }
+
 }
 
 .hidden{
@@ -231,73 +192,10 @@ display:none;
 
 #instruction{
 margin-top:30px;
+color:white;
 font-size:24px;
 font-weight:700;
-color:white;
-
-text-shadow:
-0 0 10px white,
-0 0 20px white;
 }
-
-/* BALLOONS */
-
-.balloon{
-position:absolute;
-width:80px;
-height:100px;
-border-radius:50%;
-animation:rise linear infinite;
-}
-
-.balloon:after{
-content:'';
-position:absolute;
-left:50%;
-top:100%;
-width:2px;
-height:90px;
-background:white;
-}
-
-@keyframes rise{
-
-0%{
-transform:
-translateY(120vh);
-}
-
-100%{
-transform:
-translateY(-150px);
-}
-}
-
-/* CONFETTI */
-
-.confetti{
-position:absolute;
-width:12px;
-height:12px;
-animation:fall linear infinite;
-}
-
-@keyframes fall{
-
-0%{
-transform:
-translateY(-50px)
-rotate(0deg);
-}
-
-100%{
-transform:
-translateY(120vh)
-rotate(720deg);
-}
-}
-
-/* FIREWORKS */
 
 .firework{
 position:absolute;
@@ -307,38 +205,23 @@ border-radius:50%;
 pointer-events:none;
 }
 
-/* GLASS EFFECT */
-
-.glass{
-padding:20px;
-border-radius:30px;
-
-background:
-rgba(255,255,255,.08);
-
-backdrop-filter:
-blur(18px);
-
-border:
-1px solid rgba(255,255,255,.15);
-
-box-shadow:
-0 8px 40px rgba(0,0,0,.35);
+.balloon{
+position:absolute;
+width:70px;
+height:90px;
+border-radius:50%;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div id="stars"></div>
+<canvas id="bg"></canvas>
 
-<div id="main">
+<div class="container">
 
-<div class="glass">
-
-<h1 id="birthdayText">
+<h1 id="title">
 🎉 Happy Birthday Shruti 🎉
 </h1>
 
@@ -348,17 +231,9 @@ A Day Full Of Happiness ❤️
 
 <div class="cake">
 
-<div class="layer layer1">
-<div class="cream"></div>
-</div>
-
-<div class="layer layer2">
-<div class="cream"></div>
-</div>
-
-<div class="layer layer3">
-<div class="cream"></div>
-</div>
+<div class="layer layer1"></div>
+<div class="layer layer2"></div>
+<div class="layer layer3"></div>
 
 <div class="candle" id="candle">
 <div class="flame" id="flame"></div>
@@ -372,8 +247,6 @@ Tap Flame 🔥
 
 </div>
 
-</div>
-
 <script>
 
 const flame =
@@ -382,27 +255,192 @@ document.getElementById("flame");
 const candle =
 document.getElementById("candle");
 
-const birthdayText =
-document.getElementById("birthdayText");
+const title =
+document.getElementById("title");
 
 const instruction =
 document.getElementById("instruction");
 
-let state = 0;
+let state=0;
 
-/*
-0 = flame on
-1 = flame off
-2 = flame on again
-3 = flame off + birthday reveal
-*/
-function createFireworks(){
+const canvas=
+document.getElementById("bg");
 
-for(let i=0;i<120;i++){
+const ctx=
+canvas.getContext("2d");
 
-let p=document.createElement("div");
+function resize(){
 
-p.className="firework";
+canvas.width=
+window.innerWidth;
+
+canvas.height=
+window.innerHeight;
+
+}
+
+resize();
+
+window.addEventListener(
+"resize",
+resize
+);
+/* =========================
+   GALAXY BACKGROUND
+   ========================= */
+
+let stars=[];
+
+for(let i=0;i<250;i++){
+
+stars.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*2,
+s:Math.random()*1.5
+});
+
+}
+
+function drawGalaxy(){
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+let g=
+ctx.createRadialGradient(
+canvas.width/2,
+canvas.height/2,
+50,
+canvas.width/2,
+canvas.height/2,
+700
+);
+
+g.addColorStop(0,"#16213e");
+g.addColorStop(.5,"#0f3460");
+g.addColorStop(1,"#050816");
+
+ctx.fillStyle=g;
+
+ctx.fillRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+for(let s of stars){
+
+ctx.beginPath();
+
+ctx.fillStyle=
+"rgba(255,255,255,.9)";
+
+ctx.arc(
+s.x,
+s.y,
+s.r,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+s.y+=s.s;
+
+if(s.y>canvas.height){
+
+s.y=0;
+
+s.x=
+Math.random()*canvas.width;
+
+}
+
+}
+
+requestAnimationFrame(
+drawGalaxy
+);
+
+}
+
+drawGalaxy();
+
+/* =========================
+   BALLOONS
+   ========================= */
+
+for(let i=0;i<20;i++){
+
+let b=
+document.createElement("div");
+
+b.className="balloon";
+
+b.style.left=
+Math.random()*100+"vw";
+
+b.style.bottom=
+"-150px";
+
+b.style.background=
+`hsl(
+${Math.random()*360},
+100%,
+60%
+)`;
+
+document.body.appendChild(b);
+
+let duration=
+8+Math.random()*8;
+
+b.animate(
+
+[
+{
+transform:
+"translateY(0)"
+},
+
+{
+transform:
+"translateY(-130vh)"
+}
+
+],
+
+{
+duration:
+duration*1000,
+
+iterations:
+Infinity
+}
+
+);
+
+}
+
+/* =========================
+   FIREWORKS ENGINE
+   ========================= */
+
+function fireworks(){
+
+for(let i=0;i<160;i++){
+
+let p=
+document.createElement("div");
+
+p.className=
+"firework";
 
 p.style.left=
 (window.innerWidth/2)+"px";
@@ -411,746 +449,28 @@ p.style.top=
 (window.innerHeight/3)+"px";
 
 p.style.background=
-`hsl(${Math.random()*360},
-100%,60%)`;
-
-document.body.appendChild(p);
-
-let x=
-(Math.random()-0.5)*900;
-
-let y=
-(Math.random()-0.5)*900;
-
-p.animate(
-
-[
-{
-transform:
-'translate(0,0) scale(1)',
-opacity:1
-},
-
-{
-transform:
-`translate(${x}px,${y}px)
-scale(0)`,
-
-opacity:0
-}
-
-],
-
-{
-duration:2200,
-easing:'cubic-bezier(.2,.8,.2,1)'
-}
-
-);
-
-setTimeout(()=>{
-p.remove();
-},2200);
-
-}
-
-}
-
-/* STARS */
-
-for(let i=0;i<250;i++){
-
-let star=
-document.createElement("div");
-
-star.className="star";
-
-let size=
-Math.random()*4;
-
-star.style.width=
-size+"px";
-
-star.style.height=
-size+"px";
-
-star.style.left=
-Math.random()*100+"vw";
-
-star.style.top=
-Math.random()*100+"vh";
-
-star.style.animationDelay=
-Math.random()*3+"s";
-
-document
-.getElementById("stars")
-.appendChild(star);
-
-}
-
-/* BALLOONS */
-
-for(let i=0;i<25;i++){
-
-let balloon=
-document.createElement("div");
-
-balloon.className="balloon";
-
-balloon.style.left=
-Math.random()*100+"vw";
-
-balloon.style.background=
-`hsl(${Math.random()*360},
-100%,65%)`;
-
-balloon.style.animationDuration=
-(8+Math.random()*8)+"s";
-
-balloon.style.animationDelay=
-Math.random()*5+"s";
-
-document.body.appendChild(balloon);
-
-}
-
-/* CONFETTI */
-
-for(let i=0;i<200;i++){
-
-let c=
-document.createElement("div");
-
-c.className="confetti";
-
-c.style.left=
-Math.random()*100+"vw";
-
-c.style.background=
-`hsl(${Math.random()*360},
-100%,50%)`;
-
-c.style.animationDuration=
-(3+Math.random()*5)+"s";
-
-c.style.animationDelay=
-Math.random()*5+"s";
-
-document.body.appendChild(c);
-
-  }
-/* MAIN INTERACTION */
-
-function revealBirthday(){
-
-birthdayText.classList.add("show");
-
-instruction.innerHTML =
-"🎉 Happy Birthday Shruti 🎉";
-
-createFireworks();
-
-setTimeout(()=>{
-createFireworks();
-},700);
-
-setTimeout(()=>{
-createFireworks();
-},1400);
-
-}
-
-/* CANDLE CYCLE */
-
-function nextStep(){
-
-if(state===0){
-
-/* FLAME OFF */
-
-flame.classList.add("hidden");
-
-instruction.innerHTML =
-"Tap Candle 🕯️ To Relight";
-
-state=1;
-
-}
-
-else if(state===1){
-
-/* FLAME ON */
-
-flame.classList.remove("hidden");
-
-birthdayText.classList.remove("show");
-
-instruction.innerHTML =
-"Tap Flame 🔥";
-
-state=2;
-
-}
-
-else if(state===2){
-
-/* FLAME OFF + REVEAL */
-
-flame.classList.add("hidden");
-
-revealBirthday();
-
-state=3;
-
-}
-
-else{
-
-/* RESET */
-
-birthdayText.classList.remove("show");
-
-flame.classList.remove("hidden");
-
-instruction.innerHTML =
-"Tap Flame 🔥";
-
-state=0;
-
-}
-
-}
-
-/* CLICK EVENTS */
-
-flame.addEventListener(
-"click",
-nextStep
-);
-
-candle.addEventListener(
-"click",
-()=>{
-
-if(
-state===1 ||
-state===3
-){
-nextStep();
-}
-
-}
-);
-
-/* MOBILE TOUCH SUPPORT */
-
-flame.addEventListener(
-"touchstart",
-nextStep
-);
-
-candle.addEventListener(
-"touchstart",
-()=>{
-
-if(
-state===1 ||
-state===3
-){
-nextStep();
-}
-
-}
-);
-
-/* AUTO FIREWORKS LOOP */
-
-setInterval(()=>{
-
-if(state===3){
-
-createFireworks();
-
-}
-
-},3000);
-/* SHOOTING STARS */
-
-function shootingStar(){
-
-const star =
-document.createElement("div");
-
-star.style.position="absolute";
-star.style.width="3px";
-star.style.height="3px";
-
-star.style.background="white";
-
-star.style.borderRadius="50%";
-
-star.style.boxShadow=
-`
-0 0 10px white,
-0 0 20px white,
-0 0 40px white
-`;
-
-star.style.left=
-Math.random()*window.innerWidth+"px";
-
-star.style.top=
-Math.random()*300+"px";
-
-document.body.appendChild(star);
-
-star.animate(
-
-[
-{
-transform:
-"translate(0,0)",
-opacity:1
-},
-
-{
-transform:
-"translate(-700px,350px)",
-opacity:0
-}
-
-],
-
-{
-duration:2000,
-easing:"linear"
-}
-
-);
-
-setTimeout(()=>{
-star.remove();
-},2000);
-
-}
-
-setInterval(
-shootingStar,
-2500
-);
-
-/* FLOATING HEARTS */
-
-function createHeart(){
-
-const heart=
-document.createElement("div");
-
-heart.innerHTML="❤️";
-
-heart.style.position=
-"absolute";
-
-heart.style.fontSize=
-(20+Math.random()*25)+"px";
-
-heart.style.left=
-Math.random()*100+"vw";
-
-heart.style.bottom=
-"-50px";
-
-heart.style.pointerEvents=
-"none";
-
-document.body.appendChild(
-heart
-);
-
-heart.animate(
-
-[
-{
-transform:
-"translateY(0)",
-opacity:0
-},
-
-{
-opacity:1
-},
-
-{
-transform:
-"translateY(-900px)",
-opacity:0
-}
-
-],
-
-{
-duration:
-7000+
-Math.random()*3000
-}
-
-);
-
-setTimeout(()=>{
-heart.remove();
-},10000);
-
-}
-
-setInterval(
-createHeart,
-1200
-);
-
-/* SPARKLES */
-
-function sparkle(){
-
-const s=
-document.createElement("div");
-
-s.innerHTML="✨";
-
-s.style.position=
-"absolute";
-
-const cake=
-document.querySelector(".cake");
-
-const rect=
-cake.getBoundingClientRect();
-
-s.style.left=
-(rect.left+
-Math.random()*rect.width)
-+"px";
-
-s.style.top=
-(rect.top+
-Math.random()*rect.height)
-+"px";
-
-s.style.fontSize=
-(10+Math.random()*20)
-+"px";
-
-s.style.pointerEvents=
-"none";
-
-document.body.appendChild(s);
-
-s.animate(
-
-[
-{
-transform:
-"scale(0)",
-opacity:0
-},
-
-{
-transform:
-"scale(1.5)",
-opacity:1
-},
-
-{
-transform:
-"scale(0)",
-opacity:0
-}
-
-],
-
-{
-duration:1500
-}
-
-);
-
-setTimeout(()=>{
-s.remove();
-},1500);
-
-}
-
-setInterval(
-sparkle,
-250
-);
-
-/* CAKE GLOW */
-
-document
-.querySelector(".cake")
-.animate(
-
-[
-{
-filter:
-"drop-shadow(0 0 20px pink)"
-},
-
-{
-filter:
-"drop-shadow(0 0 60px gold)"
-},
-
-{
-filter:
-"drop-shadow(0 0 20px pink)"
-}
-],
-
-{
-duration:3000,
-iterations:Infinity
-}
-
-);
-/* ==========================
-   PREMIUM MUSIC ENGINE
-   ========================== */
-
-/*
-Replace YOUR_MP3_LINK with
-your instrumental mp3 url
-if desired.
-*/
-
-const music =
-new Audio(
-"YOUR_MP3_LINK"
-);
-
-music.loop = true;
-music.volume = 0.5;
-
-let musicStarted = false;
-
-function startMusic(){
-
-if(!musicStarted){
-
-music.play()
-.catch(()=>{});
-
-musicStarted = true;
-
-}
-
-}
-
-document.addEventListener(
-"click",
-startMusic,
-{once:true}
-);
-
-document.addEventListener(
-"touchstart",
-startMusic,
-{once:true}
-);
-
-/* ==========================
-   LUXURY TEXT EXPLOSION
-   ========================== */
-
-function textExplosion(){
-
-for(let i=0;i<80;i++){
-
-const particle =
-document.createElement("div");
-
-particle.innerHTML="✨";
-
-particle.style.position=
-"absolute";
-
-particle.style.left=
-(window.innerWidth/2)+"px";
-
-particle.style.top=
-(window.innerHeight/3)+"px";
-
-particle.style.fontSize=
-(12+Math.random()*25)
-+"px";
-
-particle.style.pointerEvents=
-"none";
-
-document.body.appendChild(
-particle
-);
-
-let x=
-(Math.random()-0.5)*1200;
-
-let y=
-(Math.random()-0.5)*800;
-
-particle.animate(
-
-[
-{
-transform:
-"translate(0,0) scale(0)",
-opacity:1
-},
-
-{
-transform:
-`translate(${x}px,${y}px)
-scale(2)`,
-
-opacity:0
-}
-
-],
-
-{
-duration:2500,
-easing:"ease-out"
-}
-
-);
-
-setTimeout(()=>{
-particle.remove();
-},2500);
-
-}
-
-}
-
-/* ==========================
-   RAINBOW NEON TITLE
-   ========================== */
-
-setInterval(()=>{
-
-birthdayText.style.filter =
-`hue-rotate(
-${Math.random()*360}deg
-)`;
-
-},1200);
-
-/* ==========================
-   GLASS CARD FLOATING
-   ========================== */
-
-document
-.querySelector(".glass")
-.animate(
-
-[
-{
-transform:
-"translateY(0px)"
-},
-
-{
-transform:
-"translateY(-12px)"
-},
-
-{
-transform:
-"translateY(0px)"
-}
-],
-
-{
-duration:3500,
-iterations:Infinity
-}
-
-);
-
-/* ==========================
-   REVEAL ENHANCEMENT
-   ========================== */
-
-const originalReveal =
-revealBirthday;
-
-revealBirthday = function(){
-
-originalReveal();
-
-textExplosion();
-
-setTimeout(
-textExplosion,
-800
-);
-
-setTimeout(
-textExplosion,
-1600
-);
-
-};
-/* ==========================
-   MEGA FIREWORKS FINALE
-   ========================== */
-
-function megaFireworks(){
-
-for(let burst=0; burst<8; burst++){
-
-setTimeout(()=>{
-
-let centerX =
-Math.random()*window.innerWidth;
-
-let centerY =
-100 + Math.random()*300;
-
-for(let i=0;i<180;i++){
-
-const p =
-document.createElement("div");
-
-p.className =
-"firework";
-
-p.style.left =
-centerX+"px";
-
-p.style.top =
-centerY+"px";
-
-p.style.background =
 `hsl(
 ${Math.random()*360},
 100%,
 60%
 )`;
 
-document.body.appendChild(p);
+document.body.appendChild(
+p
+);
 
-const angle =
-(Math.PI*2*i)/180;
+let angle=
+(Math.PI*2*i)/160;
 
-const distance =
-100 + Math.random()*300;
+let dist=
+100+
+Math.random()*250;
 
-const x =
-Math.cos(angle)*distance;
+let x=
+Math.cos(angle)*dist;
 
-const y =
-Math.sin(angle)*distance;
+let y=
+Math.sin(angle)*dist;
 
 p.animate(
 
@@ -1178,203 +498,159 @@ easing:"ease-out"
 );
 
 setTimeout(()=>{
+
 p.remove();
+
 },2200);
 
 }
 
-},burst*500);
-
 }
 
-}
-
-/* ==========================
-   FALLING ROSE PETALS
-   ========================== */
-
-function rosePetal(){
-
-const petal =
-document.createElement("div");
-
-petal.innerHTML = "🌹";
-
-petal.style.position =
-"absolute";
-
-petal.style.left =
-Math.random()*100+"vw";
-
-petal.style.top =
-"-50px";
-
-petal.style.fontSize =
-(20+Math.random()*20)+"px";
-
-petal.style.pointerEvents =
-"none";
-
-document.body.appendChild(
-petal
-);
-
-petal.animate(
-
-[
-{
-transform:
-"translateY(0) rotate(0deg)"
-},
-
-{
-transform:
-`translateY(${window.innerHeight+200}px)
-rotate(${720+Math.random()*720}deg)`
-}
-
-],
-
-{
-duration:
-7000+Math.random()*5000,
-easing:"linear"
-}
-
-);
-
-setTimeout(()=>{
-petal.remove();
-},12000);
-
-}
-
-setInterval(
-rosePetal,
-1200
-);
-
-/* ==========================
-   GOLD PARTICLES
-   ========================== */
-
-function goldParticle(){
-
-const g =
-document.createElement("div");
-
-g.style.position =
-"absolute";
-
-g.style.width = "6px";
-g.style.height = "6px";
-
-g.style.borderRadius =
-"50%";
-
-g.style.background =
-"gold";
-
-g.style.boxShadow =
-`
-0 0 10px gold,
-0 0 20px gold,
-0 0 40px gold
-`;
-
-g.style.left =
-Math.random()*100+"vw";
-
-g.style.top =
-Math.random()*100+"vh";
-
-document.body.appendChild(g);
-
-g.animate(
-
-[
-{
-opacity:0,
-transform:"scale(0)"
-},
-
-{
-opacity:1,
-transform:"scale(1.8)"
-},
-
-{
-opacity:0,
-transform:"scale(0)"
-}
-
-],
-
-{
-duration:2500
-}
-
-);
-
-setTimeout(()=>{
-g.remove();
-},2500);
-
-}
-
-setInterval(
-goldParticle,
-180
-);
-
-/* ==========================
-   LUXURY BACKGROUND GLOW
-   ========================== */
+/* =========================
+   FLOATING HEARTS
+   ========================= */
 
 setInterval(()=>{
 
-document.body.style.boxShadow =
-`
-inset 0 0 150px
-hsl(
-${Math.random()*360},
-100%,
-50%
-)
-`;
+let h=
+document.createElement("div");
 
-},1800);
+h.innerHTML="❤️";
 
-/* ==========================
-   FINALE WHEN MESSAGE SHOWS
-   ========================== */
+h.style.position=
+"absolute";
 
-const oldReveal =
-revealBirthday;
+h.style.left=
+Math.random()*100+"vw";
 
-revealBirthday = function(){
+h.style.bottom=
+"-30px";
 
-oldReveal();
+h.style.fontSize=
+(20+Math.random()*25)
++"px";
 
-megaFireworks();
+document.body.appendChild(h);
 
-setTimeout(
-megaFireworks,
-2500
+h.animate(
+
+[
+{
+transform:
+"translateY(0)",
+opacity:0
+},
+
+{
+opacity:1
+},
+
+{
+transform:
+"translateY(-120vh)",
+opacity:0
+}
+
+],
+
+{
+duration:8000
+}
+
 );
-
-};
-/* ==========================
-   AUTO REPEAT SYSTEM
-   ========================== */
-
-function autoCycle(){
-
-if(state===3){
 
 setTimeout(()=>{
 
-birthdayText.classList.remove(
+h.remove();
+
+},8000);
+
+},1200);
+
+/* =========================
+   CANDLE INTERACTION
+   ========================= */
+
+function revealBirthday(){
+
+title.classList.add(
+"show"
+);
+
+instruction.innerHTML=
+"🎉 HAPPY BIRTHDAY SHRUTI 🎉";
+
+fireworks();
+
+setTimeout(
+fireworks,
+600
+);
+
+setTimeout(
+fireworks,
+1200
+);
+
+setTimeout(
+fireworks,
+1800
+);
+
+}
+
+/* =========================
+   MAIN CYCLE
+   ========================= */
+
+function nextStep(){
+
+if(state===0){
+
+flame.classList.add(
+"hidden"
+);
+
+instruction.innerHTML=
+"Tap Candle 🕯️";
+
+state=1;
+
+}
+
+else if(state===1){
+
+flame.classList.remove(
+"hidden"
+);
+
+title.classList.remove(
+"show"
+);
+
+instruction.innerHTML=
+"Tap Flame 🔥";
+
+state=2;
+
+}
+
+else if(state===2){
+
+flame.classList.add(
+"hidden"
+);
+
+revealBirthday();
+
+state=3;
+
+}
+
+else{
+
+title.classList.remove(
 "show"
 );
 
@@ -1382,152 +658,226 @@ flame.classList.remove(
 "hidden"
 );
 
-instruction.innerHTML =
+instruction.innerHTML=
 "Tap Flame 🔥";
 
-state = 0;
-
-},10000);
+state=0;
 
 }
 
 }
 
-setInterval(
-autoCycle,
-12000
+flame.addEventListener(
+"click",
+nextStep
 );
 
-/* ==========================
-   MOBILE OPTIMIZATION
-   ========================== */
+candle.addEventListener(
+"click",
+()=>{
 
-function mobileAdjust(){
+if(
+state===1 ||
+state===3
+){
 
-if(window.innerWidth < 768){
-
-birthdayText.style.fontSize =
-"42px";
-
-document
-.querySelector(".cake")
-.style.transform =
-"scale(.8)";
-
-instruction.style.fontSize =
-"18px";
+nextStep();
 
 }
 
 }
-
-mobileAdjust();
-
-window.addEventListener(
-"resize",
-mobileAdjust
 );
 
-/* ==========================
-   PREMIUM CURSOR GLOW
-   ========================== */
+/* =========================
+   AUTO FIREWORKS
+   ========================= */
 
-document.addEventListener(
-"mousemove",
-(e)=>{
+setInterval(()=>{
 
-let glow =
+if(state===3){
+
+fireworks();
+
+}
+
+},3000);
+
+/* =========================
+   GOLD SPARKLES
+   ========================= */
+
+setInterval(()=>{
+
+let s=
 document.createElement("div");
 
-glow.style.position =
-"fixed";
+s.innerHTML="✨";
 
-glow.style.left =
-e.clientX+"px";
+s.style.position=
+"absolute";
 
-glow.style.top =
-e.clientY+"px";
+s.style.left=
+Math.random()*100+"vw";
 
-glow.style.width =
-"10px";
+s.style.top=
+Math.random()*100+"vh";
 
-glow.style.height =
-"10px";
-
-glow.style.borderRadius =
-"50%";
-
-glow.style.background =
-"white";
-
-glow.style.pointerEvents =
-"none";
-
-glow.style.boxShadow =
-`
-0 0 20px white,
-0 0 40px gold,
-0 0 60px pink
-`;
+s.style.fontSize=
+(10+Math.random()*25)
++"px";
 
 document.body.appendChild(
-glow
+s
 );
 
-glow.animate(
+s.animate(
 
 [
 {
+opacity:0,
+transform:"scale(0)"
+},
+
+{
 opacity:1,
-transform:"scale(1)"
+transform:"scale(1.5)"
 },
 
 {
 opacity:0,
-transform:"scale(4)"
+transform:"scale(0)"
 }
 
 ],
 
 {
-duration:700
+duration:2000
 }
 
 );
 
 setTimeout(()=>{
-glow.remove();
-},700);
 
-});
+s.remove();
 
-/* ==========================
-   INITIAL GRAND ENTRANCE
-   ========================== */
+},2000);
+
+},250);
+
+/* =========================
+   SHOOTING STARS
+   ========================= */
+
+setInterval(()=>{
+
+let star=
+document.createElement("div");
+
+star.style.position=
+"absolute";
+
+star.style.left=
+Math.random()*100+"vw";
+
+star.style.top=
+Math.random()*30+"vh";
+
+star.style.width="3px";
+star.style.height="3px";
+
+star.style.background=
+"white";
+
+star.style.boxShadow=
+"0 0 20px white";
+
+document.body.appendChild(
+star
+);
+
+star.animate(
+
+[
+{
+transform:
+"translate(0,0)"
+},
+
+{
+transform:
+"translate(-800px,400px)"
+}
+
+],
+
+{
+duration:1800,
+easing:"linear"
+}
+
+);
 
 setTimeout(()=>{
 
-createFireworks();
+star.remove();
 
-},1200);
-
-setTimeout(()=>{
-
-createFireworks();
+},1800);
 
 },2200);
 
+/* =========================
+   AUTO RESET
+   ========================= */
+
+setInterval(()=>{
+
+if(state===3){
+
 setTimeout(()=>{
 
-createFireworks();
+title.classList.remove(
+"show"
+);
 
-},3200);
+flame.classList.remove(
+"hidden"
+);
+
+instruction.innerHTML=
+"Tap Flame 🔥";
+
+state=0;
+
+},8000);
+
+}
+
+},10000);
+
+/* =========================
+   GRAND ENTRY
+   ========================= */
+
+setTimeout(
+fireworks,
+1000
+);
+
+setTimeout(
+fireworks,
+2000
+);
+
+setTimeout(
+fireworks,
+3000
+);
 
 console.log(
-"🎂 Ultra Premium Birthday Experience Loaded Successfully ❤️"
+"Ultra Premium Birthday Loaded ❤️"
 );
 
 </script>
 
 </body>
-</html>
+</html>  
